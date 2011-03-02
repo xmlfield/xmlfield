@@ -11,7 +11,7 @@
 	<artifactId>xmlfield-core</artifactId>
 	<packaging>jar</packaging>
 	<name>XML Field</name>
-	<version>0.3-SNAPSHOT</version>
+	<version>0.3.0-SNAPSHOT</version>
 
 	<dependencies>
 
