@@ -98,6 +98,8 @@
 	</build>
 	<modules>
 		<module>xmlfield-core</module>
+		<module>xmlfield-repository</module>
+		<module>xmlfield-validation</module>
 	</modules>
 	
 </project>
