@@ -6,17 +6,15 @@
 	<groupId>org.xmlfield</groupId>
 	<artifactId>xmlfield</artifactId>
 	<packaging>pom</packaging>
-	<name>XMLField Parent module</name>
+	<name>XMLField</name>
 	<version>0.3.1-SNAPSHOT</version>
-
-	<dependencies>
 
 	
 
-
-
-	</dependencies>
-
+	<issueManagement>
+		<system>MantisBT</system>
+		<url>https://sourceforge.net/apps/mantisbt/xmlfield/</url>
+	</issueManagement>
 	<scm>
 		<developerConnection>scm:svn:https://xmlfield.svn.sourceforge.net/svnroot/xmlfield/trunk</developerConnection>
 		<url>https://xmlfield.svn.sourceforge.net/svnroot/xmlfield/trunk</url>
