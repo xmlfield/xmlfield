@@ -10,7 +10,7 @@
 	<groupId>org.xmlfield</groupId>
 	<artifactId>xmlfield-core</artifactId>
 	<packaging>jar</packaging>
-	<name>XML Field</name>
+	<name>XMLField Core</name>
 	<version>0.3.1-SNAPSHOT</version>
 
 	<dependencies>

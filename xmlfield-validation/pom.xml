@@ -8,7 +8,7 @@
   <groupId>org.xmlfield</groupId>
   <artifactId>xmlfield-validation</artifactId>
   <version>0.3.1-SNAPSHOT</version>
-  <name>XMLField Validation framework</name>
+  <name>XMLField Validation</name>
   <dependencies>
   	<dependency>
   		<groupId>org.xmlfield</groupId>
