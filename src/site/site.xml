@@ -19,7 +19,7 @@
       <item name="Maven repo" href="http://xmlfield.sourceforge.net/maven/repository/" />
       <item name="Change log" href="https://sourceforge.net/apps/mantisbt/xmlfield/changelog_page.php"/>
       <item name="Roadmap" href="https://sourceforge.net/apps/mantisbt/xmlfield/roadmap_page.php"/>
-      <item name="Stats (ohloh)" href="https://www.ohloh.net/p/statelessfilter"/>
+      <item name="Stats (ohloh)" href="https://www.ohloh.net/p/xmlfield"/>
     </links>
    
     <menu name="XMLField">
