@@ -26,14 +26,57 @@ import org.w3c.dom.Node;
 import org.xmlfield.core.XmlFieldReader;
 
 /**
+ * Test get/set xmlfield abilities on an attribute xpath expression type.
+ * 
  * @author Guillaume Mary <guillaume.mary@capgemini.com>
  */
 public class TestPack5Test {
 
+    private final XmlFieldReader parser = new XmlFieldReader();
+
     Logger log = LoggerFactory.getLogger(TestPack5Test.class);
 
-    private XmlFieldReader parser = new XmlFieldReader();
+    /**
+     * Test that xml attribute is deleted on the underlying xml element when you set a null value with a method mapped
+     * with an attribute xpath expression.
+     * 
+     * @throws Exception
+     */
+    @Test
+    public void testSetNull() throws Exception {
 
+        // Load initial XML
+        final String xml = "<person><name first=\"John\" last=\"Abbitbol\"/><age value=\"52\"/><children age=\"10\" firstName=\"Paul\" lastName=\"Abbitbol\"/><children age=\"5\" firstName=\"Mia\" lastName=\"Abbitbol\"/></person>";
+        String result = null;
+        final Node node = xmlToNode(xml);
+
+        // Attach and assert object values
+        final Person person = parser.attach(node, Person.class);
+        assertEquals("John", person.getFirstName());
+        assertEquals("John", person.getFirstName());
+        assertEquals("Abbitbol", person.getLastName());
+
+        // Remove all values by setting 'null' value
+        person.setAge(0);
+        person.setFirstName(null);
+        person.setLastName(null);
+        person.getChildrens()[0].setAge(0);
+        person.getChildrens()[0].setFirstName(null);
+        person.getChildrens()[0].setLastName(null);
+
+        result = nodeToXml(node);
+        log.info(result);
+        assertEquals(
+                "<person><name/><age value=\"0\"/><children age=\"0\"/><children age=\"5\" firstName=\"Mia\" lastName=\"Abbitbol\"/></person>",
+                result);
+    }
+
+    /**
+     * Test the ability to modify a value in an xml attribute.
+     * 
+     * @throws Exception
+     *             errors
+     */
     @Test
     public void testSetValue() throws Exception {
 
@@ -68,35 +111,6 @@ public class TestPack5Test {
         result = nodeToXml(node);
         assertEquals(
                 "<person><name first=\"Freddy\" last=\"Kruger\"/><age value=\"25\"/><children age=\"50\" firstName=\"Horror\" lastName=\"Kruger\"/><children age=\"40\" firstName=\"Diane\" lastName=\"Kruger\"/></person>",
-                result);
-    }
-
-    @Test
-    public void testSetNull() throws Exception {
-
-        // Load initial XML
-        final String xml = "<person><name first=\"John\" last=\"Abbitbol\"/><age value=\"52\"/><children age=\"10\" firstName=\"Paul\" lastName=\"Abbitbol\"/><children age=\"5\" firstName=\"Mia\" lastName=\"Abbitbol\"/></person>";
-        String result = null;
-        final Node node = xmlToNode(xml);
-
-        // Attach and assert object values
-        final Person person = parser.attach(node, Person.class);
-        assertEquals("John", person.getFirstName());
-        assertEquals("John", person.getFirstName());
-        assertEquals("Abbitbol", person.getLastName());
-
-        // Remove all values by setting 'null' value
-        person.setAge(0);
-        person.setFirstName(null);
-        person.setLastName(null);
-        person.getChildrens()[0].setAge(0);
-        person.getChildrens()[0].setFirstName(null);
-        person.getChildrens()[0].setLastName(null);
-
-        result = nodeToXml(node);
-        log.info(result);
-        assertEquals(
-                "<person><name/><age value=\"0\"/><children age=\"0\"/><children age=\"5\" firstName=\"Mia\" lastName=\"Abbitbol\"/></person>",
                 result);
     }
 }
