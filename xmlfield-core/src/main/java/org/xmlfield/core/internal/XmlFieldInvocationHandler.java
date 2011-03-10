@@ -174,7 +174,17 @@ public class XmlFieldInvocationHandler implements InvocationHandler {
             }
         }
     }
+    
+    /**
+     * invoque une méthode "<tt>addToXxx()</tt>".
+     */
+    private Object doNew(final Object proxy, final Method method, final Class<?> type) throws Exception {
 
+        final String fieldXPath = getFieldXPath(method);
+        
+        return XmlFieldUtils.add(proxy, fieldXPath, type);
+    }
+    
     /**
      * invoque une méthode "<tt>addToXxx()</tt>".
      */
@@ -383,7 +393,7 @@ public class XmlFieldInvocationHandler implements InvocationHandler {
                                 + method.getName()
                                 + "()"
                                 + " with an array of a Java primitive type."
-                                + " This usage is not able to ensure that additionnal data (such as attribute)"
+                                + " This usage is not able to ensure that additionnal data (such as org.xmlfield.tests.attribute)"
                                 + " are not erased during call. Please use the corresponding xml-field type implementation instead."
                                 + " String -> XmlString for instance.");
                     }
@@ -676,6 +686,12 @@ public class XmlFieldInvocationHandler implements InvocationHandler {
         } else if (fieldType.isArray()) {
             // cas nominal
             value = xmlFieldReader.attachArray(fieldXPath, node, fieldType.getComponentType());
+
+        } else if (fieldType.isEnum()) {
+            value = parseEnum(domValue, (Class<? extends Enum>) fieldType);
+        } else if (isXmlFieldInterface(fieldType)) {
+            value = xmlFieldReader.attach(fieldXPath, node, fieldType);
+
         } else {
 
             throw new NotImplementedException("fieldType: " + type + ", method: " + method);
@@ -683,7 +699,23 @@ public class XmlFieldInvocationHandler implements InvocationHandler {
 
         return value;
     }
-
+    
+    
+    private boolean isXmlFieldInterface(final Class<?> fieldType) {
+        return XmlFieldUtils.getResourceXPath(fieldType) != null;
+    }
+    
+    private Object parseEnum(final Object domValue, final Class<? extends Enum> fieldType) {
+        if (domValue == null) {
+            return null;
+        }
+        final String s = parseString(domValue);
+        if ("".equals(s)) {
+            return null;
+        }
+        return Enum.valueOf(fieldType, s);
+    }
+    
     public Node getNode() {
         return node;
     }
@@ -723,6 +755,13 @@ public class XmlFieldInvocationHandler implements InvocationHandler {
 
             return doAddTo(proxy, method, method.getReturnType());
 
+        } else if (methodName.startsWith("new")&& noArg){
+            Object presentObject = doGet(methodName);
+            if(presentObject!=null){
+                return presentObject;
+            }
+            return doNew(proxy, method, method.getReturnType());
+            
         } else if (methodName.startsWith("isNull") && noArg) {
 
             return doIsNull(methodName);

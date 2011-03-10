@@ -43,7 +43,7 @@ public class XPathUtils {
     public static String getElementName(String xPath) {
         String name = XPathUtils.getElementNameWithSelector(xPath);
 
-        // Remove attribute selector
+        // Remove org.xmlfield.tests.attribute selector
         name = substringBefore(name, "[");
         return name;
     }

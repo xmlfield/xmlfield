@@ -325,7 +325,7 @@ public abstract class XmlFieldUtils {
      * les préfixes de méthodes reconnus.
      */
     private static final String[] METHOD_PREFIXES = { "set", "get", "has",
-            "is", "addTo", "sizeOf", "isNull", "removeFrom" };
+            "is", "addTo", "sizeOf", "isNull", "new", "removeFrom" };
 
     /**
      * récupère le contenu de l'annotation @{@link FieldXPath} sur une méthode,
