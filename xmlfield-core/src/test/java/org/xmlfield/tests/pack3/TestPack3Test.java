@@ -27,96 +27,116 @@ import org.w3c.dom.Node;
 import org.xmlfield.core.XmlFieldReader;
 
 /**
+ * Test getter and setter with array of native types.
+ * 
  * @author Nicolas Richeton <nicolas.richeton@capgemini.com>
  */
 public class TestPack3Test {
 
-    Logger log = LoggerFactory.getLogger(TestPack3Test.class);
+	Logger log = LoggerFactory.getLogger(TestPack3Test.class);
 
-    private XmlFieldReader parser = new XmlFieldReader();
+	private XmlFieldReader parser = new XmlFieldReader();
 
-    @Test
-    public void testSetValue() throws Exception {
+	/**
+	 * Test adding items to array by adding items directly.
+	 * 
+	 * @throws Exception
+	 */
+	@Test
+	public void testSetValue() throws Exception {
 
-        // Load initial XML
-        final String xml = "<list><string>String1</string><string>String2</string></list>";
-        String result = null;
-        final Node node = xmlToNode(xml);
+		// Load initial XML
+		final String xml = "<list><string>String1</string><string>String2</string></list>";
+		String result = null;
+		final Node node = xmlToNode(xml);
 
-        // Attach and assert object values
-        final StringList list = parser.attach(node, StringList.class);
-        assertEquals(2, list.getStrings().length);
+		// Attach and assert object values
+		final StringList list = parser.attach(node, StringList.class);
+		assertEquals(2, list.getStrings().length);
 
-        // Set new Value and assert
-        list.setStrings((String[]) ArrayUtils.add(list.getStrings(), "String3"));
-        result = nodeToXml(node);
-        log.info(result);
-        assertEquals(
-                "<list><string>String1</string><string>String2</string><string>String3</string></list>",
-                result);
+		// Set new Value and assert
+		list.setStrings((String[]) ArrayUtils.add(list.getStrings(), "String3"));
+		result = nodeToXml(node);
+		log.info(result);
+		assertEquals(
+				"<list><string>String1</string><string>String2</string><string>String3</string></list>",
+				result);
 
-        // Set new Value and assert
-        list.setStrings((String[]) ArrayUtils.remove(list.getStrings(), 1));
-        result = nodeToXml(node);
-        log.info(result);
-        assertEquals(
-                "<list><string>String1</string><string>String3</string></list>",
-                result);
+		// Set new Value and assert
+		list.setStrings((String[]) ArrayUtils.remove(list.getStrings(), 1));
+		result = nodeToXml(node);
+		log.info(result);
+		assertEquals(
+				"<list><string>String1</string><string>String3</string></list>",
+				result);
 
-    }
+	}
 
-    @Test
-    public void testSetNull() throws Exception {
+	/**
+	 * Test clearing array with null.
+	 * 
+	 * @throws Exception
+	 */
+	@Test
+	public void testSetNull() throws Exception {
 
-        // Load initial XML
-        final String xml = "<list><string>String1</string><string>String2</string><single>Single value</single></list>";
-        String result = null;
-        final Node node = xmlToNode(xml);
+		// Load initial XML
+		final String xml = "<list><string>String1</string><string>String2</string><single>Single value</single></list>";
+		String result = null;
+		final Node node = xmlToNode(xml);
 
-        // Attach and assert object values
-        final StringList list = parser.attach(node, StringList.class);
-        assertEquals(2, list.getStrings().length);
-        assertEquals("Single value", list.getSingle());
+		// Attach and assert object values
+		final StringList list = parser.attach(node, StringList.class);
+		assertEquals(2, list.getStrings().length);
+		assertEquals("Single value", list.getSingle());
 
-        // Remove tag 'single' by setting 'null' value
-        list.setSingle(null);
-        result = nodeToXml(node);
-        log.info(result);
-        assertEquals(
-                "<list><string>String1</string><string>String2</string></list>",
-                result);
+		// Remove tag 'single' by setting 'null' value
+		list.setSingle(null);
+		result = nodeToXml(node);
+		log.info(result);
+		assertEquals(
+				"<list><string>String1</string><string>String2</string></list>",
+				result);
 
-        // Remove all tags 'string' by setting 'null' value
-        list.setStrings(null);
-        result = nodeToXml(node);
-        log.info(result);
-        assertEquals("<list/>", result);
-    }
+		// Remove all tags 'string' by setting 'null' value
+		list.setStrings(null);
+		result = nodeToXml(node);
+		log.info(result);
+		assertEquals("<list/>", result);
+	}
 
-    @Test
-    public void testAlterDocument() throws Exception {
-        // Load initial XML
-        // XML Document contains values which are not mapped to object and
-        // should not be lost during the test
+	/**
+	 * Test changing array while preserving additional existing informations.
+	 * <p>
+	 * Note: Due to design, these informations can be lost when using array with
+	 * native types.
+	 * 
+	 * @throws Exception
+	 */
+	@Test
+	public void testAlterDocument() throws Exception {
+		// Load initial XML
+		// XML Document contains values which are not mapped to object and
+		// should not be lost during the test
 
-        // Due to current implementation and design, attributes are LOST during
-        // this set. When used with primitive types.
-        // This has yet to be fixed.
-        // Until resolution, the buggy behavior is the documented one.
-        final String xml = "<list><string>String1</string><string selected=\"true\">String2</string></list>";
-        String result = null;
-        final Node node = xmlToNode(xml);
+		// Due to current implementation and design, attributes are LOST during
+		// this set. When used with primitive types.
+		// This has yet to be fixed.
+		// Until resolution, the buggy behavior is the documented one.
+		final String xml = "<list><string>String1</string><string selected=\"true\">String2</string></list>";
+		String result = null;
+		final Node node = xmlToNode(xml);
 
-        // Set new Value and assert
-        final StringList list = parser.attach(node, StringList.class);
-        list.setStrings((String[]) ArrayUtils.remove(list.getStrings(), 0));
-        result = nodeToXml(node);
-        log.info(result);
-        assertEquals("<list><string>String2</string></list>", result);
+		// Set new Value and assert
+		final StringList list = parser.attach(node, StringList.class);
+		list.setStrings((String[]) ArrayUtils.remove(list.getStrings(), 0));
+		result = nodeToXml(node);
+		log.info(result);
+		assertEquals("<list><string>String2</string></list>", result);
 
-        // We should have expected this
-        // assertEquals("<list><string selected=\"true\">String2</string></list>",
-        // result);
+		// We should have expected this
+		// assertEquals("<list><string selected=\"true\">String2</string></list>",
+		// result);
 
-    }
+	}
 }

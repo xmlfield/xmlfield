@@ -28,6 +28,8 @@ import org.w3c.dom.Node;
 import org.xmlfield.core.XmlFieldReader;
 
 /**
+ * Test basic xmlfield usage, with namespaces and attributes.
+ * 
  * @author Nicolas Richeton <nicolas.richeton@capgemini.com>
  */
 public class TestPack2Test {
@@ -36,6 +38,11 @@ public class TestPack2Test {
 
 	private XmlFieldReader parser = new XmlFieldReader();
 
+	/**
+	 * Check read and update abilities (get/set).
+	 * 
+	 * @throws Exception
+	 */
 	@Test
 	public void testSimple() throws Exception {
 
@@ -62,6 +69,11 @@ public class TestPack2Test {
 
 	}
 
+	/**
+	 * Test adding element.
+	 * 
+	 * @throws Exception
+	 */
 	@Test
 	public void testAddCd() throws Exception {
 

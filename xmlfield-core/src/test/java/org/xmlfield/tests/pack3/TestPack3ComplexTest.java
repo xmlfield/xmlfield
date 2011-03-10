@@ -27,71 +27,74 @@ import org.w3c.dom.Node;
 import org.xmlfield.core.XmlFieldReader;
 
 /**
+ * Test getter and setter with array of native types but with complex xpath
+ * values (several nodes, attributes).
+ * 
  * @author Nicolas Richeton <nicolas.richeton@capgemini.com>
  */
 public class TestPack3ComplexTest {
 
-    Logger log = LoggerFactory.getLogger(TestPack3ComplexTest.class);
+	Logger log = LoggerFactory.getLogger(TestPack3ComplexTest.class);
 
-    private XmlFieldReader parser = new XmlFieldReader();
+	private XmlFieldReader parser = new XmlFieldReader();
 
-    @Test
-    public void testSetValueComplex() throws Exception {
+	@Test
+	public void testSetValueComplex() throws Exception {
 
-        // Load initial XML
-        final String xml = "<list></list>";
-        String result = null;
-        final Node node = xmlToNode(xml);
+		// Load initial XML
+		final String xml = "<list></list>";
+		String result = null;
+		final Node node = xmlToNode(xml);
 
-        // Attach and assert object values
-        final ComplexStringList list = parser.attach(node,
-                ComplexStringList.class);
-        assertEquals(0, list.getStrings().length);
+		// Attach and assert object values
+		final ComplexStringList list = parser.attach(node,
+				ComplexStringList.class);
+		assertEquals(0, list.getStrings().length);
 
-        // Set new Value and assert
-        list.setStrings(new String[] { "String1", "String2", "String3" });
-        result = nodeToXml(node);
-        log.info(result);
-        assertEquals(
-                "<list><parent1><parent2><stringlist type=\"complex\"><string>String1</string><string>String2</string><string>String3</string></stringlist></parent2></parent1></list>",
-                result);
+		// Set new Value and assert
+		list.setStrings(new String[] { "String1", "String2", "String3" });
+		result = nodeToXml(node);
+		log.info(result);
+		assertEquals(
+				"<list><parent1><parent2><stringlist type=\"complex\"><string>String1</string><string>String2</string><string>String3</string></stringlist></parent2></parent1></list>",
+				result);
 
-        // Set new Value and assert
-        list.setStrings((String[]) ArrayUtils.remove(list.getStrings(), 1));
-        result = nodeToXml(node);
-        log.info(result);
-        assertEquals(
-                "<list><parent1><parent2><stringlist type=\"complex\"><string>String1</string><string>String3</string></stringlist></parent2></parent1></list>",
-                result);
+		// Set new Value and assert
+		list.setStrings((String[]) ArrayUtils.remove(list.getStrings(), 1));
+		result = nodeToXml(node);
+		log.info(result);
+		assertEquals(
+				"<list><parent1><parent2><stringlist type=\"complex\"><string>String1</string><string>String3</string></stringlist></parent2></parent1></list>",
+				result);
 
-    }
+	}
 
-    @Test
-    public void testSetNull() throws Exception {
+	@Test
+	public void testSetNull() throws Exception {
 
-        // Load initial XML
-        final String xml = "<list><string>String1</string><string>String2</string><single>Single value</single></list>";
-        String result = null;
-        final Node node = xmlToNode(xml);
+		// Load initial XML
+		final String xml = "<list><string>String1</string><string>String2</string><single>Single value</single></list>";
+		String result = null;
+		final Node node = xmlToNode(xml);
 
-        // Attach and assert object values
-        final StringList list = parser.attach(node, StringList.class);
-        assertEquals(2, list.getStrings().length);
-        assertEquals("Single value", list.getSingle());
+		// Attach and assert object values
+		final StringList list = parser.attach(node, StringList.class);
+		assertEquals(2, list.getStrings().length);
+		assertEquals("Single value", list.getSingle());
 
-        // Remove tag 'single' by setting 'null' value
-        list.setSingle(null);
-        result = nodeToXml(node);
-        log.info(result);
-        assertEquals(
-                "<list><string>String1</string><string>String2</string></list>",
-                result);
+		// Remove tag 'single' by setting 'null' value
+		list.setSingle(null);
+		result = nodeToXml(node);
+		log.info(result);
+		assertEquals(
+				"<list><string>String1</string><string>String2</string></list>",
+				result);
 
-        // Remove all tags 'string' by setting 'null' value
-        list.setStrings(null);
-        result = nodeToXml(node);
-        log.info(result);
-        assertEquals("<list/>", result);
-    }
+		// Remove all tags 'string' by setting 'null' value
+		list.setStrings(null);
+		result = nodeToXml(node);
+		log.info(result);
+		assertEquals("<list/>", result);
+	}
 
 }
