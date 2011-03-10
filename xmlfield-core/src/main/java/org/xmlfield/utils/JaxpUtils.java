@@ -53,11 +53,19 @@ import org.xmlfield.core.internal.XmlFieldUtils.NamespaceMap;
  */
 public abstract class JaxpUtils {
 
-    static Logger logger = LoggerFactory.getLogger(JaxpUtils.class);
     public static final Attributes NO_ATTRIBUTES = new AttributesImpl();
+    private static final ThreadLocal<XPathFactory> xPathFactory = new ThreadLocal<XPathFactory>() {
 
-    public static Attr _createAttribute(final Node node,
-            final String attributeName, final String textContent) {
+        @Override
+        protected XPathFactory initialValue() {
+            return XPathFactory.newInstance();
+        }
+
+    };
+
+    static Logger logger = LoggerFactory.getLogger(JaxpUtils.class);
+
+    public static Attr _createAttribute(final Node node, final String attributeName, final String textContent) {
 
         final Document document = getNodeDocument(node);
 
@@ -73,14 +81,46 @@ public abstract class JaxpUtils {
         return attribute;
     }
 
-    public static Node createElement(final NamespaceMap namespaces,
-            final Node node, final String elementName) {
+    public static Node createComplexElement(NamespaceMap namespaces, Node contextNode, String elementName,
+            String stringValue) {
+
+        Node result = contextNode;
+        // Create required node
+        switch (XPathUtils.getElementType(elementName)) {
+        case XPathUtils.TYPE_ATTRIBUTE:
+
+            _createAttribute(contextNode, elementName.substring(1), stringValue);
+            break;
+        case XPathUtils.TYPE_TAG:
+
+            result = createElement(namespaces, contextNode, elementName, stringValue);
+            break;
+
+        case XPathUtils.TYPE_TAG_WITH_ATTRIBUTE:
+            // Create tag
+            String tagName = XPathUtils.getElementName(elementName);
+            result = createElement(namespaces, contextNode, tagName, stringValue);
+
+            // Then create attributes in selector
+            Map<String, String> attributes = XPathUtils.getElementSelectorAttributes(elementName);
+            for (String key : attributes.keySet()) {
+                _createAttribute(result, key, attributes.get(key));
+            }
+
+            break;
+        }
+
+        return result;
+
+    }
+
+    public static Node createElement(final NamespaceMap namespaces, final Node node, final String elementName) {
 
         return createElement(namespaces, node, elementName, null);
     }
 
-    public static Node createElement(final NamespaceMap namespaces,
-            final Node node, final String elementName, final String textContent) {
+    public static Node createElement(final NamespaceMap namespaces, final Node node, final String elementName,
+            final String textContent) {
 
         if (StringUtils.isEmpty(elementName)) {
             return node;
@@ -88,8 +128,7 @@ public abstract class JaxpUtils {
 
         final Document document = getNodeDocument(node);
 
-        final Element element = _createElement(namespaces, document,
-                elementName);
+        final Element element = _createElement(namespaces, document, elementName);
 
         node.appendChild(element);
 
@@ -101,14 +140,13 @@ public abstract class JaxpUtils {
         return element;
     }
 
-    public static void dumpNode(final Node node)
-            throws ParserConfigurationException, SAXException, IOException {
+    public static void dumpNode(final Node node) throws ParserConfigurationException, SAXException, IOException {
 
         dumpNode(null, node);
     }
 
-    public static void dumpNode(final String message, final Node node)
-            throws ParserConfigurationException, SAXException, IOException {
+    public static void dumpNode(final String message, final Node node) throws ParserConfigurationException,
+            SAXException, IOException {
 
         final OutputFormat outputFormat = null;
 
@@ -138,12 +176,11 @@ public abstract class JaxpUtils {
 
     public static XPath getXPath(final NamespaceMap namespaces) {
 
-        final XPath xpath = XPathFactory.newInstance().newXPath();
+        final XPath xpath = getXPathFactory().newXPath();
 
         if (namespaces != null) {
 
-            final Map<String, String> prefixesURIs = namespaces
-                    .getPrefixesURIs();
+            final Map<String, String> prefixesURIs = namespaces.getPrefixesURIs();
 
             final NamespaceContext ns = new NamespaceContext() {
 
@@ -170,8 +207,7 @@ public abstract class JaxpUtils {
 
                     if (prefixesURIs.containsValue(namespaceURI)) {
 
-                        for (final Map.Entry<String, String> e : prefixesURIs
-                                .entrySet()) {
+                        for (final Map.Entry<String, String> e : prefixesURIs.entrySet()) {
 
                             if (namespaceURI.equals(e.getValue())) {
 
@@ -196,8 +232,8 @@ public abstract class JaxpUtils {
         return xpath;
     }
 
-    private static Element _createElement(final NamespaceMap namespaces,
-            final Document document, final String elementName) {
+    private static Element _createElement(final NamespaceMap namespaces, final Document document,
+            final String elementName) {
 
         String prefix = XPathUtils.getElementPrefix(elementName);
 
@@ -205,16 +241,14 @@ public abstract class JaxpUtils {
 
             if (namespaces == null) {
 
-                throw new IllegalArgumentException(
-                        "No namespaceURI defined for <" + elementName + ">");
+                throw new IllegalArgumentException("No namespaceURI defined for <" + elementName + ">");
             }
 
             final String uri = namespaces.getPrefixesURIs().get(prefix);
 
             if (uri == null) {
 
-                throw new IllegalArgumentException(
-                        "No namespaceURI defined for <" + elementName + ">");
+                throw new IllegalArgumentException("No namespaceURI defined for <" + elementName + ">");
             }
 
             final String localName = substringAfter(elementName, ":");
@@ -227,39 +261,7 @@ public abstract class JaxpUtils {
         }
     }
 
-    public static Node createComplexElement(NamespaceMap namespaces,
-            Node contextNode, String elementName, String stringValue) {
-
-        Node result = contextNode;
-        // Create required node
-        switch (XPathUtils.getElementType(elementName)) {
-        case XPathUtils.TYPE_ATTRIBUTE:
-
-            _createAttribute(contextNode, elementName.substring(1), stringValue);
-            break;
-        case XPathUtils.TYPE_TAG:
-
-            result = createElement(namespaces, contextNode, elementName,
-                    stringValue);
-            break;
-
-        case XPathUtils.TYPE_TAG_WITH_ATTRIBUTE:
-            // Create tag
-            String tagName = XPathUtils.getElementName(elementName);
-            result = createElement(namespaces, contextNode, tagName,
-                    stringValue);
-
-            // Then create attributes in selector
-            Map<String, String> attributes = XPathUtils
-                    .getElementSelectorAttributes(elementName);
-            for (String key : attributes.keySet()) {
-                _createAttribute(result, key, attributes.get(key));
-            }
-
-            break;
-        }
-
-        return result;
-
+    private static XPathFactory getXPathFactory() {
+        return xPathFactory.get();
     }
 }
