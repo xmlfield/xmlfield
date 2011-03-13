@@ -23,7 +23,6 @@ import static org.xmlfield.core.internal.XmlFieldUtils.getFieldXPathType;
 import static org.xmlfield.core.internal.XmlFieldUtils.getResourceNamespaces;
 import static org.xmlfield.utils.JaxpUtils.getXPath;
 
-import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
@@ -42,6 +41,7 @@ import javax.xml.xpath.XPathExpressionException;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.NotImplementedException;
+import org.apache.commons.lang.StringUtils;
 import org.joda.time.DateTime;
 import org.joda.time.chrono.ISOChronology;
 import org.joda.time.format.DateTimeFormat;
@@ -174,17 +174,17 @@ public class XmlFieldInvocationHandler implements InvocationHandler {
             }
         }
     }
-    
+
     /**
      * invoque une méthode "<tt>addToXxx()</tt>".
      */
     private Object doNew(final Object proxy, final Method method, final Class<?> type) throws Exception {
 
         final String fieldXPath = getFieldXPath(method);
-        
+
         return XmlFieldUtils.add(proxy, fieldXPath, type);
     }
-    
+
     /**
      * invoque une méthode "<tt>addToXxx()</tt>".
      */
@@ -333,7 +333,7 @@ public class XmlFieldInvocationHandler implements InvocationHandler {
      * @throws TransformerException
      */
     private Object doSet(final Method method, final Object value) throws XPathExpressionException,
-            ParserConfigurationException, SAXException, IOException, TransformerException,
+            ParserConfigurationException, SAXException, TransformerException,
             TransformerFactoryConfigurationError {
 
         final XPath xpath = getXPath(namespaces);
@@ -699,23 +699,19 @@ public class XmlFieldInvocationHandler implements InvocationHandler {
 
         return value;
     }
-    
-    
+
     private boolean isXmlFieldInterface(final Class<?> fieldType) {
         return XmlFieldUtils.getResourceXPath(fieldType) != null;
     }
-    
+
     private Object parseEnum(final Object domValue, final Class<? extends Enum> fieldType) {
-        if (domValue == null) {
-            return null;
-        }
-        final String s = parseString(domValue);
-        if ("".equals(s)) {
+        String s = parseString(domValue);
+        if (StringUtils.isEmpty(s)) {
             return null;
         }
         return Enum.valueOf(fieldType, s);
     }
-    
+
     public Node getNode() {
         return node;
     }
@@ -755,13 +751,13 @@ public class XmlFieldInvocationHandler implements InvocationHandler {
 
             return doAddTo(proxy, method, method.getReturnType());
 
-        } else if (methodName.startsWith("new")&& noArg){
+        } else if (methodName.startsWith("new") && noArg) {
             Object presentObject = doGet(methodName);
-            if(presentObject!=null){
+            if (presentObject != null) {
                 return presentObject;
             }
             return doNew(proxy, method, method.getReturnType());
-            
+
         } else if (methodName.startsWith("isNull") && noArg) {
 
             return doIsNull(methodName);
@@ -778,29 +774,17 @@ public class XmlFieldInvocationHandler implements InvocationHandler {
     }
 
     private boolean parseBoolean(final String methodName, final Object domValue, final String fieldXPath) {
-
         if (Boolean.class.isInstance(domValue)) {
-
             return (Boolean) domValue;
-
-        } else {
-
-            final Node n = (Node) domValue;
-
-            if (n != null) {
-
-                final String textContent = n.getTextContent();
-
-                try {
-
-                    return Boolean.parseBoolean(textContent);
-
-                } catch (final RuntimeException e) {
-
-                    logger.error("Cannot parse boolean: " + textContent + ", xpath=" + fieldXPath + ", method="
-                            + methodName + "()");
-                    logger.warn("Cannot parse boolean (details) : ", e);
-                }
+        }
+        if (domValue instanceof Node) {
+            String textContent = ((Node) domValue).getTextContent();
+            try {
+                return Boolean.parseBoolean(textContent);
+            } catch (final RuntimeException e) {
+                logger.error("Cannot parse boolean: " + textContent + //
+                        ", xpath=" + fieldXPath + ", method=" + methodName + "()");
+                logger.warn("Cannot parse boolean (details) : ", e);
             }
         }
 
@@ -887,91 +871,34 @@ public class XmlFieldInvocationHandler implements InvocationHandler {
     }
 
     private float parseFloat(final String methodName, final Object domValue, final String fieldXPath) {
-
-        if (Float.class.isInstance(domValue)) {
-
-            return (Float) domValue;
-
-        } else if (Integer.class.isInstance(domValue)) {
-
-            return ((Integer) domValue).intValue();
-
-        } else if (Long.class.isInstance(domValue)) {
-
-            return ((Long) domValue).longValue();
-
-        } else if (Short.class.isInstance(domValue)) {
-
-            return ((Short) domValue).shortValue();
-
-        } else if (Double.class.isInstance(domValue)) {
-
-            return (float) ((Double) domValue).doubleValue();
-
-        } else {
-
-            final Node n = (Node) domValue;
-
-            if (n != null) {
-
-                final String textContent = n.getTextContent();
-
-                try {
-
-                    return Float.parseFloat(textContent);
-
-                } catch (final RuntimeException e) {
-
-                    logger.error("Cannot parse float: " + textContent + ", xpath=" + fieldXPath + ", method="
-                            + methodName + "()");
-                    logger.warn("Cannot parse float (details) : ", e);
-                }
+        if (domValue instanceof Number) {
+            return ((Number) domValue).floatValue();
+        }
+        if (domValue instanceof Node) {
+            String textContent = ((Node) domValue).getTextContent();
+            try {
+                return Float.parseFloat(textContent);
+            } catch (final RuntimeException e) {
+                logger.error("Cannot parse float: " + textContent + //
+                        ", xpath=" + fieldXPath + ", method=" + methodName + "()");
+                logger.warn("Cannot parse float (details) : ", e);
             }
         }
-
         return 0;
     }
 
     private int parseInt(final String methodName, final Object domValue, final String fieldXPath) {
-
-        if (Integer.class.isInstance(domValue)) {
-
-            return (Integer) domValue;
-
-        } else if (Long.class.isInstance(domValue)) {
-
-            return (int) ((Long) domValue).longValue();
-
-        } else if (Short.class.isInstance(domValue)) {
-
-            return ((Short) domValue).shortValue();
-
-        } else if (Float.class.isInstance(domValue)) {
-
-            return (int) ((Float) domValue).floatValue();
-
-        } else if (Double.class.isInstance(domValue)) {
-
-            return (int) ((Double) domValue).doubleValue();
-
-        } else {
-
-            final Node n = (Node) domValue;
-
-            if (n != null) {
-
-                final String textContent = n.getTextContent();
-
-                try {
-
-                    return Integer.parseInt(textContent);
-
-                } catch (final RuntimeException e) {
-
-                    logger.error("Cannot parse int: " + textContent + ", xpath=" + fieldXPath + ", method="
-                            + methodName + "()");
-                    logger.warn("Cannot parse int (details) : ", e);
-                }
+        if (domValue instanceof Number) {
+            return ((Number) domValue).intValue();
+        }
+        if (domValue instanceof Node) {
+            String textContent = ((Node) domValue).getTextContent();
+            try {
+                return Integer.parseInt(textContent);
+            } catch (final RuntimeException e) {
+                logger.error("Cannot parse int: " + textContent + //
+                        ", xpath=" + fieldXPath + ", method=" + methodName + "()");
+                logger.warn("Cannot parse int (details) : ", e);
             }
         }
 
@@ -980,90 +907,40 @@ public class XmlFieldInvocationHandler implements InvocationHandler {
 
     private long parseLong(final String methodName, final Object domValue, final String fieldXPath) {
 
-        if (Long.class.isInstance(domValue)) {
+        if (domValue instanceof Number) {
+            return ((Number) domValue).longValue();
+        }
 
-            return (Long) domValue;
-
-        } else if (Integer.class.isInstance(domValue)) {
-
-            return ((Integer) domValue).intValue();
-
-        } else if (Short.class.isInstance(domValue)) {
-
-            return ((Short) domValue).shortValue();
-
-        } else if (Float.class.isInstance(domValue)) {
-
-            return (long) ((Float) domValue).floatValue();
-
-        } else if (Double.class.isInstance(domValue)) {
-
-            return (long) ((Double) domValue).doubleValue();
-
-        } else {
-
-            final Node n = (Node) domValue;
-
-            if (n != null) {
-
-                final String textContent = n.getTextContent();
-
-                try {
-
-                    return Long.parseLong(textContent);
-
-                } catch (final RuntimeException e) {
-
-                    logger.error("Cannot parse long: " + textContent + ", xpath=" + fieldXPath + ", method="
-                            + methodName + "()");
-                    logger.warn("Cannot parse long (details) : ", e);
-                }
+        if (domValue instanceof Node) {
+            String textContent = ((Node) domValue).getTextContent();
+            try {
+                return Long.parseLong(textContent);
+            } catch (final RuntimeException e) {
+                logger.error("Cannot parse long: " + textContent + ", xpath=" + fieldXPath + //
+                        ", method=" + methodName + "()");
+                logger.warn("Cannot parse long (details) : ", e);
             }
         }
 
-        return 0L;
+        return 0;
     }
 
     private short parseShort(final String methodName, final Object domValue, final String fieldXPath) {
 
-        if (Short.class.isInstance(domValue)) {
+        if (domValue instanceof Number) {
+            return ((Number) domValue).shortValue();
+        }
+        if (domValue instanceof Node) {
 
-            return (Short) domValue;
+            Node n = (Node) domValue;
+            String textContent = n.getTextContent();
 
-        } else if (Integer.class.isInstance(domValue)) {
-
-            return (short) ((Integer) domValue).intValue();
-
-        } else if (Long.class.isInstance(domValue)) {
-
-            return (short) ((Long) domValue).longValue();
-
-        } else if (Float.class.isInstance(domValue)) {
-
-            return (short) ((Float) domValue).floatValue();
-
-        } else if (Double.class.isInstance(domValue)) {
-
-            return (short) ((Double) domValue).doubleValue();
-
-        } else {
-
-            final Node n = (Node) domValue;
-
-            if (n != null) {
-
-                final String textContent = n.getTextContent();
-
-                try {
-
-                    return Short.parseShort(textContent);
-
-                } catch (final RuntimeException e) {
-
-                    logger.error("Cannot parse short: " + textContent + ", xpath=" + fieldXPath + ", method="
-                            + methodName + "()");
-                    logger.warn("Cannot parse short (details) : ", e);
-                }
+            try {
+                return Short.parseShort(textContent);
+            } catch (final RuntimeException e) {
+                logger.error("Cannot parse short: " + textContent + ", xpath=" + fieldXPath + //
+                        ", method=" + methodName + "()");
+                logger.warn("Cannot parse short (details) : ", e);
             }
         }
 
@@ -1071,19 +948,12 @@ public class XmlFieldInvocationHandler implements InvocationHandler {
     }
 
     private String parseString(final Object domValue) {
-
-        if (domValue == null) {
-
-            return null;
-        }
-
-        if (String.class.isInstance(domValue)) {
-
+        if (domValue instanceof String) {
             return (String) domValue;
         }
-
-        final Node n = (Node) domValue;
-
-        return n.getTextContent();
+        if (domValue instanceof Node) {
+            return ((Node) domValue).getTextContent();
+        }
+        return null;
     }
 }

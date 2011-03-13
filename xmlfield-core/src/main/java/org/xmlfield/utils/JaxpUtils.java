@@ -18,21 +18,23 @@ package org.xmlfield.utils;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static org.apache.commons.lang.StringUtils.substringAfter;
 
-import java.io.IOException;
 import java.io.StringWriter;
-import java.io.Writer;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.xml.namespace.NamespaceContext;
-import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.TransformerFactoryConfigurationError;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathFactory;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.xml.serialize.DOMSerializer;
-import org.apache.xml.serialize.OutputFormat;
-import org.apache.xml.serialize.XMLSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Attr;
@@ -40,7 +42,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 import org.xmlfield.core.internal.XmlFieldUtils.NamespaceMap;
 
@@ -49,7 +50,7 @@ import org.xmlfield.core.internal.XmlFieldUtils.NamespaceMap;
  * 
  * @author Loic Abemonty <loic.abemonty@capgemini.com>
  * @author Nicolas Richeton <nicolas.richeton@capgemini.com>
- * 
+ * @author Mabrouk Belhout
  */
 public abstract class JaxpUtils {
 
@@ -140,21 +141,18 @@ public abstract class JaxpUtils {
         return element;
     }
 
-    public static void dumpNode(final Node node) throws ParserConfigurationException, SAXException, IOException {
+    public static void dumpNode(final Node node) throws TransformerFactoryConfigurationError, TransformerException {
 
         dumpNode(null, node);
     }
 
-    public static void dumpNode(final String message, final Node node) throws ParserConfigurationException,
-            SAXException, IOException {
-
-        final OutputFormat outputFormat = null;
-
-        final Writer sw = new StringWriter();
-
-        final DOMSerializer serializer = new XMLSerializer(sw, outputFormat);
-
-        serializer.serialize((Element) node);
+    public static void dumpNode(final String message, final Node node) throws TransformerFactoryConfigurationError,
+            TransformerException {
+        Transformer t = TransformerFactory.newInstance().newTransformer();
+        StringWriter sw = new StringWriter();
+        t.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+        t.setOutputProperty(OutputKeys.INDENT, "yes");
+        t.transform(new DOMSource(node), new StreamResult(sw));
 
         logger.info((message == null ? "" : (message + ": ")) + sw);
     }
@@ -237,31 +235,54 @@ public abstract class JaxpUtils {
 
         String prefix = XPathUtils.getElementPrefix(elementName);
 
-        if (prefix != null) {
-
-            if (namespaces == null) {
-
-                throw new IllegalArgumentException("No namespaceURI defined for <" + elementName + ">");
-            }
-
-            final String uri = namespaces.getPrefixesURIs().get(prefix);
-
-            if (uri == null) {
-
-                throw new IllegalArgumentException("No namespaceURI defined for <" + elementName + ">");
-            }
-
-            final String localName = substringAfter(elementName, ":");
-
-            return document.createElementNS(uri, localName);
-
-        } else {
-
+        if (prefix == null) {
             return document.createElement(elementName);
         }
+
+        if (namespaces == null) {
+            throw new IllegalArgumentException("No namespaceURI defined for <" + elementName + ">");
+        }
+
+        String uri = namespaces.get(prefix);
+
+        if (uri == null) {
+            throw new IllegalArgumentException("No namespaceURI defined for <" + elementName + ">");
+        }
+
+        String localName = substringAfter(elementName, ":");
+
+        return document.createElementNS(uri, localName);
+
     }
 
     private static XPathFactory getXPathFactory() {
         return xPathFactory.get();
+    }
+
+    /**
+     * Create an empty tag matching the given data.
+     * 
+     * @param tag
+     *            an xml tag, can be of the form "ns:name" or "name"
+     * @param namespaces
+     *            the namespaces to use or null if none
+     * @return a string representing the given tag with the given namespaces
+     */
+    public static String emptyTag(String tag, NamespaceMap namespaces) {
+        StringBuilder builder = new StringBuilder("<");
+        builder.append(tag);
+
+        if (namespaces != null) {
+            for (Entry<String, String> entry : namespaces) {
+                builder.append(" xmlns:");
+                builder.append(entry.getKey());
+                builder.append("=\"");
+                builder.append(entry.getValue());
+                builder.append("\"");
+            }
+        }
+        builder.append(" />");
+
+        return builder.toString();
     }
 }

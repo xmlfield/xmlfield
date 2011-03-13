@@ -18,6 +18,7 @@ package org.xmlfield.core.test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.util.Map;
 
@@ -27,7 +28,6 @@ import org.slf4j.LoggerFactory;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXParseException;
 import org.xmlfield.core.XmlFieldReader;
-import org.xmlfield.tests.pack1.Catalog;
 import org.xmlfield.utils.XPathUtils;
 import org.xmlfield.utils.XmlUtils;
 
@@ -125,6 +125,9 @@ public class XmlFieldReaderTest {
         Node node = XmlUtils.getNode(catalog);
         String xml = XmlUtils.nodeToXml(node);
 
+        assertEquals(
+                "<Catalog><Cd>  <Title>toto</Title>  <Artist>Bob Dylan</Artist><Country>USA</Country>  <Company>Columbia</Company>  <Price>10.90</Price><Year>1985</Year></Cd><Cd>   <Title>toto</Title><Artist>Bonnie Tyler</Artist><Country>UK</Country>   <Company>CBS Records</Company>   <Price>9.90</Price><Year>1988</Year></Cd></Catalog>",
+                xml);
     }
 
     @Test
@@ -139,5 +142,42 @@ public class XmlFieldReaderTest {
         assertEquals("1", map.get("id"));
         assertEquals(2, map.size());
 
+    }
+
+    @Test
+    public void testInstantiate() throws Exception {
+        XmlFieldReader reader = new XmlFieldReader();
+
+        Catalog catalog = reader.instantiate(Catalog.class);
+        assertNotNull(catalog);
+        assertTrue(catalog.getCd().length == 0);
+
+        assertEquals("<Catalog/>", XmlUtils.nodeToXml(catalog));
+
+        catalog.addToCd().setTitle("title");
+        catalog.addToCd().setPrice(987);
+
+        assertEquals("<Catalog><Cd><Title>title</Title></Cd><Cd><Price>987.0</Price></Cd></Catalog>",
+                XmlUtils.nodeToXml(catalog));
+    }
+
+    @Test
+    public void testInstantiateWithNamespaces() throws Exception {
+        XmlFieldReader reader = new XmlFieldReader();
+
+        AtomCatalog catalog = reader.instantiate(AtomCatalog.class);
+        assertNotNull(catalog);
+        assertTrue(catalog.getCd().length == 0);
+
+        assertEquals("<a:entry xmlns:a=\"http://www.w3.org/2005/Atom\" xmlns:x=\"http://www.w3.org/1999/xhtml\"/>",
+                XmlUtils.nodeToXml(catalog));
+
+        catalog.addToCd().setTitle("title");
+        catalog.addToCd().setPrice(987);
+
+        assertEquals(
+                "<a:entry xmlns:a=\"http://www.w3.org/2005/Atom\" xmlns:x=\"http://www.w3.org/1999/xhtml\">"
+                        + "<content xmlns=\"http://www.w3.org/2005/Atom\"><div xmlns=\"http://www.w3.org/1999/xhtml\"><div class=\"cd\"><span class=\"title\">title</span></div><div class=\"cd\"><span class=\"price\">987.0</span></div></div></content></a:entry>",
+                XmlUtils.nodeToXml(catalog));
     }
 }

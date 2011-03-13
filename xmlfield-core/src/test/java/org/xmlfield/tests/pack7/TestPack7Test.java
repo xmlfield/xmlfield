@@ -17,10 +17,9 @@ package org.xmlfield.tests.pack7;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.xmlfield.utils.XmlUtils.xmlToNode;
-import junit.framework.Assert;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.w3c.dom.Node;
 import org.xmlfield.core.XmlFieldReader;
@@ -39,9 +38,9 @@ public class TestPack7Test {
         final Node node = xmlToNode(xml);
 
         final Catalog catalog = parser.attach(node, Catalog.class);
-        assertEquals(null, catalog.getCd());
+        assertNull(catalog.getCd());
     }
-    
+
     @Test
     public void testSimple() throws Exception {
         String xml = "<Catalog><Cd /></Catalog>";
@@ -50,14 +49,11 @@ public class TestPack7Test {
         final Catalog catalog = parser.attach(node, Catalog.class);
         assertNotNull(catalog.getCd());
         assertEquals(null, catalog.getCd().getTitle());
-        
+
         catalog.getCd().setTitle("Wolfmother");
-        
 
         xml = XmlUtils.nodeToXml(catalog);
-        Assert.assertEquals(
-                "<Catalog><Cd><Title>Wolfmother</Title></Cd></Catalog>",
-                xml);
+        assertEquals("<Catalog><Cd><Title>Wolfmother</Title></Cd></Catalog>", xml);
     }
 
     @Test
@@ -73,31 +69,25 @@ public class TestPack7Test {
 
         assertNotNull(catalog.getCd());
         xml = XmlUtils.nodeToXml(catalog);
-        Assert.assertEquals(
-                "<Catalog><Cd><Title>"+title+"</Title></Cd></Catalog>",
-                xml);
-        
+        assertEquals("<Catalog><Cd><Title>" + title + "</Title></Cd></Catalog>", xml);
+
         catalog.setCd(cd);
-        Assert.assertEquals(
-                "<Catalog><Cd><Title>"+title+"</Title></Cd></Catalog>",
-                xml);
+        assertEquals("<Catalog><Cd><Title>" + title + "</Title></Cd></Catalog>", xml);
     }
 
     @Test
     public void testSet2() throws Exception {
         String title = "Ça fait rire les oiseaux";
-        String xml = "<Catalog><Cd><Title>"+title+"</Title></Cd></Catalog>";
+        String xml = "<Catalog><Cd><Title>" + title + "</Title></Cd></Catalog>";
         Node node = xmlToNode(xml);
 
         final Catalog catalog = parser.attach(node, Catalog.class);
 
         Cd cd = catalog.newCd();
-        
 
         assertNotNull(catalog.getCd());
-        Assert.assertEquals(cd.getTitle(),title);
-        
+        assertEquals(cd.getTitle(), title);
+
     }
-    
 
 }
