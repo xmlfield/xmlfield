@@ -21,23 +21,15 @@ import static org.xmlfield.core.internal.XmlFieldUtils.getFieldFormat;
 import static org.xmlfield.core.internal.XmlFieldUtils.getFieldXPath;
 import static org.xmlfield.core.internal.XmlFieldUtils.getFieldXPathType;
 import static org.xmlfield.core.internal.XmlFieldUtils.getResourceNamespaces;
-import static org.xmlfield.utils.JaxpUtils.getXPath;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
-
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactoryConfigurationError;
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathConstants;
-import javax.xml.xpath.XPathExpressionException;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.NotImplementedException;
@@ -49,26 +41,72 @@ import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
 import org.xmlfield.annotations.FieldXPath;
-import org.xmlfield.core.XmlFieldReader;
+import org.xmlfield.core.XmlFieldBinder;
+import org.xmlfield.core.XmlFieldNode;
+import org.xmlfield.core.XmlFieldNodeList;
+import org.xmlfield.core.XmlFieldNodeModifier;
+import org.xmlfield.core.XmlFieldNodeModifierFactory;
+import org.xmlfield.core.XmlFieldSelector;
+import org.xmlfield.core.XmlFieldSelectorFactory;
+import org.xmlfield.core.exception.XmlFieldXPathException;
 import org.xmlfield.core.internal.XmlFieldUtils.NamespaceMap;
-import org.xmlfield.utils.JaxpUtils;
 import org.xmlfield.utils.XPathUtils;
 
 /**
- * l'objet {@link InvocationHandler} à utiliser sur les proxies chargés à la
- * lecture des nœuds XML.
+ * l'objet {@link InvocationHandler} à utiliser sur les proxies chargés à la lecture des nœuds XML.
  * 
  * @author David Andrianavalontsalama
  * @author Nicolas Richeton <nicolas.richeton@capgemini.com>
+ * @author Guillaume Mary <guillaume.mary@capgemini.com>
  */
 public class XmlFieldInvocationHandler implements InvocationHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(XmlFieldInvocationHandler.class);
+
+    private final Set<String> methodNames = new TreeSet<String>();
+
+    private final NamespaceMap namespaces;
+
+    private final XmlFieldNode<?> node;
+
+    private final Class<?> type;
+
+    private final XmlFieldBinder xmlFieldBinder;
+
+    /**
+     * constructeur, qui dit ce que doit renvoyer chaque méthode <em>getter</em> .
+     * 
+     * @param xmlFieldBinder
+     *            l'objet reader, qui permet notamment de récupérer des sous-champs.
+     * @param type
+     *            le type de l'objet Java.
+     * @param node
+     *            le nœud de l'objet Java.
+     */
+    public XmlFieldInvocationHandler(final XmlFieldBinder xmlFieldBinder, final XmlFieldNode<?> node,
+            final Class<?> type) {
+
+        this.xmlFieldBinder = checkNotNull(xmlFieldBinder, "xmlFieldBinder");
+        this.node = checkNotNull(node, "node");
+        this.type = checkNotNull(type, "type");
+        this.namespaces = getResourceNamespaces(type);
+
+        for (final Method method : type.getMethods()) {
+
+            final String methodName = method.getName();
+
+            if (method.isAnnotationPresent(FieldXPath.class) && isMethodNameGetter(methodName)) {
+
+                final Class<?>[] paramTypes = method.getParameterTypes();
+
+                if (paramTypes == null || paramTypes.length == 0) {
+
+                    methodNames.add(methodName);
+                }
+            }
+        }
+    }
 
     /**
      * vérifie qu'un type réel est compatible avec un type déclaré.
@@ -120,9 +158,8 @@ public class XmlFieldInvocationHandler implements InvocationHandler {
     }
 
     /**
-     * vérifie qu'un nom de méthode est un nom de getter, en <tt>"getXxx()"</tt>
-     * , <tt>"hasXxx()"</tt> ou <tt>"isXxx()"</tt>, mais pas
-     * <tt>"isNullXxx()"</tt>.
+     * vérifie qu'un nom de méthode est un nom de getter, en <tt>"getXxx()"</tt> , <tt>"hasXxx()"</tt> ou
+     * <tt>"isXxx()"</tt>, mais pas <tt>"isNullXxx()"</tt>.
      */
     private static boolean isMethodNameGetter(final String methodName) {
 
@@ -130,59 +167,65 @@ public class XmlFieldInvocationHandler implements InvocationHandler {
                 || (methodName.startsWith("is") && !methodName.startsWith("isNull"));
     }
 
-    private final Set<String> methodNames = new TreeSet<String>();
-
-    private final NamespaceMap namespaces;
-
-    private final Node node;
-
-    private final Class<?> type;
-
-    private final XmlFieldReader xmlFieldReader;
-
-    /**
-     * constructeur, qui dit ce que doit renvoyer chaque méthode <em>getter</em>
-     * .
-     * 
-     * @param xmlFieldReader
-     *            l'objet reader, qui permet notamment de récupérer des
-     *            sous-champs.
-     * @param type
-     *            le type de l'objet Java.
-     * @param node
-     *            le nœud de l'objet Java.
-     */
-    public XmlFieldInvocationHandler(final XmlFieldReader xmlFieldReader, final Node node, final Class<?> type) {
-
-        this.xmlFieldReader = checkNotNull(xmlFieldReader, "xmlFieldReader");
-        this.node = checkNotNull(node, "node");
-        this.type = checkNotNull(type, "type");
-        this.namespaces = getResourceNamespaces(type);
-
-        for (final Method method : type.getMethods()) {
-
-            final String methodName = method.getName();
-
-            if (method.isAnnotationPresent(FieldXPath.class) && isMethodNameGetter(methodName)) {
-
-                final Class<?>[] paramTypes = method.getParameterTypes();
-
-                if (paramTypes == null || paramTypes.length == 0) {
-
-                    methodNames.add(methodName);
-                }
-            }
-        }
+    public XmlFieldNode<?> getNode() {
+        return node;
     }
 
-    /**
-     * invoque une méthode "<tt>addToXxx()</tt>".
-     */
-    private Object doNew(final Object proxy, final Method method, final Class<?> type) throws Exception {
+    @Override
+    public Object invoke(final Object proxy, final Method method, final Object[] args) throws Throwable {
 
-        final String fieldXPath = getFieldXPath(method);
+        final String methodName = method.getName();
 
-        return XmlFieldUtils.add(proxy, fieldXPath, type);
+        final boolean noArg = (args == null) || args.length == 0;
+
+        if ("toString".equals(methodName) && noArg) {
+
+            return doToString();
+
+        } else if ("hashCode".equals(methodName) && noArg) {
+
+            return doHashCode();
+
+        } else if ("equals".equals(methodName) && !noArg && args.length == 1) {
+
+            return doEquals(proxy, args[0]);
+
+        } else if ("toNode".equals(methodName) && noArg) {
+
+            return node;
+
+        } else if (isMethodNameGetter(methodName) && noArg) {
+
+            return doGet(methodName);
+
+        } else if (methodName.startsWith("set") && !noArg && args.length == 1) {
+
+            return doSet(method, args[0]);
+
+        } else if (methodName.startsWith("addTo") && noArg) {
+
+            return doAddTo(proxy, method, method.getReturnType());
+
+        } else if (methodName.startsWith("new") && noArg) {
+            Object presentObject = doGet(methodName);
+            if (presentObject != null) {
+                return presentObject;
+            }
+            return doNew(proxy, method, method.getReturnType());
+
+        } else if (methodName.startsWith("isNull") && noArg) {
+
+            return doIsNull(methodName);
+
+        } else if (methodName.startsWith("sizeOf") && noArg) {
+
+            return doSizeOf(methodName);
+        } else if (methodName.startsWith("removeFrom") && args.length == 1) {
+
+            return doRemoveFrom(method, args[0]);
+        }
+
+        return null;
     }
 
     /**
@@ -197,9 +240,11 @@ public class XmlFieldInvocationHandler implements InvocationHandler {
 
     /**
      * invoque la méthode "<tt>equals(Object)</tt>".
+     * 
+     * @throws XmlFieldXPathException
      */
     private Object doEquals(final Object proxy, final Object ob) throws IllegalAccessException,
-            InvocationTargetException, NoSuchMethodException, XPathExpressionException {
+            InvocationTargetException, NoSuchMethodException, XmlFieldXPathException {
 
         if (ob == null) {
             return false;
@@ -242,8 +287,10 @@ public class XmlFieldInvocationHandler implements InvocationHandler {
 
     /**
      * invoque une méthode "<tt>getXxx()</tt>".
+     * 
+     * @throws XmlFieldXPathException
      */
-    private Object doGet(final String methodName) throws NoSuchMethodException, XPathExpressionException {
+    private Object doGet(final String methodName) throws NoSuchMethodException, XmlFieldXPathException {
 
         final Object value = getMethodValue(methodName);
 
@@ -267,8 +314,10 @@ public class XmlFieldInvocationHandler implements InvocationHandler {
 
     /**
      * invoque la méthode "<tt>hashCode()</tt>".
+     * 
+     * @throws XmlFieldXPathException
      */
-    private Object doHashCode() throws XPathExpressionException {
+    private Object doHashCode() throws XmlFieldXPathException {
         int hash = 0;
 
         for (final String methodName : methodNames) {
@@ -298,9 +347,9 @@ public class XmlFieldInvocationHandler implements InvocationHandler {
     /**
      * invoque une méthode "<tt>isNullXxx()</tt>".
      * 
-     * @throws XPathExpressionException
+     * @throws XmlFieldXPathException
      */
-    private Object doIsNull(final String methodName) throws XPathExpressionException {
+    private Object doIsNull(final String methodName) throws XmlFieldXPathException {
 
         final Object rawValue = getMethodDomValue("get" + methodName.substring(6));
 
@@ -308,11 +357,19 @@ public class XmlFieldInvocationHandler implements InvocationHandler {
     }
 
     /**
+     * invoque une méthode "<tt>addToXxx()</tt>".
+     */
+    private Object doNew(final Object proxy, final Method method, final Class<?> type) throws Exception {
+
+        final String fieldXPath = getFieldXPath(method);
+
+        return XmlFieldUtils.add(proxy, fieldXPath, type);
+    }
+
+    /**
      * Remove object from xml.
      */
     private Object doRemoveFrom(Method method, Object obj) throws Exception {
-
-        final String fieldXPath = getFieldXPath(method);
 
         XmlFieldUtils.remove(obj);
 
@@ -329,49 +386,41 @@ public class XmlFieldInvocationHandler implements InvocationHandler {
      * 
      * </ul>
      * 
-     * @throws TransformerFactoryConfigurationError
-     * @throws TransformerException
+     * @throws XmlFieldXPathException
      */
-    private Object doSet(final Method method, final Object value) throws XPathExpressionException,
-            ParserConfigurationException, SAXException, TransformerException,
-            TransformerFactoryConfigurationError {
-
-        final XPath xpath = getXPath(namespaces);
+    private Object doSet(final Method method, final Object value) throws XmlFieldXPathException {
 
         final String fieldXPath = getFieldXPath(method);
 
-        final Node contextNode;
+        final XmlFieldNode<?> contextNode;
 
-        Node n;
+        XmlFieldNode<?> n;
+
+        XmlFieldNodeModifier modifier = XmlFieldNodeModifierFactory.newInstance().newModifier();
+
+        XmlFieldSelector selector = XmlFieldSelectorFactory.newInstance().newSelector();
 
         if (value == null) {
             // Value is null. We have to delete the current value.
-
-            n = (Node) xpath.evaluate(fieldXPath, node, XPathConstants.NODE);
+            n = selector.selectXPathToNode(namespaces, fieldXPath, node);
             if (n == null) {
                 // No node was matching the Xpath. Value is already null
-
                 if (logger.isDebugEnabled()) {
                     logger.debug("value null, node null");
                 }
-
-            } else if (n.getNodeType() == Node.ATTRIBUTE_NODE) {
-                NamedNodeMap nnMap = node.getAttributes();
-                if (nnMap.getLength() == 0) {
+            } else if (n.getNodeType() == XmlFieldNode.ATTRIBUTE_NODE) {
+                final String attributeName = n.getNodeName();
+                n = node;
+                if (!n.hasAttributes()) {
                     // the resource is not the node who contains the attributes
-                    Node e = (Node) xpath
-                            .evaluate(XmlFieldUtils.getElementXPath(fieldXPath), node, XPathConstants.NODE);
-                    nnMap = e.getAttributes();
+                    String elementXPath = XPathUtils.getElementXPath(fieldXPath);
+                    n = selector.selectXPathToNode(namespaces, elementXPath, node);
                 }
-                nnMap.removeNamedItem(n.getNodeName());
-
+                modifier.removeAttribute(n, attributeName);
             } else {
                 // Remove all matching nodes.
-                NodeList nodeList = (NodeList) xpath.evaluate(fieldXPath, node, XPathConstants.NODESET);
-                for (int i = nodeList.getLength() - 1; i >= 0; i--) {
-                    Node currentNode = nodeList.item(i);
-                    currentNode.getParentNode().removeChild(currentNode);
-                }
+                XmlFieldNodeList nodesToRemove = selector.selectXPathToNodeList(namespaces, fieldXPath, node);
+                modifier.removeNodes(nodesToRemove);
             }
 
         } else {
@@ -403,46 +452,46 @@ public class XmlFieldInvocationHandler implements InvocationHandler {
             }
 
             // Get all matching nodes
-            NodeList nodeList = (NodeList) xpath.evaluate(XPathUtils.getElementNameWithSelector(fieldXPath),
-                    contextNode, XPathConstants.NODESET);
+            XmlFieldNodeList nodeXmlFieldList = selector.selectXPathToNodeList(namespaces,
+                    XPathUtils.getElementNameWithSelector(fieldXPath), contextNode);
 
             // Loop on new values
-            Node currentNode = null;
+            XmlFieldNode<?> currentNode = null;
             Object currentValue = null;
             String stringValue = null;
 
             // Loop 1 : reorder
-            Node valueNode = null;
+            XmlFieldNode<?> valueNode = null;
             boolean listUpdated = false;
             for (int i = 0; i < items.length; i++) {
                 // Get current existing node and value.
                 // Note: currentNode may be null, node will be created.
-                currentNode = nodeList.item(i);
+                currentNode = nodeXmlFieldList.item(i);
                 currentValue = items[i];
 
                 if (currentValue instanceof INodeable) {
-                    valueNode = ((INodeable) currentValue).toNode();
-                    valueNode.getParentNode().insertBefore(valueNode, currentNode);
+                    valueNode = ((INodeable<?>) currentValue).toNode();
+                    modifier.insertBefore(valueNode.getParentNode(), valueNode, currentNode);
                     listUpdated = true;
                 }
             }
 
             // Update list if necessary
             if (listUpdated) {
-                nodeList = (NodeList) xpath.evaluate(XPathUtils.getElementNameWithSelector(fieldXPath), contextNode,
-                        XPathConstants.NODESET);
+                nodeXmlFieldList = selector.selectXPathToNodeList(namespaces,
+                        XPathUtils.getElementNameWithSelector(fieldXPath), contextNode);
             }
 
             // Java bug : we have to call item() once with a valid node to make
             // this method work again.
             // see : http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6333993
-            currentNode = nodeList.item(0);
+            // currentNode = nodeList.item(0);
 
             // Loop 2 :Assign values
             for (int i = 0; i < items.length; i++) {
                 // Get current existing node and value.
                 // Note: currentNode may be null, node will be created.
-                currentNode = nodeList.item(i);
+                currentNode = nodeXmlFieldList.item(i);
                 currentValue = items[i];
 
                 if (currentValue instanceof INodeable) {
@@ -466,7 +515,7 @@ public class XmlFieldInvocationHandler implements InvocationHandler {
 
                 if (currentNode == null) {
                     // Node didn't exist : create new node
-                    JaxpUtils.createComplexElement(namespaces, contextNode,
+                    XmlFieldUtils.createComplexElement(namespaces, contextNode,
                             XPathUtils.getElementNameWithSelector(fieldXPath), stringValue);
                 } else {
                     // Node exists : set value.
@@ -475,9 +524,9 @@ public class XmlFieldInvocationHandler implements InvocationHandler {
             }
 
             // Remove additional items
-            for (int i = items.length; i < nodeList.getLength(); i++) {
-                currentNode = nodeList.item(i);
-                currentNode.getParentNode().removeChild(currentNode);
+            for (int i = items.length; i < nodeXmlFieldList.getLength(); i++) {
+                currentNode = nodeXmlFieldList.item(i);
+                modifier.removeChild(currentNode.getParentNode(), currentNode);
             }
         }
 
@@ -486,8 +535,10 @@ public class XmlFieldInvocationHandler implements InvocationHandler {
 
     /**
      * invoque une méthode "<tt>sizeOfXxx()</tt>".
+     * 
+     * @throws XmlFieldXPathException
      */
-    private Object doSizeOf(final String methodName) throws XPathExpressionException {
+    private Object doSizeOf(final String methodName) throws XmlFieldXPathException {
 
         final Object value = getMethodValue("get" + methodName.substring(6));
 
@@ -506,8 +557,10 @@ public class XmlFieldInvocationHandler implements InvocationHandler {
 
     /**
      * invoque la méthode "<tt>toString()</tt>".
+     * 
+     * @throws XmlFieldXPathException
      */
-    private Object doToString() throws XPathExpressionException {
+    private Object doToString() throws XmlFieldXPathException {
 
         final StringBuilder sb = new StringBuilder("{");
 
@@ -570,7 +623,7 @@ public class XmlFieldInvocationHandler implements InvocationHandler {
         return null;
     }
 
-    private Object getMethodDomValue(final String methodName) throws XPathExpressionException {
+    private Object getMethodDomValue(final String methodName) throws XmlFieldXPathException {
 
         Method method = getMethodByName(methodName);
 
@@ -584,15 +637,15 @@ public class XmlFieldInvocationHandler implements InvocationHandler {
             return null;
         }
 
-        final Object value;
+        XmlFieldSelector selector = XmlFieldSelectorFactory.newInstance().newSelector();
 
-        final XPath xpath = JaxpUtils.getXPath(namespaces);
+        final Object value;
 
         final Class<?> xpathType = getFieldXPathType(method);
 
         if (Number.class.equals(xpathType)) {
 
-            final Double d = (Double) xpath.evaluate(fieldXPath, node, XPathConstants.NUMBER);
+            final Double d = selector.selectXPathToNumber(namespaces, fieldXPath, node);
 
             final double v = (d == null) ? 0 : d.doubleValue();
 
@@ -600,13 +653,13 @@ public class XmlFieldInvocationHandler implements InvocationHandler {
 
         } else if (String.class.equals(xpathType)) {
 
-            final String s = (String) xpath.evaluate(fieldXPath, node, XPathConstants.STRING);
+            final String s = selector.selectXPathToString(namespaces, fieldXPath, node);
 
             value = s;
 
         } else if (Boolean.class.equals(xpathType)) {
 
-            final Boolean b = (Boolean) xpath.evaluate(fieldXPath, node, XPathConstants.BOOLEAN);
+            final Boolean b = selector.selectXPathToBoolean(namespaces, fieldXPath, node);
 
             final boolean v = (b == null) ? false : b.booleanValue();
 
@@ -614,7 +667,7 @@ public class XmlFieldInvocationHandler implements InvocationHandler {
 
         } else {
 
-            final Node n = (Node) xpath.evaluate(fieldXPath, node, XPathConstants.NODE);
+            final XmlFieldNode<?> n = selector.selectXPathToNode(namespaces, fieldXPath, node);
 
             value = n;
         }
@@ -623,16 +676,16 @@ public class XmlFieldInvocationHandler implements InvocationHandler {
     }
 
     /**
-     * récupère de façon dynamique la valeur d'un champ repéré par une
-     * expression XPath, donnée en annotation d'une méthode.
+     * récupère de façon dynamique la valeur d'un champ repéré par une expression XPath, donnée en annotation d'une
+     * méthode.
      * 
      * @param methodName
      *            le nom de la méthode.
-     * @return la valeur du champ repéré par le XPath donné en annotation de la
-     *         méthode, ou <tt>null</tt> si le champ n'existe pas.
-     * @throws XPathExpressionException
+     * @return la valeur du champ repéré par le XPath donné en annotation de la méthode, ou <tt>null</tt> si le champ
+     *         n'existe pas.
+     * @throws XmlFieldXPathException
      */
-    private Object getMethodValue(final String methodName) throws XPathExpressionException {
+    private Object getMethodValue(final String methodName) throws XmlFieldXPathException {
 
         final Object domValue = getMethodDomValue(methodName);
 
@@ -643,7 +696,7 @@ public class XmlFieldInvocationHandler implements InvocationHandler {
         final String fieldXPath = getFieldXPath(method);
 
         // research Explicit collections
-        final HashMap<String, Class<?>> explicitAssociations = getExplicitCollections(method);
+        final Map<String, Class<?>> explicitAssociations = getExplicitCollections(method);
 
         final Object value;
 
@@ -681,16 +734,16 @@ public class XmlFieldInvocationHandler implements InvocationHandler {
 
         } else if (fieldType.isArray() && explicitAssociations.size() != 0) {
             // case of an explicit collection
-            value = xmlFieldReader.attachExplicitArray(fieldXPath, node, explicitAssociations);
+            value = xmlFieldBinder.bindToExplicitArray(fieldXPath, node, explicitAssociations);
 
         } else if (fieldType.isArray()) {
             // cas nominal
-            value = xmlFieldReader.attachArray(fieldXPath, node, fieldType.getComponentType());
+            value = xmlFieldBinder.bindToArray(fieldXPath, node, fieldType.getComponentType());
 
         } else if (fieldType.isEnum()) {
             value = parseEnum(domValue, (Class<? extends Enum>) fieldType);
         } else if (isXmlFieldInterface(fieldType)) {
-            value = xmlFieldReader.attach(fieldXPath, node, fieldType);
+            value = xmlFieldBinder.bind(fieldXPath, node, fieldType);
 
         } else {
 
@@ -704,81 +757,12 @@ public class XmlFieldInvocationHandler implements InvocationHandler {
         return XmlFieldUtils.getResourceXPath(fieldType) != null;
     }
 
-    private Object parseEnum(final Object domValue, final Class<? extends Enum> fieldType) {
-        String s = parseString(domValue);
-        if (StringUtils.isEmpty(s)) {
-            return null;
-        }
-        return Enum.valueOf(fieldType, s);
-    }
-
-    public Node getNode() {
-        return node;
-    }
-
-    @Override
-    public Object invoke(final Object proxy, final Method method, final Object[] args) throws Throwable {
-
-        final String methodName = method.getName();
-
-        final boolean noArg = (args == null) || args.length == 0;
-
-        if ("toString".equals(methodName) && noArg) {
-
-            return doToString();
-
-        } else if ("hashCode".equals(methodName) && noArg) {
-
-            return doHashCode();
-
-        } else if ("equals".equals(methodName) && !noArg && args.length == 1) {
-
-            return doEquals(proxy, args[0]);
-
-        } else if ("toNode".equals(methodName) && noArg) {
-
-            return node;
-
-        } else if (isMethodNameGetter(methodName) && noArg) {
-
-            return doGet(methodName);
-
-        } else if (methodName.startsWith("set") && !noArg && args.length == 1) {
-
-            return doSet(method, args[0]);
-
-        } else if (methodName.startsWith("addTo") && noArg) {
-
-            return doAddTo(proxy, method, method.getReturnType());
-
-        } else if (methodName.startsWith("new") && noArg) {
-            Object presentObject = doGet(methodName);
-            if (presentObject != null) {
-                return presentObject;
-            }
-            return doNew(proxy, method, method.getReturnType());
-
-        } else if (methodName.startsWith("isNull") && noArg) {
-
-            return doIsNull(methodName);
-
-        } else if (methodName.startsWith("sizeOf") && noArg) {
-
-            return doSizeOf(methodName);
-        } else if (methodName.startsWith("removeFrom") && args.length == 1) {
-
-            return doRemoveFrom(method, args[0]);
-        }
-
-        return null;
-    }
-
     private boolean parseBoolean(final String methodName, final Object domValue, final String fieldXPath) {
         if (Boolean.class.isInstance(domValue)) {
             return (Boolean) domValue;
         }
-        if (domValue instanceof Node) {
-            String textContent = ((Node) domValue).getTextContent();
+        if (domValue instanceof XmlFieldNode<?>) {
+            String textContent = ((XmlFieldNode<?>) domValue).getTextContent();
             try {
                 return Boolean.parseBoolean(textContent);
             } catch (final RuntimeException e) {
@@ -794,7 +778,7 @@ public class XmlFieldInvocationHandler implements InvocationHandler {
     private DateTime parseDateTime(final String methodName, final Object domValue, final Method method,
             final String fieldXPath) {
 
-        final Node n = (Node) domValue;
+        final XmlFieldNode<?> n = (XmlFieldNode<?>) domValue;
 
         if (n != null) {
 
@@ -848,7 +832,7 @@ public class XmlFieldInvocationHandler implements InvocationHandler {
 
         } else {
 
-            final Node n = (Node) domValue;
+            final XmlFieldNode<?> n = (XmlFieldNode<?>) domValue;
 
             if (n != null) {
 
@@ -870,12 +854,20 @@ public class XmlFieldInvocationHandler implements InvocationHandler {
         return 0;
     }
 
+    private Object parseEnum(final Object domValue, final Class<? extends Enum> fieldType) {
+        String s = parseString(domValue);
+        if (StringUtils.isEmpty(s)) {
+            return null;
+        }
+        return Enum.valueOf(fieldType, s);
+    }
+
     private float parseFloat(final String methodName, final Object domValue, final String fieldXPath) {
         if (domValue instanceof Number) {
             return ((Number) domValue).floatValue();
         }
-        if (domValue instanceof Node) {
-            String textContent = ((Node) domValue).getTextContent();
+        if (domValue instanceof XmlFieldNode<?>) {
+            String textContent = ((XmlFieldNode<?>) domValue).getTextContent();
             try {
                 return Float.parseFloat(textContent);
             } catch (final RuntimeException e) {
@@ -891,8 +883,8 @@ public class XmlFieldInvocationHandler implements InvocationHandler {
         if (domValue instanceof Number) {
             return ((Number) domValue).intValue();
         }
-        if (domValue instanceof Node) {
-            String textContent = ((Node) domValue).getTextContent();
+        if (domValue instanceof XmlFieldNode<?>) {
+            String textContent = ((XmlFieldNode<?>) domValue).getTextContent();
             try {
                 return Integer.parseInt(textContent);
             } catch (final RuntimeException e) {
@@ -911,8 +903,8 @@ public class XmlFieldInvocationHandler implements InvocationHandler {
             return ((Number) domValue).longValue();
         }
 
-        if (domValue instanceof Node) {
-            String textContent = ((Node) domValue).getTextContent();
+        if (domValue instanceof XmlFieldNode<?>) {
+            String textContent = ((XmlFieldNode<?>) domValue).getTextContent();
             try {
                 return Long.parseLong(textContent);
             } catch (final RuntimeException e) {
@@ -930,9 +922,9 @@ public class XmlFieldInvocationHandler implements InvocationHandler {
         if (domValue instanceof Number) {
             return ((Number) domValue).shortValue();
         }
-        if (domValue instanceof Node) {
+        if (domValue instanceof XmlFieldNode<?>) {
 
-            Node n = (Node) domValue;
+            XmlFieldNode<?> n = (XmlFieldNode<?>) domValue;
             String textContent = n.getTextContent();
 
             try {
@@ -951,8 +943,8 @@ public class XmlFieldInvocationHandler implements InvocationHandler {
         if (domValue instanceof String) {
             return (String) domValue;
         }
-        if (domValue instanceof Node) {
-            return ((Node) domValue).getTextContent();
+        if (domValue instanceof XmlFieldNode<?>) {
+            return ((XmlFieldNode<?>) domValue).getTextContent();
         }
         return null;
     }

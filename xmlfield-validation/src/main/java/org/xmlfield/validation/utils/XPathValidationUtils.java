@@ -18,7 +18,7 @@ package org.xmlfield.validation.utils;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Iterables.toArray;
 import static org.apache.commons.lang.StringUtils.isBlank;
-import static org.xmlfield.core.internal.XmlFieldUtils.getNode;
+import static org.xmlfield.core.internal.XmlFieldUtils.getXmlFieldNode;
 
 import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Field;
@@ -28,22 +28,88 @@ import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
 
 import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
+import org.xmlfield.core.XmlFieldNode;
+import org.xmlfield.core.XmlFieldNodeList;
+import org.xmlfield.core.XmlFieldSelector;
+import org.xmlfield.core.XmlFieldSelectorFactory;
+import org.xmlfield.core.exception.XmlFieldXPathException;
+import org.xmlfield.core.impl.DefaultXmlFieldNode;
 import org.xmlfield.core.internal.XmlFieldUtils.NamespaceMap;
-import org.xmlfield.utils.JaxpUtils;
 import org.xmlfield.validation.annotations.XPathEquals;
 
 /**
  * XPath Validation Utils tool.
  * 
  * @author David Andrianavalontsalama
+ * @author Guillaume Mary <guillaume.mary@capgemini.com>
  */
 public class XPathValidationUtils {
+
+    private static class ExplosiveValidatorInvocationHandler implements InvocationHandler {
+
+        private final XmlFieldNode<?> node;
+
+        @Deprecated
+        public ExplosiveValidatorInvocationHandler(final Node node) {
+
+            this.node = new DefaultXmlFieldNode(checkNotNull(node, "node"));
+        }
+
+        public ExplosiveValidatorInvocationHandler(final XmlFieldNode<?> node) {
+
+            this.node = checkNotNull(node, "node");
+        }
+
+        @Override
+        public Object invoke(final Object proxy, final Method method, final Object[] args) throws Throwable {
+
+            handleXPathEquals(EXPLOSIVE_CALLBACK, method, method.getName(), null, node);
+
+            return null;
+        }
+    }
+
+    private static interface HandleXPathCallback {
+
+        void handleXPathEquals(String message);
+    }
+
+    private static class ValidatorWithErrorsInvocationHandler implements InvocationHandler {
+
+        private final XmlFieldNode<?> node;
+
+        @Deprecated
+        public ValidatorWithErrorsInvocationHandler(final Node node) {
+
+            this.node = new DefaultXmlFieldNode(checkNotNull(node, "node"));
+        }
+
+        public ValidatorWithErrorsInvocationHandler(final XmlFieldNode<?> node) {
+
+            this.node = checkNotNull(node, "node");
+        }
+
+        @Override
+        public Object invoke(final Object proxy, final Method method, final Object[] args) throws Throwable {
+
+            final String[] error = new String[1];
+
+            handleXPathEquals(new HandleXPathCallback() {
+
+                @Override
+                public void handleXPathEquals(final String message) {
+
+                    error[0] = message;
+                }
+
+            }, method, method.getName(), null, node);
+
+            return error[0];
+        }
+    }
 
     private static final HandleXPathCallback EXPLOSIVE_CALLBACK = new HandleXPathCallback() {
 
@@ -54,30 +120,66 @@ public class XPathValidationUtils {
         }
     };
 
-    public static void validateExplosively(final Object object,
-            final Class<?>... validationClasses)
-            throws XPathExpressionException {
+    @Deprecated
+    public static <T> T getExplosiveValidator(final Node node, final Class<T> validatorClass) {
 
-        validateExplosively(getNode(object), validationClasses);
+        final Object proxy = Proxy.newProxyInstance(getClassLoader(), new Class<?>[] { validatorClass },
+                new ExplosiveValidatorInvocationHandler(node));
+
+        return validatorClass.cast(proxy);
+
     }
 
-    public static void validateExplosively(final Node node,
-            final Class<?>... validationClasses)
-            throws XPathExpressionException {
+    public static <T> T getExplosiveValidator(final Object object, final Class<T> validatorClass) {
 
-        validate(EXPLOSIVE_CALLBACK, node, validationClasses);
+        return getExplosiveValidator(getXmlFieldNode(object), validatorClass);
     }
 
-    public static String[] getValidationErrors(final Object object,
-            final Class<?>... validationClasses)
-            throws XPathExpressionException {
+    public static <T> T getExplosiveValidator(final XmlFieldNode<?> node, final Class<T> validatorClass) {
 
-        return getValidationErrors(getNode(object), validationClasses);
+        final Object proxy = Proxy.newProxyInstance(getClassLoader(), new Class<?>[] { validatorClass },
+                new ExplosiveValidatorInvocationHandler(node));
+
+        return validatorClass.cast(proxy);
+
     }
 
-    public static String[] getValidationErrors(final Node node,
-            final Class<?>... validationClasses)
+    @Deprecated
+    public static String[] getValidationErrors(final Node node, final Class<?>... validationClasses)
             throws XPathExpressionException {
+
+        final List<String> errors = new ArrayList<String>();
+
+        try {
+            validate(new HandleXPathCallback() {
+
+                @Override
+                public void handleXPathEquals(final String message) {
+
+                    errors.add(message);
+                }
+
+            }, new DefaultXmlFieldNode(node), validationClasses);
+        } catch (XmlFieldXPathException e) {
+            Throwable cause = e.getCause();
+            if (cause instanceof XPathExpressionException) {
+                throw (XPathExpressionException) cause;
+            } else {
+                throw new RuntimeException(cause);
+            }
+        }
+
+        return toArray(errors, String.class);
+    }
+
+    public static String[] getValidationErrors(final Object object, final Class<?>... validationClasses)
+            throws XmlFieldXPathException {
+
+        return getValidationErrors(getXmlFieldNode(object), validationClasses);
+    }
+
+    public static String[] getValidationErrors(final XmlFieldNode<?> node, final Class<?>... validationClasses)
+            throws XmlFieldXPathException {
 
         final List<String> errors = new ArrayList<String>();
 
@@ -94,80 +196,106 @@ public class XPathValidationUtils {
         return toArray(errors, String.class);
     }
 
-    private static ClassLoader getClassLoader() {
+    @Deprecated
+    public static <T> T getValidatorWithErrors(final Node node, final Class<T> validatorClass) {
 
-        return XPathValidationUtils.class.getClassLoader();
-    }
-
-    public static <T> T getExplosiveValidator(final Object object,
-            final Class<T> validatorClass) {
-
-        return getExplosiveValidator(getNode(object), validatorClass);
-    }
-
-    public static <T> T getExplosiveValidator(final Node node,
-            final Class<T> validatorClass) {
-
-        final Object proxy = Proxy.newProxyInstance(getClassLoader(),
-                new Class<?>[] { validatorClass },
-                new ExplosiveValidatorInvocationHandler(node));
-
-        return validatorClass.cast(proxy);
-
-    }
-
-    public static <T> T getValidatorWithErrors(final Object object,
-            final Class<T> validatorClass) {
-
-        return getValidatorWithErrors(getNode(object), validatorClass);
-    }
-
-    public static <T> T getValidatorWithErrors(final Node node,
-            final Class<T> validatorClass) {
-
-        final Object proxy = Proxy.newProxyInstance(getClassLoader(),
-                new Class<?>[] { validatorClass },
+        final Object proxy = Proxy.newProxyInstance(getClassLoader(), new Class<?>[] { validatorClass },
                 new ValidatorWithErrorsInvocationHandler(node));
 
         return validatorClass.cast(proxy);
     }
 
-    private static void validate(final HandleXPathCallback handleXPathCallback,
-            final Node node, final Class<?>[] validationClasses)
+    public static <T> T getValidatorWithErrors(final Object object, final Class<T> validatorClass) {
+        return getValidatorWithErrors(getXmlFieldNode(object), validatorClass);
+    }
+
+    public static <T> T getValidatorWithErrors(final XmlFieldNode<?> node, final Class<T> validatorClass) {
+
+        final Object proxy = Proxy.newProxyInstance(getClassLoader(), new Class<?>[] { validatorClass },
+                new ValidatorWithErrorsInvocationHandler(node));
+
+        return validatorClass.cast(proxy);
+    }
+
+    @Deprecated
+    public static void validateExplosively(final Node node, final Class<?>... validationClasses)
             throws XPathExpressionException {
 
-        for (final Class<?> validationClass : validationClasses) {
-
-            for (final Method method : validationClass.getMethods()) {
-
-                handleXPathEquals(handleXPathCallback, method,
-                        method.getName(), null, node);
-            }
-
-            for (final Field field : validationClass.getFields()) {
-
-                Object objectValue;
-
-                try {
-
-                    objectValue = field.get(null);
-
-                } catch (final IllegalAccessException e) {
-
-                    objectValue = null;
-                }
-
-                handleXPathEquals(handleXPathCallback, field, field.getName(),
-                        objectValue, node);
+        try {
+            validate(EXPLOSIVE_CALLBACK, new DefaultXmlFieldNode(node), validationClasses);
+        } catch (XmlFieldXPathException e) {
+            Throwable cause = e.getCause();
+            if (cause instanceof XPathExpressionException) {
+                throw (XPathExpressionException) cause;
+            } else {
+                throw new RuntimeException(cause);
             }
         }
     }
 
-    private static void handleXPathEquals(
-            final HandleXPathCallback handleXPathCallback,
-            final AccessibleObject object, final String name,
-            final Object objectValue, final Node node)
-            throws XPathExpressionException {
+    public static void validateExplosively(final Object object, final Class<?>... validationClasses)
+            throws XmlFieldXPathException {
+
+        validateExplosively(getXmlFieldNode(object), validationClasses);
+    }
+
+    public static void validateExplosively(final XmlFieldNode<?> node, final Class<?>... validationClasses)
+            throws XmlFieldXPathException {
+
+        validate(EXPLOSIVE_CALLBACK, node, validationClasses);
+    }
+
+    private static void assertXPath(final NamespaceMap namespaces, final XmlFieldSelector xpath,
+            final HandleXPathCallback handleXPathCallback, final String methodName, final String message,
+            final String refValueParam, final boolean isXPathRefValue, final String xpathExpression,
+            final XmlFieldNode<?> node) throws XmlFieldXPathException {
+
+        final String result = xpath.selectXPathToString(namespaces, xpathExpression, node);
+
+        if (result == null && refValueParam == null) {
+            return;
+        }
+
+        final String refValue;
+
+        if (isXPathRefValue) {
+
+            refValue = xpath.selectXPathToString(namespaces, refValueParam, node);
+
+        } else {
+
+            refValue = refValueParam;
+        }
+
+        if (result == null || refValue == null || !refValue.equals(result)) {
+
+            final String error = isBlank(message) ? "" : xpath.selectXPathToString(namespaces, message, node);
+
+            String m = "Error in the following assertion: " + methodName + "/" + error + ": XPath=" + xpathExpression
+                    + ", expected: ";
+
+            if (isXPathRefValue) {
+
+                m += "XPath=" + refValueParam + ": ";
+            }
+
+            m += refValue + ", but was: " + result;
+
+            handleXPathCallback.handleXPathEquals(m);
+        }
+    }
+
+    private static ClassLoader getClassLoader() {
+
+        return XPathValidationUtils.class.getClassLoader();
+    }
+
+    private static XmlFieldSelector getSelector() {
+        return XmlFieldSelectorFactory.newInstance().newSelector();
+    }
+
+    private static void handleXPathEquals(final HandleXPathCallback handleXPathCallback, final AccessibleObject object,
+            final String name, final Object objectValue, final XmlFieldNode<?> node) throws XmlFieldXPathException {
 
         final XPathEquals xpathEquals = object.getAnnotation(XPathEquals.class);
 
@@ -232,126 +360,56 @@ public class XPathValidationUtils {
             isXPathRefValue = false;
         }
 
-        final XPath xpath = JaxpUtils.getXPath(new NamespaceMap(namespaces));
+        final XmlFieldSelector xpathSelector = getSelector();
+
+        final NamespaceMap namespaceMap = new NamespaceMap(namespaces);
 
         if (isBlank(selector)) {
 
-            assertXPath(xpath, handleXPathCallback, name, message, declValue,
-                    isXPathRefValue, xpathExpression, node);
+            assertXPath(namespaceMap, xpathSelector, handleXPathCallback, name, message, declValue, isXPathRefValue,
+                    xpathExpression, node);
 
         } else {
 
-            final NodeList nodeList = (NodeList) xpath.evaluate(selector, node,
-                    XPathConstants.NODESET);
+            final XmlFieldNodeList nodeList = xpathSelector.selectXPathToNodeList(namespaceMap, selector, node);
 
             final int count = nodeList.getLength();
 
             for (int i = 0; i < count; ++i) {
 
-                final Node n = nodeList.item(i);
+                final XmlFieldNode<?> n = nodeList.item(i);
 
-                assertXPath(xpath, handleXPathCallback, name, message,
-                        declValue, isXPathRefValue, xpathExpression, n);
+                assertXPath(namespaceMap, xpathSelector, handleXPathCallback, name, message, declValue,
+                        isXPathRefValue, xpathExpression, n);
             }
         }
     }
 
-    private static void assertXPath(final XPath xpath,
-            final HandleXPathCallback handleXPathCallback,
-            final String methodName, final String message,
-            final String refValueParam, final boolean isXPathRefValue,
-            final String xpathExpression, final Node node)
-            throws XPathExpressionException {
+    private static void validate(final HandleXPathCallback handleXPathCallback, final XmlFieldNode<?> node,
+            final Class<?>[] validationClasses) throws XmlFieldXPathException {
 
-        final String result = xpath.evaluate(xpathExpression, node);
+        for (final Class<?> validationClass : validationClasses) {
 
-        if (result == null && refValueParam == null) {
-            return;
-        }
+            for (final Method method : validationClass.getMethods()) {
 
-        final String refValue;
-
-        if (isXPathRefValue) {
-
-            refValue = xpath.evaluate(refValueParam, node);
-
-        } else {
-
-            refValue = refValueParam;
-        }
-
-        if (result == null || refValue == null || !refValue.equals(result)) {
-
-            final String error = isBlank(message) ? "" : xpath.evaluate(
-                    message, node);
-
-            String m = "Error in the following assertion: " + methodName + "/"
-                    + error + ": XPath=" + xpathExpression + ", expected: ";
-
-            if (isXPathRefValue) {
-
-                m += "XPath=" + refValueParam + ": ";
+                handleXPathEquals(handleXPathCallback, method, method.getName(), null, node);
             }
 
-            m += refValue + ", but was: " + result;
+            for (final Field field : validationClass.getFields()) {
 
-            handleXPathCallback.handleXPathEquals(m);
-        }
-    }
+                Object objectValue;
 
-    private static interface HandleXPathCallback {
+                try {
 
-        void handleXPathEquals(String message);
-    }
+                    objectValue = field.get(null);
 
-    private static class ExplosiveValidatorInvocationHandler implements
-            InvocationHandler {
+                } catch (final IllegalAccessException e) {
 
-        public ExplosiveValidatorInvocationHandler(final Node node) {
-
-            this.node = checkNotNull(node, "node");
-        }
-
-        private final Node node;
-
-        @Override
-        public Object invoke(final Object proxy, final Method method,
-                final Object[] args) throws Throwable {
-
-            handleXPathEquals(EXPLOSIVE_CALLBACK, method, method.getName(),
-                    null, node);
-
-            return null;
-        }
-    }
-
-    private static class ValidatorWithErrorsInvocationHandler implements
-            InvocationHandler {
-
-        public ValidatorWithErrorsInvocationHandler(final Node node) {
-
-            this.node = checkNotNull(node, "node");
-        }
-
-        private final Node node;
-
-        @Override
-        public Object invoke(final Object proxy, final Method method,
-                final Object[] args) throws Throwable {
-
-            final String[] error = new String[1];
-
-            handleXPathEquals(new HandleXPathCallback() {
-
-                @Override
-                public void handleXPathEquals(final String message) {
-
-                    error[0] = message;
+                    objectValue = null;
                 }
 
-            }, method, method.getName(), null, node);
-
-            return error[0];
+                handleXPathEquals(handleXPathCallback, field, field.getName(), objectValue, node);
+            }
         }
     }
 }

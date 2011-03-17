@@ -13,24 +13,21 @@
  * limitations under the License. 
  * 
  */
-package org.xmlfield.core.internal;
+package org.xmlfield.core.impl;
 
-import org.xmlfield.core.XmlFieldNode;
+import org.xmlfield.core.XmlFieldNodeModifier;
+import org.xmlfield.core.XmlFieldNodeModifierFactory;
 
 /**
- * interface essentiellement utilisée par le moteur de lecture du XML vers Java, mais rien n'empêche de déclarer une
- * interface Java de manipulation du XML héritant de <tt>INodeable</tt> afin de récupérer le nœud XML correspondant.
+ * Default xml field node modifier factory implementation.
  * 
- * @author David Andrianavalontsalama
  * @author Guillaume Mary <guillaume.mary@capgemini.com>
- * 
  */
-public interface INodeable<T> {
+public class DefaultXmlFieldNodeModifierFactory extends XmlFieldNodeModifierFactory {
 
-    /**
-     * renvoie le nœud XML correspondant à cet objet.
-     * 
-     * @return le nœud XML.
-     */
-    XmlFieldNode<T> toNode();
+    @Override
+    public XmlFieldNodeModifier newModifier() {
+        return new DefaultXmlFieldNodeModifier();
+    }
+
 }

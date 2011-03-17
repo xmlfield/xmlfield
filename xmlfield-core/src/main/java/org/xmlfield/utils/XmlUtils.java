@@ -15,42 +15,61 @@
  */
 package org.xmlfield.utils;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.StringReader;
-import java.io.StringWriter;
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Proxy;
+import java.util.Map.Entry;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.TransformerFactoryConfigurationError;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
 
-import org.w3c.dom.Document;
 import org.w3c.dom.Node;
-import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+import org.xmlfield.core.XmlFieldNode;
+import org.xmlfield.core.XmlFieldNodeParser;
+import org.xmlfield.core.XmlFieldNodeParserFactory;
 import org.xmlfield.core.XmlFieldReader;
-import org.xmlfield.core.internal.XmlFieldInvocationHandler;
+import org.xmlfield.core.exception.XmlFieldParsingException;
+import org.xmlfield.core.impl.DefaultXmlFieldNode;
+import org.xmlfield.core.impl.DefaultXmlFieldNodeParser;
 import org.xmlfield.core.internal.XmlFieldUtils;
+import org.xmlfield.core.internal.XmlFieldUtils.NamespaceMap;
 
 /**
  * Classe de lecture/ecriture d'un flux XML/Node
  * 
  * @author Loic Abemonty <loic.abemonty@capgemini.com>
  * @author Nicolas Richeton <nicolas.richeton@capgemini.com>
- * 
+ * @author Guillaume Mary <guillaume.mary@capgemini.com>
  */
 public class XmlUtils {
+
+    /**
+     * Create an empty tag matching the given data.
+     * 
+     * @param tag
+     *            an xml tag, can be of the form "ns:name" or "name"
+     * @param namespaces
+     *            the namespaces to use or null if none
+     * @return a string representing the given tag with the given namespaces
+     */
+    public static String emptyTag(String tag, NamespaceMap namespaces) {
+        StringBuilder builder = new StringBuilder("<");
+        builder.append(tag);
+
+        if (namespaces != null) {
+            for (Entry<String, String> entry : namespaces) {
+                builder.append(" xmlns:");
+                builder.append(entry.getKey());
+                builder.append("=\"");
+                builder.append(entry.getValue());
+                builder.append("\"");
+            }
+        }
+        builder.append(" />");
+
+        return builder.toString();
+    }
 
     /**
      * Retrouve le {@link Node} associé à un Object.
@@ -58,20 +77,13 @@ public class XmlUtils {
      * @throws ClassCastException
      *             si l'objet n'est pas un Object XmlField
      * @param o
-     *            un objet attaché grace à
-     *            {@link XmlFieldReader#attach(Node, Class)}
+     *            un objet attaché grace à {@link XmlFieldReader#attach(Node, Class)}
      * @return un {@link Node} à l'origine de l'attachement
-     * 
+     * @deprecated use the {@link XmlFieldUtils#getXmlFieldNode(Object)} method instead
      */
+    @Deprecated
     public static Node getNode(Object o) {
-        if (o instanceof java.lang.reflect.Proxy) {
-            InvocationHandler handler = Proxy.getInvocationHandler(o);
-            if (handler instanceof XmlFieldInvocationHandler) {
-                XmlFieldInvocationHandler xmlField = (XmlFieldInvocationHandler) handler;
-                return xmlField.getNode();
-            }
-        }
-        throw new ClassCastException("object is not an XmlField interface" + String.valueOf(o));
+        return XmlFieldUtils.getNode(o);
     }
 
     /**
@@ -82,67 +94,85 @@ public class XmlUtils {
      * @throws IOException
      * @throws TransformerException
      * @throws TransformerFactoryConfigurationError
+     * @deprecated use the {@link XmlUtils#xmlFieldNodeToXml(XmlFieldNode)} method instead
      */
+    @Deprecated
     public static String nodeToXml(final Node node) throws IOException, TransformerException,
             TransformerFactoryConfigurationError {
 
-        final Transformer t = TransformerFactory.newInstance().newTransformer();
+        XmlFieldNodeParser<Node> parser = new DefaultXmlFieldNodeParser();
 
-        final StringWriter sw = new StringWriter();
+        try {
+            return parser.nodeToXml(new DefaultXmlFieldNode(node));
+        } catch (XmlFieldParsingException e) {
+            Throwable cause = e.getCause();
+            if (cause instanceof IOException) {
+                throw (IOException) cause;
+            } else if (cause instanceof TransformerException) {
+                throw (TransformerException) cause;
+            } else if (cause instanceof TransformerFactoryConfigurationError) {
+                throw (TransformerFactoryConfigurationError) cause;
+            } else {
+                throw new RuntimeException(cause);
+            }
+        }
 
-        t.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
-
-        // t.setOutputProperty(OutputKeys.INDENT, "yes");
-
-        t.transform(new DOMSource(node), new StreamResult(sw));
-
-        return sw.toString();
     }
 
     /**
-     * Produit du XML à partir d'un objet (par exemple les interfaces d'accès du
-     * XML)
+     * Produit du XML à partir d'un objet (par exemple les interfaces d'accès du XML)
      * 
      * @param o
      * @return
      * @throws IOException
      * @throws TransformerException
      * @throws TransformerFactoryConfigurationError
+     * @deprecated use the {@link XmlUtils#xmlFieldNodeToXml(Object)} method instead
      */
+    @Deprecated
     public static String nodeToXml(final Object o) throws IOException, TransformerException,
             TransformerFactoryConfigurationError {
 
-        checkNotNull(o, "o");
+        XmlFieldNodeParser<Node> parser = new DefaultXmlFieldNodeParser();
 
-        final Node node = XmlFieldUtils.getNode(o);
-
-        if (node == null) {
-
-            throw new IllegalArgumentException("Argument should be an instance of Nodeable.");
+        try {
+            return parser.nodeToXml(o);
+        } catch (XmlFieldParsingException e) {
+            Throwable cause = e.getCause();
+            if (cause instanceof IOException) {
+                throw (IOException) cause;
+            } else if (cause instanceof TransformerException) {
+                throw (TransformerException) cause;
+            } else if (cause instanceof TransformerFactoryConfigurationError) {
+                throw (TransformerFactoryConfigurationError) cause;
+            } else {
+                throw new RuntimeException(cause);
+            }
         }
 
-        return nodeToXml(node);
+    }
+
+    public static String xmlFieldNodeToXml(final Object o) throws XmlFieldParsingException {
+
+        XmlFieldNodeParser<?> parser = XmlFieldNodeParserFactory.newInstance().newParser();
+
+        return parser.nodeToXml(o);
+
     }
 
     /**
-     * Loads xml content from the input source and create XML DOM object.
+     * Produit du XML à partir de sa représentation objet.
      * 
-     * @param xmlInputSource
+     * @param node
      * @return
-     * @throws ParserConfigurationException
-     * @throws SAXException
-     * @throws IOException
+     * @throws XmlFieldParsingException
      */
-    private static Node xmlToNode(final InputSource xmlInputSource) throws ParserConfigurationException, SAXException,
-            IOException {
+    public static String xmlFieldNodeToXml(final XmlFieldNode<?> node) throws XmlFieldParsingException {
 
-        DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
+        XmlFieldNodeParser<?> parser = XmlFieldNodeParserFactory.newInstance().newParser();
 
-        documentBuilderFactory.setNamespaceAware(true);
-        DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
+        return parser.nodeToXml(node);
 
-        Document document = documentBuilder.parse(xmlInputSource);
-        return document.getDocumentElement();
     }
 
     /**
@@ -153,10 +183,27 @@ public class XmlUtils {
      * @throws ParserConfigurationException
      * @throws SAXException
      * @throws IOException
+     * @deprecated use the {@link XmlUtils#xmlToXmlFieldNode(InputStream)} method instead
      */
+    @Deprecated
     public static Node xmlToNode(final InputStream xmlContent) throws ParserConfigurationException, SAXException,
             IOException {
-        return xmlToNode(new InputSource(xmlContent));
+        XmlFieldNodeParser<Node> parser = new DefaultXmlFieldNodeParser();
+
+        try {
+            return parser.xmlToNode(xmlContent).getNode();
+        } catch (XmlFieldParsingException e) {
+            Throwable cause = e.getCause();
+            if (cause instanceof IOException) {
+                throw (IOException) cause;
+            } else if (cause instanceof SAXException) {
+                throw (SAXException) cause;
+            } else if (cause instanceof ParserConfigurationException) {
+                throw (ParserConfigurationException) cause;
+            } else {
+                throw new RuntimeException(cause);
+            }
+        }
     }
 
     /**
@@ -167,9 +214,37 @@ public class XmlUtils {
      * @throws ParserConfigurationException
      * @throws SAXException
      * @throws IOException
+     * @deprecated use the {@link XmlUtils#xmlToXmlFieldNode(String)} method instead
      */
+    @Deprecated
     public static Node xmlToNode(final String xml) throws ParserConfigurationException, SAXException, IOException {
-        return xmlToNode(new InputSource(new StringReader(xml)));
+        XmlFieldNodeParser<Node> parser = new DefaultXmlFieldNodeParser();
+
+        try {
+            return parser.xmlToNode(xml).getNode();
+        } catch (XmlFieldParsingException e) {
+            Throwable cause = e.getCause();
+            if (cause instanceof IOException) {
+                throw (IOException) cause;
+            } else if (cause instanceof SAXException) {
+                throw (SAXException) cause;
+            } else if (cause instanceof ParserConfigurationException) {
+                throw (ParserConfigurationException) cause;
+            } else {
+                throw new RuntimeException(cause);
+            }
+        }
     }
 
+    public static XmlFieldNode<?> xmlToXmlFieldNode(final InputStream xmlContent) throws XmlFieldParsingException {
+        XmlFieldNodeParser<?> parser = XmlFieldNodeParserFactory.newInstance().newParser();
+
+        return parser.xmlToNode(xmlContent);
+    }
+
+    public static XmlFieldNode<?> xmlToXmlFieldNode(final String xml) throws XmlFieldParsingException {
+        XmlFieldNodeParser<?> parser = XmlFieldNodeParserFactory.newInstance().newParser();
+
+        return parser.xmlToNode(xml);
+    }
 }

@@ -20,6 +20,8 @@ import static org.apache.commons.lang.StringUtils.substringBefore;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -27,8 +29,15 @@ import org.apache.commons.lang.StringUtils;
  * Xpath manipulation methods.
  * 
  * @author Nicolas Richeton <nicolas.richeton@capgemini.com>
+ * @author Guillaume Mary <guillaume.mary@capgemini.com>
  */
 public class XPathUtils {
+
+    public static final int TYPE_ATTRIBUTE = 3;
+
+    public static final int TYPE_TAG = 1;
+
+    public static final int TYPE_TAG_WITH_ATTRIBUTE = 2;
 
     /**
      * Return element name without any selector.
@@ -45,6 +54,14 @@ public class XPathUtils {
 
         // Remove org.xmlfield.tests.attribute selector
         name = substringBefore(name, "[");
+        return name;
+    }
+
+    public static String getElementNameWithSelector(String xPath) {
+        String name = xPath;
+        if (name.contains("/")) {
+            name = substringAfterLast(name, "/");
+        }
         return name;
     }
 
@@ -78,8 +95,7 @@ public class XPathUtils {
                         break;
                     default:
                     }
-                    aSplitted[1] = aSplitted[1].substring(1,
-                            aSplitted[1].length() - endIndex);
+                    aSplitted[1] = aSplitted[1].substring(1, aSplitted[1].length() - endIndex);
 
                     result.put(aSplitted[0], aSplitted[1]);
                 }
@@ -92,8 +108,7 @@ public class XPathUtils {
     }
 
     /**
-     * Returns the type of the element described by this xPath query. See the
-     * following examples :
+     * Returns the type of the element described by this xPath query. See the following examples :
      * 
      * <ul>
      * <li>/parent/tagname => TYPE_TAG
@@ -125,16 +140,36 @@ public class XPathUtils {
         return XPathUtils.TYPE_TAG;
     }
 
-    public static final int TYPE_TAG_WITH_ATTRIBUTE = 2;
-    public static final int TYPE_TAG = 1;
-    public static final int TYPE_ATTRIBUTE = 3;
-
-    public static String getElementNameWithSelector(String xPath) {
-        String name = xPath;
-        if (name.contains("/")) {
-            name = substringAfterLast(name, "/");
+    /**
+     * Retrieve the xpath element from the specified xpath.
+     * 
+     * @param fieldXPath
+     *            xpath mapped to a field
+     * @return xpath element
+     */
+    public static String getElementXPath(String fieldXPath) {
+        Pattern pattern = Pattern.compile("^(.+)\\/@(.+)$");
+        Matcher matcher = pattern.matcher(fieldXPath);
+        if (matcher.matches()) {
+            return matcher.group(1);
         }
-        return name;
+        return null;
+    }
+
+    /**
+     * Retrieve the xpath element from the specified xpath.
+     * 
+     * @param fieldXPath
+     *            xpath mapped to a field
+     * @return xpath element
+     */
+    public static boolean isAttributeXPath(String fieldXPath) {
+        Pattern pattern = Pattern.compile("^(.*)@(.+)$");
+        Matcher matcher = pattern.matcher(fieldXPath);
+        if (matcher.matches()) {
+            return true;
+        }
+        return false;
     }
 
 }

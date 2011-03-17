@@ -13,24 +13,34 @@
  * limitations under the License. 
  * 
  */
-package org.xmlfield.core.internal;
-
-import org.xmlfield.core.XmlFieldNode;
+package org.xmlfield.core.exception;
 
 /**
- * interface essentiellement utilisée par le moteur de lecture du XML vers Java, mais rien n'empêche de déclarer une
- * interface Java de manipulation du XML héritant de <tt>INodeable</tt> afin de récupérer le nœud XML correspondant.
  * 
- * @author David Andrianavalontsalama
  * @author Guillaume Mary <guillaume.mary@capgemini.com>
  * 
  */
-public interface INodeable<T> {
+public class XmlFieldXPathException extends XmlFieldException {
 
     /**
-     * renvoie le nœud XML correspondant à cet objet.
-     * 
-     * @return le nœud XML.
+     * Generated serial version UID.
      */
-    XmlFieldNode<T> toNode();
+    private static final long serialVersionUID = 5811265296656802075L;
+
+    public XmlFieldXPathException() {
+        super();
+    }
+
+    public XmlFieldXPathException(String message) {
+        super(message);
+    }
+
+    public XmlFieldXPathException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
+    public XmlFieldXPathException(Throwable cause) {
+        super(cause);
+    }
+
 }

@@ -19,6 +19,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static org.apache.commons.lang.StringUtils.substringAfter;
 
 import java.io.StringWriter;
+import java.io.Writer;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -28,7 +29,6 @@ import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.TransformerFactoryConfigurationError;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.xpath.XPath;
@@ -50,11 +50,21 @@ import org.xmlfield.core.internal.XmlFieldUtils.NamespaceMap;
  * 
  * @author Loic Abemonty <loic.abemonty@capgemini.com>
  * @author Nicolas Richeton <nicolas.richeton@capgemini.com>
+ * @author Guillaume Mary <guillaume.mary@capgemini.com>
  * @author Mabrouk Belhout
  */
 public abstract class JaxpUtils {
 
     public static final Attributes NO_ATTRIBUTES = new AttributesImpl();
+
+    private static final ThreadLocal<TransformerFactory> transformerFactory = new ThreadLocal<TransformerFactory>() {
+
+        @Override
+        protected TransformerFactory initialValue() {
+            return TransformerFactory.newInstance();
+        }
+
+    };
     private static final ThreadLocal<XPathFactory> xPathFactory = new ThreadLocal<XPathFactory>() {
 
         @Override
@@ -115,11 +125,13 @@ public abstract class JaxpUtils {
 
     }
 
+    @Deprecated
     public static Node createElement(final NamespaceMap namespaces, final Node node, final String elementName) {
 
         return createElement(namespaces, node, elementName, null);
     }
 
+    @Deprecated
     public static Node createElement(final NamespaceMap namespaces, final Node node, final String elementName,
             final String textContent) {
 
@@ -141,20 +153,47 @@ public abstract class JaxpUtils {
         return element;
     }
 
-    public static void dumpNode(final Node node) throws TransformerFactoryConfigurationError, TransformerException {
+    public static void dumpNode(final Node node) throws TransformerException {
 
         dumpNode(null, node);
     }
 
-    public static void dumpNode(final String message, final Node node) throws TransformerFactoryConfigurationError,
-            TransformerException {
-        Transformer t = TransformerFactory.newInstance().newTransformer();
-        StringWriter sw = new StringWriter();
-        t.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
-        t.setOutputProperty(OutputKeys.INDENT, "yes");
-        t.transform(new DOMSource(node), new StreamResult(sw));
-
+    public static void dumpNode(final String message, final Node node) throws TransformerException {
+        final Writer sw = new StringWriter();
+        final Transformer transformer = transformerFactory.get().newTransformer();
+        transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+        transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+        transformer.transform(new DOMSource(node), new StreamResult(sw));
         logger.info((message == null ? "" : (message + ": ")) + sw);
+    }
+
+    /**
+     * Create an empty tag matching the given data.
+     * 
+     * @deprecated use the {@link XmlUtils#emptyTag(String, NamespaceMap)} method instead
+     * @param tag
+     *            an xml tag, can be of the form "ns:name" or "name"
+     * @param namespaces
+     *            the namespaces to use or null if none
+     * @return a string representing the given tag with the given namespaces
+     */
+    @Deprecated
+    public static String emptyTag(String tag, NamespaceMap namespaces) {
+        StringBuilder builder = new StringBuilder("<");
+        builder.append(tag);
+
+        if (namespaces != null) {
+            for (Entry<String, String> entry : namespaces) {
+                builder.append(" xmlns:");
+                builder.append(entry.getKey());
+                builder.append("=\"");
+                builder.append(entry.getValue());
+                builder.append("\"");
+            }
+        }
+        builder.append(" />");
+
+        return builder.toString();
     }
 
     public static Document getNodeDocument(final Node node) {
@@ -257,32 +296,5 @@ public abstract class JaxpUtils {
 
     private static XPathFactory getXPathFactory() {
         return xPathFactory.get();
-    }
-
-    /**
-     * Create an empty tag matching the given data.
-     * 
-     * @param tag
-     *            an xml tag, can be of the form "ns:name" or "name"
-     * @param namespaces
-     *            the namespaces to use or null if none
-     * @return a string representing the given tag with the given namespaces
-     */
-    public static String emptyTag(String tag, NamespaceMap namespaces) {
-        StringBuilder builder = new StringBuilder("<");
-        builder.append(tag);
-
-        if (namespaces != null) {
-            for (Entry<String, String> entry : namespaces) {
-                builder.append(" xmlns:");
-                builder.append(entry.getKey());
-                builder.append("=\"");
-                builder.append(entry.getValue());
-                builder.append("\"");
-            }
-        }
-        builder.append(" />");
-
-        return builder.toString();
     }
 }

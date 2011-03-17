@@ -19,37 +19,17 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.xmlfield.utils.XmlUtils.xmlFieldNodeToXml;
 
 import org.junit.Test;
-import org.xmlfield.core.XmlFieldBinder;
+import org.xmlfield.core.XmlFieldReader;
+import org.xmlfield.utils.XmlUtils;
 
 /**
  * @author Mabrouk Belhout
  */
-public class TestPack8Test {
+public class TestPack8NewTest {
 
-    private final XmlFieldBinder binder = new XmlFieldBinder();
-
-    @Test
-    public void testChangeInterface() throws Exception {
-        Catalog catalog = binder.bindReadOnly(sampleXml1(), Catalog.class);
-
-        // Cd cd = catalog.addToCds(); // compile error
-
-        assertFalse(catalog instanceof ExtendedCatalog);
-        assertNotNull(catalog.getCds());
-        assertEquals(2, catalog.getCds().length);
-
-        String xml = xmlFieldNodeToXml(catalog);
-        assertTrue(xml.contains("<Artist>Bob Dylan</Artist>"));
-
-        ExtendedCatalog extended = binder.rebind(catalog, ExtendedCatalog.class);
-        assertTrue(extended instanceof Catalog);
-        extended.addToCds().setArtist("The Prince");
-        assertEquals(3, extended.getCds().length);
-        assertEquals("The Prince", extended.getCds()[2].getArtist());
-    }
+    private XmlFieldReader parser = new XmlFieldReader();
 
     private String sampleXml1() {
         return "<Catalog>" //
@@ -66,6 +46,26 @@ public class TestPack8Test {
                 + "</Cd>" + //
                 "</Catalog>";
 
+    }
+
+    @Test
+    public void testChangeInterface() throws Exception {
+        Catalog catalog = parser.attachReadOnly(sampleXml1(), Catalog.class);
+
+        // Cd cd = catalog.addToCds(); // compile error
+
+        assertFalse(catalog instanceof ExtendedCatalog);
+        assertNotNull(catalog.getCds());
+        assertEquals(2, catalog.getCds().length);
+
+        String xml = XmlUtils.nodeToXml(catalog);
+        assertTrue(xml.contains("<Artist>Bob Dylan</Artist>"));
+
+        ExtendedCatalog extended = parser.reattach(catalog, ExtendedCatalog.class);
+        assertTrue(extended instanceof Catalog);
+        extended.addToCds().setArtist("The Prince");
+        assertEquals(3, extended.getCds().length);
+        assertEquals("The Prince", extended.getCds()[2].getArtist());
     }
 
 }
