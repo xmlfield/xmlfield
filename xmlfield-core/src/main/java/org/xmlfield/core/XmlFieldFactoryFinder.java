@@ -59,11 +59,10 @@ public class XmlFieldFactoryFinder {
 
     static {
         defaultFactoriesClass = new HashMap<String, Class<?>>();
-        defaultFactoriesClass.put(XmlFieldSelectorFactory.class.getSimpleName(), DefaultXmlFieldSelectorFactory.class);
-        defaultFactoriesClass.put(XmlFieldNodeParserFactory.class.getSimpleName(),
-                DefaultXmlFieldNodeParserFactory.class);
-        defaultFactoriesClass.put(XmlFieldNodeModifierFactory.class.getSimpleName(),
-                DefaultXmlFieldNodeModifierFactory.class);
+        defaultFactoriesClass.put(XmlFieldSelectorFactory.class.getName(), DefaultXmlFieldSelectorFactory.class);
+        defaultFactoriesClass.put(XmlFieldNodeParserFactory.class.getName(), DefaultXmlFieldNodeParserFactory.class);
+        defaultFactoriesClass
+                .put(XmlFieldNodeModifierFactory.class.getName(), DefaultXmlFieldNodeModifierFactory.class);
     }
 
     private final ClassLoader classloader;
@@ -89,7 +88,7 @@ public class XmlFieldFactoryFinder {
      * @return intance of the requested factory class
      */
     public <T> T newFactory(Class<T> factoryClass) {
-        final String requestedFactoryClass = factoryClass.getSimpleName();
+        final String requestedFactoryClass = factoryClass.getName();
         if (!defaultFactoriesClass.containsKey(requestedFactoryClass)) {
             logger.error("This requseted factory class is not managed by this finder, factory class : {}",
                     requestedFactoryClass);
@@ -100,8 +99,11 @@ public class XmlFieldFactoryFinder {
         }
         String implementationFactoryClass = cachedProperties.getProperty(requestedFactoryClass);
         if (implementationFactoryClass == null) {
+            logger.debug("The requested factory is not overriden ({}), we return the factory class : {}",
+                    requestedFactoryClass, defaultFactoriesClass.get(requestedFactoryClass));
             return createDefaultInstance(requestedFactoryClass);
         }
+        logger.debug("The requested factory is overriden by : {}", implementationFactoryClass);
         return createInstance(implementationFactoryClass);
     }
 
