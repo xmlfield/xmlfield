@@ -16,13 +16,13 @@
 
     <dependencies>
 
-        <!-- passage de junit en scope compile car utilisé dans XsdValidationUtils -->
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.8.2</version>
-            <scope>compile</scope>
-        </dependency>
+
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.8.2</version>
+			<scope>test</scope>
+		</dependency>
 
         <dependency>
             <groupId>com.google.code.guice</groupId>
