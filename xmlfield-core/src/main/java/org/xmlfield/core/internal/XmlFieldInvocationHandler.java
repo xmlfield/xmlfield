@@ -420,7 +420,7 @@ public class XmlFieldInvocationHandler implements InvocationHandler {
             } else {
                 // Remove all matching nodes.
                 XmlFieldNodeList nodesToRemove = selector.selectXPathToNodeList(namespaces, fieldXPath, node);
-                modifier.removeNodes(nodesToRemove);
+                modifier.removeChildren(node, nodesToRemove);
             }
 
         } else {

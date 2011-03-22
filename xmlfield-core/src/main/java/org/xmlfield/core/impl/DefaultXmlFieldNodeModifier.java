@@ -66,6 +66,8 @@ public class DefaultXmlFieldNodeModifier implements XmlFieldNodeModifier {
 
     @Override
     public void createAttribute(XmlFieldNode<?> node, String attributeName, String textContent) {
+        checkNotNull(node, "node");
+        checkNotNull(attributeName, "attributeName");
         final Document document = getNodeDocument((Node) node.getNode());
 
         final Attr attribute = document.createAttribute(attributeName);
@@ -109,33 +111,42 @@ public class DefaultXmlFieldNodeModifier implements XmlFieldNodeModifier {
 
     @Override
     public XmlFieldNode<?> insertBefore(XmlFieldNode<?> contextNode, XmlFieldNode<?> newChild, XmlFieldNode<?> refChild) {
+        checkNotNull(contextNode, "contextNode");
+        checkNotNull(newChild, "newChild");
+        checkNotNull(refChild, "refChild");
         Node insertedNode = ((Node) contextNode.getNode()).insertBefore((Node) newChild.getNode(),
                 (Node) refChild.getNode());
         return new DefaultXmlFieldNode(insertedNode);
     }
 
     @Override
-    public XmlFieldNode<?> removeAttribute(XmlFieldNode<?> node, String attibuteName) {
+    public XmlFieldNode<?> removeAttribute(XmlFieldNode<?> node, String attributeName) {
         checkNotNull(node, "node");
-        checkNotNull(attibuteName, "attributeName");
+        checkNotNull(attributeName, "attributeName");
         NamedNodeMap nnMap = ((Node) node.getNode()).getAttributes();
-        return new DefaultXmlFieldNode(nnMap.removeNamedItem(attibuteName));
+        if (nnMap.getNamedItem(attributeName) == null) {
+            return null;
+        }
+        return new DefaultXmlFieldNode(nnMap.removeNamedItem(attributeName));
     }
 
     @Override
     public XmlFieldNode<?> removeChild(XmlFieldNode<?> node, XmlFieldNode<?> oldChild) {
         checkNotNull(node, "node");
-        checkNotNull(oldChild, "attributeName");
+        checkNotNull(oldChild, "oldChild");
         Node removedNode = ((Node) node.getNode()).removeChild((Node) oldChild.getNode());
-        return new DefaultXmlFieldNode(removedNode);
+        if (removedNode != null) {
+            return oldChild;
+        }
+        return null;
     }
 
     @Override
-    public void removeNodes(final XmlFieldNodeList nodesToRemove) {
+    public void removeChildren(final XmlFieldNode<?> contextNode, final XmlFieldNodeList nodesToRemove) {
         checkNotNull(nodesToRemove, "nodesToRemove");
         for (int i = nodesToRemove.getLength() - 1; i >= 0; i--) {
             Node currentNode = (Node) nodesToRemove.item(i).getNode();
-            currentNode.getParentNode().removeChild(currentNode);
+            ((Node) contextNode.getNode()).removeChild(currentNode);
         }
     }
 

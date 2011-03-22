@@ -43,6 +43,7 @@ public class DefaultXmlFieldSelector implements XmlFieldSelector {
     @Override
     public Boolean selectXPathToBoolean(NamespaceMap namespaces, String xpath, XmlFieldNode<?> node)
             throws XmlFieldXPathException {
+        checkXPathNotNull(xpath);
         final XPath xp = getXPath(namespaces);
         final Boolean value;
         try {
@@ -56,6 +57,7 @@ public class DefaultXmlFieldSelector implements XmlFieldSelector {
     @Override
     public XmlFieldNode<?> selectXPathToNode(NamespaceMap namespaces, String xpath, XmlFieldNode<?> node)
             throws XmlFieldXPathException {
+        checkXPathNotNull(xpath);
         final XPath xp = getXPath(namespaces);
         final Node selectedNode;
         try {
@@ -69,6 +71,7 @@ public class DefaultXmlFieldSelector implements XmlFieldSelector {
     @Override
     public XmlFieldNodeList selectXPathToNodeList(NamespaceMap namespaces, String xpath, XmlFieldNode<?> node)
             throws XmlFieldXPathException {
+        checkXPathNotNull(xpath);
         final XPath xp = getXPath(namespaces);
 
         final NodeList nodeList;
@@ -94,6 +97,7 @@ public class DefaultXmlFieldSelector implements XmlFieldSelector {
     @Override
     public Double selectXPathToNumber(NamespaceMap namespaces, String xpath, XmlFieldNode<?> node)
             throws XmlFieldXPathException {
+        checkXPathNotNull(xpath);
         final XPath xp = getXPath(namespaces);
         final Double value;
         try {
@@ -107,6 +111,7 @@ public class DefaultXmlFieldSelector implements XmlFieldSelector {
     @Override
     public String selectXPathToString(NamespaceMap namespaces, String xpath, XmlFieldNode<?> node)
             throws XmlFieldXPathException {
+        checkXPathNotNull(xpath);
         final XPath xp = getXPath(namespaces);
         final String value;
         try {
@@ -115,6 +120,12 @@ public class DefaultXmlFieldSelector implements XmlFieldSelector {
             throw new XmlFieldXPathException(e);
         }
         return value;
+    }
+
+    private void checkXPathNotNull(String xpath) throws XmlFieldXPathException {
+        if (xpath == null) {
+            throw new XmlFieldXPathException("The requested xpath is null");
+        }
     }
 
 }

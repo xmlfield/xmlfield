@@ -1,7 +1,9 @@
 package org.xmlfield.core.impl;
 
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
 
 import org.junit.Test;
@@ -41,6 +43,8 @@ public class DefaultXmlFieldNodeTest {
         XmlFieldNode<Node> node = parser.xmlToNode(xml);
         Node newNode = node.getNode().getFirstChild();
 
+        assertThat(node.getParentNode().getNode(), not(nullValue()));
+
         XmlFieldNode<Node> subNode = new DefaultXmlFieldNode(newNode);
         assertThat(subNode.getNodeName(), is("Cd"));
         assertThat(subNode.getParentNode().getNodeName(), is("Catalog"));
@@ -59,6 +63,12 @@ public class DefaultXmlFieldNodeTest {
         xml = "<Catalog>Empire Burlesque</Catalog>";
         node = parser.xmlToNode(xml);
         assertThat(node.getTextContent(), is("Empire Burlesque"));
+
+        xml = "<Catalog><Cd><Title>Empire Burlesque</Title><Artist>Bob Dylan</Artist><Country>USA</Country><Company>Columbia</Company><Price>10.90</Price><Year>1985</Year></Cd><Cd><Title>Hide your heart</Title><Artist>Bonnie Tyler</Artist><Country>UK</Country><Company>CBS Records</Company><Price>9.90</Price><Year>1988</Year></Cd><Cd><Title>Greatest Hits</Title><Artist>Dolly Parton</Artist><Country>USA</Country><Company>RCA</Company><Price>9.90</Price><Year>1982</Year></Cd></Catalog>";
+        node = parser.xmlToNode(xml);
+        assertThat(
+                node.getTextContent(),
+                is("Empire BurlesqueBob DylanUSAColumbia10.901985Hide your heartBonnie TylerUKCBS Records9.901988Greatest HitsDolly PartonUSARCA9.901982"));
     }
 
     @Test
