@@ -48,7 +48,6 @@ import org.xmlfield.core.XmlFieldNodeList;
 import org.xmlfield.core.XmlFieldNodeModifier;
 import org.xmlfield.core.XmlFieldNodeModifierFactory;
 import org.xmlfield.core.XmlFieldSelector;
-import org.xmlfield.core.XmlFieldSelectorFactory;
 import org.xmlfield.core.exception.XmlFieldXPathException;
 import org.xmlfield.core.internal.XmlFieldUtils.NamespaceMap;
 import org.xmlfield.utils.XPathUtils;
@@ -398,7 +397,7 @@ public class XmlFieldInvocationHandler implements InvocationHandler {
 
         XmlFieldNodeModifier modifier = XmlFieldNodeModifierFactory.newInstance().newModifier();
 
-        XmlFieldSelector selector = XmlFieldSelectorFactory.newInstance().newSelector();
+        XmlFieldSelector selector = xmlFieldBinder.getSelector();
 
         if (value == null) {
             // Value is null. We have to delete the current value.
@@ -637,7 +636,7 @@ public class XmlFieldInvocationHandler implements InvocationHandler {
             return null;
         }
 
-        XmlFieldSelector selector = XmlFieldSelectorFactory.newInstance().newSelector();
+        XmlFieldSelector selector = xmlFieldBinder.getSelector();
 
         final Object value;
 
