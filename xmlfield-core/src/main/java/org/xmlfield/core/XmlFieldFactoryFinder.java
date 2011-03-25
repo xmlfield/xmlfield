@@ -87,6 +87,7 @@ public class XmlFieldFactoryFinder {
      *            lookup factory class
      * @return intance of the requested factory class
      */
+    @SuppressWarnings("unchecked")
     public <T> T newFactory(Class<T> factoryClass) {
         final String requestedFactoryClass = factoryClass.getName();
         if (!defaultFactoriesClass.containsKey(requestedFactoryClass)) {
@@ -101,10 +102,10 @@ public class XmlFieldFactoryFinder {
         if (implementationFactoryClass == null) {
             logger.debug("The requested factory is not overriden ({}), we return the factory class : {}",
                     requestedFactoryClass, defaultFactoriesClass.get(requestedFactoryClass));
-            return createDefaultInstance(requestedFactoryClass);
+            return (T) createDefaultInstance(requestedFactoryClass);
         }
         logger.debug("The requested factory is overriden by : {}", implementationFactoryClass);
-        return createInstance(implementationFactoryClass);
+        return (T) createInstance(implementationFactoryClass);
     }
 
     /**
@@ -143,17 +144,16 @@ public class XmlFieldFactoryFinder {
      *            string factory class
      * @return instance of the factory class
      */
-    private <T> T createDefaultInstance(String factoryClass) {
-        @SuppressWarnings("unchecked")
-        Class<T> implementationFactoryClass = (Class<T>) defaultFactoriesClass.get(factoryClass);
+    private Object createDefaultInstance(String factoryClass) {
+        Class<?> implementationFactoryClass = defaultFactoriesClass.get(factoryClass);
         if (implementationFactoryClass == null) {
             return null;
         }
         return createInstance(implementationFactoryClass);
     }
 
-    private <T> T createInstance(Class<T> clazz) {
-        T factory;
+    private Object createInstance(Class<?> clazz) {
+        Object factory;
         try {
             factory = clazz.newInstance();
         } catch (ClassCastException classCastException) {
@@ -169,9 +169,8 @@ public class XmlFieldFactoryFinder {
         return factory;
     }
 
-    private <T> T createInstance(String className) {
-        @SuppressWarnings("unchecked")
-        Class<T> implementationFactoryClass = (Class<T>) createClass(className);
+    private Object createInstance(String className) {
+        Class<?> implementationFactoryClass = createClass(className);
         if (implementationFactoryClass == null) {
             return null;
         }
