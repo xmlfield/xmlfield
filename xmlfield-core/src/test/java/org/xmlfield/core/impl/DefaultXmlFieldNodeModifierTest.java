@@ -302,19 +302,19 @@ public class DefaultXmlFieldNodeModifierTest {
     public void testRemoveChildren() throws Exception {
         // test to remove nodes with a null list
         try {
-            modifier.removeChildren(node, null);
+            modifier.removeChildren(null);
             fail("No exception thrown");
         } catch (NullPointerException e) {
             assertTrue(true);
         }
 
         // test to remove nodes with an empty list
-        modifier.removeChildren(node, new DefaultXmlFieldNodeList(new ArrayList<XmlFieldNode<?>>()));
+        modifier.removeChildren(new DefaultXmlFieldNodeList(new ArrayList<XmlFieldNode<?>>()));
         assertThat(parser.nodeToXml(node), is(xml));
 
         // test to remove nodes with a list
         XmlFieldNodeList list = selector.selectXPathToNodeList(null, "/Catalog/Cd[Year < 1986]", node);
-        modifier.removeChildren(node, list);
+        modifier.removeChildren(list);
         assertThat(
                 parser.nodeToXml(node),
                 is("<Catalog><Cd><Title>Hide your heart</Title><Artist>Bonnie Tyler</Artist><Country>UK</Country><Company>CBS Records</Company><Price>9.90</Price><Year>1988</Year></Cd></Catalog>"));

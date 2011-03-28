@@ -57,7 +57,7 @@ public class DefaultXmlFieldSelectorTest {
     @Test
     public void testSelectXPathToNode() throws Exception {
         String xpath = "/Catalog/Cd/Title[text()='Greatest Hitss']";
-        assertThat(selector.selectXPathToNode(null, xpath, node).getNode(), nullValue());
+        assertThat(selector.selectXPathToNode(null, xpath, node), nullValue());
 
         xpath = "/Catalog/Cd[1]";
         String result = "<Cd> <Title>Empire Burlesque</Title> <Artist>Bob Dylan</Artist>  <Country>USA</Country>  <Company>Columbia</Company> <Price>10.90</Price>    <Year>1985</Year></Cd>";

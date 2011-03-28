@@ -110,6 +110,6 @@ public interface XmlFieldNodeModifier {
      * @param nodesToRemove
      *            node list of children to be removed
      */
-    void removeChildren(final XmlFieldNode<?> contextNode, final XmlFieldNodeList nodesToRemove);
+    void removeChildren(final XmlFieldNodeList nodesToRemove);
 
 }

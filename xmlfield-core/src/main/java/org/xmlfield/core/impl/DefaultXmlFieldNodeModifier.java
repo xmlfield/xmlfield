@@ -142,11 +142,11 @@ public class DefaultXmlFieldNodeModifier implements XmlFieldNodeModifier {
     }
 
     @Override
-    public void removeChildren(final XmlFieldNode<?> contextNode, final XmlFieldNodeList nodesToRemove) {
+    public void removeChildren(final XmlFieldNodeList nodesToRemove) {
         checkNotNull(nodesToRemove, "nodesToRemove");
         for (int i = nodesToRemove.getLength() - 1; i >= 0; i--) {
-            Node currentNode = (Node) nodesToRemove.item(i).getNode();
-            ((Node) contextNode.getNode()).removeChild(currentNode);
+            final Node currentNode = (Node) nodesToRemove.item(i).getNode();
+            currentNode.getParentNode().removeChild(currentNode);
         }
     }
 

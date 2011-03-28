@@ -65,6 +65,9 @@ public class DefaultXmlFieldSelector implements XmlFieldSelector {
         } catch (XPathExpressionException e) {
             throw new XmlFieldXPathException(e);
         }
+        if (selectedNode == null) {
+            return null;
+        }
         return new DefaultXmlFieldNode(selectedNode);
     }
 

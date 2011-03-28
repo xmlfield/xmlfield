@@ -94,7 +94,7 @@ public class XmlFieldBinder {
             }
         }
 
-        if (subNode.getNode() == null) {
+        if (subNode == null || subNode.getNode() == null) {
             return null;
         } else {
             return loadProxy(subNode, resourceType);

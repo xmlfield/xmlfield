@@ -352,6 +352,10 @@ public class XmlFieldInvocationHandler implements InvocationHandler {
 
         final Object rawValue = getMethodDomValue("get" + methodName.substring(6));
 
+        if (rawValue instanceof XmlFieldNode<?>) {
+            return ((XmlFieldNode<?>) rawValue).getNode() == null;
+        }
+
         return rawValue == null;
     }
 
@@ -419,7 +423,7 @@ public class XmlFieldInvocationHandler implements InvocationHandler {
             } else {
                 // Remove all matching nodes.
                 XmlFieldNodeList nodesToRemove = selector.selectXPathToNodeList(namespaces, fieldXPath, node);
-                modifier.removeChildren(node, nodesToRemove);
+                modifier.removeChildren(nodesToRemove);
             }
 
         } else {
