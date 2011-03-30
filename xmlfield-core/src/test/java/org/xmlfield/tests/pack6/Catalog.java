@@ -26,22 +26,19 @@ import org.xmlfield.annotations.ResourceXPath;
 @ResourceXPath("/Catalog")
 public interface Catalog {
 
-    @FieldXPath("Cd")
-    Cd[] getCd();
+  
 
-    void setCd(Cd[] cds);
-
-    Cd addToCd();
-
-    void removeFromCd(Cd cd);
-
-    @FieldXPath("online/*")
+    @FieldXPath("goods/*")
     @ExplicitCollection({
             @Association(xpath = "Book", targetClass = Book.class),
             @Association(xpath = "Cd", targetClass = Cd.class) })
-    Object[] getOtherCd();
+    Object[] getGoods();
 
-    @Override
-    String toString();
+    
+    Object addToGoods(Class type);
+    
+    void removeFromGoods( Object object );
+    
+    void setGoods( Object[] objects);
 
 }

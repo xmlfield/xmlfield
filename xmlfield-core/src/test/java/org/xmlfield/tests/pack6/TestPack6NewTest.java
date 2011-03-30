@@ -40,26 +40,26 @@ public class TestPack6NewTest {
     @Test
     public void testGet() throws Exception {
 
-        final String xml = "<Catalog> <online> <Cd>    <Title>Black angel</Title>    <Artist>Savage Rose</Artist>    <Country>EU</Country>    <Company>Mega</Company>    <Price>10.90</Price>    <Year>1995</Year>  </Cd>  <Book>    <Title>Germinal</Title>    <Author>Emile Zola</Author>    <Price>10.20</Price>  </Book>  <Book>    <Title>La Faute de l’abbé Mouret</Title>    <Author>Emile Zola</Author>    <Price>10.20</Price>  </Book><Crayola><Color>Red</Color></Crayola>  <Cd>    <Title>One night only</Title>    <Artist>Many</Artist>    <Country>USA</Country>    <Company>Grammy</Company>    <Price>10.20</Price>    <Year>1999</Year>  </Cd>  <Book>    <Title>La Bête humaine</Title>    <Author>Emile Zola</Author>    <Price>10.20</Price>  </Book></online></Catalog>";
+        final String xml = "<Catalog> <goods> <Cd>    <Title>Black angel</Title>    <Artist>Savage Rose</Artist>    <Country>EU</Country>    <Company>Mega</Company>    <Price>10.90</Price>    <Year>1995</Year>  </Cd>  <Book>    <Title>Germinal</Title>    <Author>Emile Zola</Author>    <Price>10.20</Price>  </Book>  <Book>    <Title>La Faute de l’abbé Mouret</Title>    <Author>Emile Zola</Author>    <Price>10.20</Price>  </Book><Crayola><Color>Red</Color></Crayola>  <Cd>    <Title>One night only</Title>    <Artist>Many</Artist>    <Country>USA</Country>    <Company>Grammy</Company>    <Price>10.20</Price>    <Year>1999</Year>  </Cd>  <Book>    <Title>La Bête humaine</Title>    <Author>Emile Zola</Author>    <Price>10.20</Price>  </Book></goods></Catalog>";
 
         final XmlFieldNode<?> node = xmlToXmlFieldNode(xml);
 
         final Catalog catalog = binder.bind(node, Catalog.class);
         // the catalog get otherCd must return Cd and Book only (not a Crayola)
-        assertEquals(5, catalog.getOtherCd().length);
+        assertEquals(5, catalog.getGoods().length);
 
-        assertTrue(catalog.getOtherCd()[1] instanceof Book);
+        assertTrue(catalog.getGoods()[1] instanceof Book);
         // the second item must be the zola book germinal
-        Book livreZola = (Book) catalog.getOtherCd()[1];
+        Book livreZola = (Book) catalog.getGoods()[1];
         assertEquals("Germinal", livreZola.getTitle());
 
-        Cd oneNight = (Cd) catalog.getOtherCd()[3];
+        Cd oneNight = (Cd) catalog.getGoods()[3];
         assertEquals("One night only", oneNight.getTitle());
 
-        assertFalse(catalog.getOtherCd()[2] instanceof Cd);
+        assertFalse(catalog.getGoods()[2] instanceof Cd);
 
-        for (int i = 0; i < catalog.getOtherCd().length; i++) {
-            log.info(catalog.getOtherCd()[i].toString());
+        for (int i = 0; i < catalog.getGoods().length; i++) {
+            log.info(catalog.getGoods()[i].toString());
         }
     }
 }
