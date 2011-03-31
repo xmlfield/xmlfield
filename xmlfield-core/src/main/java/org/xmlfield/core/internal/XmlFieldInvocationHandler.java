@@ -205,6 +205,10 @@ public class XmlFieldInvocationHandler implements InvocationHandler {
 
             return doAddTo(proxy, method, method.getReturnType());
 
+        } else if(methodName.startsWith("addTo") && !noArg) {
+        	
+        	return doAddTo(proxy, method, args[0]);
+        	
         } else if (methodName.startsWith("new") && noArg) {
             Object presentObject = doGet(methodName);
             if (presentObject != null) {
@@ -226,7 +230,7 @@ public class XmlFieldInvocationHandler implements InvocationHandler {
 
         return null;
     }
-
+    
     /**
      * invoque une méthode "<tt>addToXxx()</tt>".
      */
@@ -237,6 +241,42 @@ public class XmlFieldInvocationHandler implements InvocationHandler {
         return XmlFieldUtils.add(proxy, fieldXPath, type);
     }
 
+    /**
+     * invoque une méthode "<tt>addToXxx(Xxx.class)</tt>".
+     * 
+     * <p>
+     * La méthode récupère les champs FieldXPath et ExplicitCollection(avec les associations) 
+     * de la méthode "get" associée à la méthode "addTo". Elle cherche ensuite un match 
+     * entre une Association et le type d'objet à ajouter.
+     * </p>
+     *
+     */
+    private Object doAddTo(final Object proxy, final Method method, final Object objectType) throws Exception {
+
+        final String fieldXPath = getFieldXPath(method);
+        
+        final Class<?> objectClass = (Class<?>) objectType; 
+
+        Map<String, Class<?>> explicitCollectionAssociations = getExplicitCollections(method);
+        
+        Set<String> keysAssociations = explicitCollectionAssociations.keySet();
+        
+        String specificFieldXPath = "";
+        
+        for(String key : keysAssociations)
+        {
+        	if(objectClass == explicitCollectionAssociations.get(key)) {
+        		specificFieldXPath = fieldXPath.replace("*", key);
+            }
+        }
+        
+        if(StringUtils.isEmpty(specificFieldXPath)) {
+        	throw new XmlFieldXPathException("Aucune @Association du type " + objectClass.getName() + " n'a été définie.");
+        }
+        
+        return XmlFieldUtils.add(proxy, specificFieldXPath, objectClass);
+    }
+    
     /**
      * invoque la méthode "<tt>equals(Object)</tt>".
      * 

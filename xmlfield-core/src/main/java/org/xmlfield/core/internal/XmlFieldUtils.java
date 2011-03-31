@@ -521,7 +521,7 @@ public abstract class XmlFieldUtils {
      * 
      * @param method
      *            method to get the Collection
-     * @return map with an asociation of xpath name and classes
+     * @return map with an association of xpath name and classes
      */
     public static Map<String, Class<?>> getExplicitCollections(final Method method) {
 
@@ -531,24 +531,50 @@ public abstract class XmlFieldUtils {
             return null;
         }
 
-        final Annotation[] annotations = method.getAnnotations();
+        final ExplicitCollection explicitCollection = method.getAnnotation(ExplicitCollection.class);
+        
+        if (explicitCollection != null) {
 
-        for (int i = 0; i < annotations.length; i++) {
-            // looking for ExplicitCollection
-            if (annotations[i] instanceof ExplicitCollection) {
-                ExplicitCollection tmpExplicitCollection = (ExplicitCollection) annotations[i];
-                for (int j = 0; j < tmpExplicitCollection.value().length; j++) {
-                    // looking for ExplicitCollectionAssociation in a
-                    // ExplicitCollection
-                    if (tmpExplicitCollection.value()[j] != null) {
-                        Association tmpExplicitCollectionAssociation = tmpExplicitCollection.value()[j];
-                        explicitAssociations.put(tmpExplicitCollectionAssociation.xpath(),
-                                tmpExplicitCollectionAssociation.targetClass());
-                    }
-
+        	for (int j = 0; j < explicitCollection.value().length; j++) {
+                // looking for ExplicitCollectionAssociation in a ExplicitCollection
+                if (explicitCollection.value()[j] != null) {
+                    Association explicitCollectionAssociation = explicitCollection.value()[j];
+                    explicitAssociations.put(explicitCollectionAssociation.xpath(),
+                    		explicitCollectionAssociation.targetClass());
                 }
+
+            }
+
+            return explicitAssociations;
+        }
+        
+        final String methodName = method.getName();
+
+        if (methodName.startsWith("get")) {
+            return explicitAssociations;
+        }
+
+        for (final String prefix : METHOD_PREFIXES) {
+
+            if (methodName.startsWith(prefix)) {
+
+                final String methodSuffix = methodName.substring(prefix.length());
+
+                final Method getterMethod;
+
+                try {
+
+                    getterMethod = method.getDeclaringClass().getMethod("get" + methodSuffix);
+
+                } catch (final NoSuchMethodException e) {
+
+                    return null;
+                }
+
+                return getExplicitCollections(getterMethod);
             }
         }
+
         return explicitAssociations;
     }
 
@@ -768,17 +794,6 @@ public abstract class XmlFieldUtils {
             XmlFieldNodeModifier modifier = XmlFieldNodeModifierFactory.newInstance().newModifier();
             modifier.removeChild(parent, node);
         }
-    }
-
-    private static String getElementName(final Class<?> type) {
-
-        final String resourceXPath = getResourceXPath(type);
-
-        if (resourceXPath == null) {
-            throw new IllegalArgumentException("No @ResourceXPath annotation for: " + type);
-        }
-
-        return XPathUtils.getElementNameWithSelector(resourceXPath);
     }
 
     private static FieldXPath getFieldXPathAnnotation(final Method method) {

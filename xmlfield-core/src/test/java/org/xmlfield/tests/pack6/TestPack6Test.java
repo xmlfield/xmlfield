@@ -20,8 +20,9 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.xmlfield.utils.XmlUtils.xmlToNode;
 
+import java.lang.reflect.UndeclaredThrowableException;
+
 import org.apache.commons.lang.ArrayUtils;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -67,10 +68,52 @@ public class TestPack6Test {
 		}
 	}
 	
-	@Ignore
+	private String sampleXmlCatalog() {
+        return "<Catalog> " 
+        		+"  <goods> " 
+        		+"		<Cd>" 
+        		+"			<Title>Black angel</Title>" 
+        		+"			<Artist>Savage Rose</Artist>" 
+        		+"		    <Country>EU</Country>" 
+        		+"    		<Company>Mega</Company>" 
+        		+"		    <Price>10.90</Price>" 
+        		+"    		<Year>1995</Year>  " 
+        		+"		</Cd>" 
+        		+"  	<Book>" 
+        		+"    		<Title>Germinal</Title>" 
+        		+"    		<Author>Emile Zola</Author>" 
+        		+"    		<Price>10.20</Price>"
+        		+"		</Book>" 
+        		+"		<Book>" 
+        		+"    		<Title>La Faute de l’abbé Mouret</Title>" 
+        		+"    		<Author>Emile Zola</Author>" 
+        		+"    		<Price>10.20</Price>" 
+        		+"  	</Book>" 
+        		+"		<Crayola>" 
+        		+"			<Color>Red</Color>" 
+        		+"		</Crayola>" 
+        		+" 		<Cd>" 
+        		+"    		<Title>One night only</Title>" 
+        		+"    		<Artist>Many</Artist>" 
+        		+"    		<Country>USA</Country>" 
+        		+"    		<Company>Grammy</Company>" 
+        		+"    		<Price>10.20</Price>" 
+        		+"    		<Year>1999</Year>" 
+        		+"		</Cd>" 
+        		+"  	<Book>" 
+        		+"    		<Title>La Bête humaine</Title>" 
+        		+"			<Author>Emile Zola</Author>" 
+        		+"    		<Price>10.20</Price>" 
+        		+"  	</Book>" 
+        		+"	</goods>" 
+        		+"</Catalog>";
+
+    }
+
+	
 	@Test
 	public void testAddTo() throws Exception {
-		final String xml = "<Catalog> <goods> <Cd>    <Title>Black angel</Title>    <Artist>Savage Rose</Artist>    <Country>EU</Country>    <Company>Mega</Company>    <Price>10.90</Price>    <Year>1995</Year>  </Cd>  <Book>    <Title>Germinal</Title>    <Author>Emile Zola</Author>    <Price>10.20</Price>  </Book>  <Book>    <Title>La Faute de l’abbé Mouret</Title>    <Author>Emile Zola</Author>    <Price>10.20</Price>  </Book><Crayola><Color>Red</Color></Crayola>  <Cd>    <Title>One night only</Title>    <Artist>Many</Artist>    <Country>USA</Country>    <Company>Grammy</Company>    <Price>10.20</Price>    <Year>1999</Year>  </Cd>  <Book>    <Title>La Bête humaine</Title>    <Author>Emile Zola</Author>    <Price>10.20</Price>  </Book></goods></Catalog>";
+		final String xml = sampleXmlCatalog();
 		final Node node = xmlToNode(xml);
 		
 
@@ -90,10 +133,20 @@ public class TestPack6Test {
 		assertTrue( catalog.getGoods()[5] instanceof Cd);
 		assertTrue( catalog.getGoods()[6] instanceof Book);
 		
-		
 	}
 	
-	
+	@Test(expected = UndeclaredThrowableException.class)
+	public void testAddToInError() throws Exception {
+		
+		final String xml = sampleXmlCatalog();
+		final Node node = xmlToNode(xml);
+		
+		final Catalog catalog = parser.attach(node, Catalog.class);
+		assertEquals(5, catalog.getGoods().length);
+		
+		Integer classError = (Integer) catalog.addToGoods(Integer.class);
+	}
+		
 	@Test
 	public void testRemoveFrom() throws Exception {
 		
