@@ -22,7 +22,7 @@ import org.xmlfield.annotations.ResourceXPath;
  * @author Olivier Lafon <olivier.lafon@capgemini.com>
  */
 @ResourceXPath("/Cd")
-public interface Book {
+public interface Book extends CatalogElement{
     @FieldXPath("Title")
     String getTitle();
 

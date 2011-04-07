@@ -265,7 +265,7 @@ public class XmlFieldInvocationHandler implements InvocationHandler {
         
         for(String key : keysAssociations)
         {
-        	if(objectClass == explicitCollectionAssociations.get(key)) {
+        	if(objectClass.isAssignableFrom(explicitCollectionAssociations.get(key))) {
         		specificFieldXPath = fieldXPath.replace("*", key);
             }
         }

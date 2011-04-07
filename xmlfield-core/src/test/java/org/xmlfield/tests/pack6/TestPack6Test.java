@@ -125,7 +125,7 @@ public class TestPack6Test {
 		
 		assertEquals(6, catalog.getGoods().length);
 
-		Book book = (Book)catalog.addToGoods(Book.class);
+		Book book = catalog.addToGoods(Book.class);
 		book.setTitle("TestBook");
 
 		assertEquals(7, catalog.getGoods().length);
@@ -135,18 +135,6 @@ public class TestPack6Test {
 		
 	}
 	
-	@Test(expected = UndeclaredThrowableException.class)
-	public void testAddToInError() throws Exception {
-		
-		final String xml = sampleXmlCatalog();
-		final Node node = xmlToNode(xml);
-		
-		final Catalog catalog = parser.attach(node, Catalog.class);
-		assertEquals(5, catalog.getGoods().length);
-		
-		Integer classError = (Integer) catalog.addToGoods(Integer.class);
-	}
-		
 	@Test
 	public void testRemoveFrom() throws Exception {
 		

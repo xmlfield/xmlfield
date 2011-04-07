@@ -35,7 +35,7 @@ public interface Catalog {
     Object[] getGoods();
 
     
-    Object addToGoods(Class type);
+    <T extends CatalogElement>  T addToGoods(Class<T> type);
     
     void removeFromGoods( Object object );
     
