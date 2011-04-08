@@ -37,147 +37,175 @@ import org.xmlfield.utils.XmlUtils;
  */
 public class XmlFieldReaderTest {
 
-    Logger log = LoggerFactory.getLogger(XmlFieldReaderTest.class);
+	Logger log = LoggerFactory.getLogger(XmlFieldReaderTest.class);
 
-    private String sampleXml1() {
-        return "<Catalog>" //
-                + "<Cd>"
-                + "  <Title>toto</Title>"
-                + "  <Artist>Bob Dylan</Artist><Country>USA</Country>"
-                + "  <Company>Columbia</Company>" //
-                + "  <Price>10.90</Price><Year>1985</Year>"
-                + "</Cd>"
-                + "<Cd>"
-                + "   <Title>toto</Title><Artist>Bonnie Tyler</Artist><Country>UK</Country>"
-                + "   <Company>CBS Records</Company>" //
-                + "   <Price>9.90</Price><Year>1988</Year>" //
-                + "</Cd>" + //
-                "</Catalog>";
+	private String sampleXml1() {
+		return "<Catalog>" //
+				+ "<Cd>"
+				+ "  <id>64546</id>"
+				+ "  <Title>toto</Title>"
+				+ "  <Artist>Bob Dylan</Artist><Country>USA</Country>"
+				+ "  <Company>Columbia</Company>" //
+				+ "  <Price>10.90</Price><Year>1985</Year>"
+				+ "</Cd>"
+				+ "<Cd>"
+				+ "   <Title>toto</Title><Artist>Bonnie Tyler</Artist><Country>UK</Country>"
+				+ "   <Company>CBS Records</Company>" //
+				+ "   <Price>9.90</Price><Year>1988</Year>" //
+				+ "</Cd>" + //
+				"</Catalog>";
 
-    }
+	}
 
-    private String sampleXmlBuggy() {
-        return "<CatalogInvalid>" //
-                + "<Cd>"
-                + "  <Title>toto</Title>"
-                + "  <Artist>Bob Dylan</Artist><Country>USA</Country>"
-                + "  <Company>Columbia</Company>" //
-                + "  <Price>10.90</Price><Year>1985</Year>"
-                + "</Cd>"
-                + "<Cd>"
-                + "   <Title>toto</Title><Artist>Bonnie Tyler</Artist><Country>UK</Country>"
-                + "   <Company>CBS Records</Company>" //
-                + "   <Price>9.90</Price><Year>1988</Year>" //
-                + "</Cd>" + //
-                "</Catalog>";
-    }
+	private String sampleXmlBuggy() {
+		return "<CatalogInvalid>" //
+				+ "<Cd>"
+				+ "  <Title>toto</Title>"
+				+ "  <Artist>Bob Dylan</Artist><Country>USA</Country>"
+				+ "  <Company>Columbia</Company>" //
+				+ "  <Price>10.90</Price><Year>1985</Year>"
+				+ "</Cd>"
+				+ "<Cd>"
+				+ "   <Title>toto</Title><Artist>Bonnie Tyler</Artist><Country>UK</Country>"
+				+ "   <Company>CBS Records</Company>" //
+				+ "   <Price>9.90</Price><Year>1988</Year>" //
+				+ "</Cd>" + //
+				"</Catalog>";
+	}
 
-    private String sampleXmlWrongEntity() {
-        return "<Invalid>" //
-                + "<Cd>"
-                + "  <Title>toto</Title>"
-                + "  <Artist>Bob Dylan</Artist><Country>USA</Country>"
-                + "  <Company>Columbia</Company>" //
-                + "  <Price>10.90</Price><Year>1985</Year>"
-                + "</Cd>"
-                + "<Cd>"
-                + "   <Title>toto</Title><Artist>Bonnie Tyler</Artist><Country>UK</Country>"
-                + "   <Company>CBS Records</Company>" //
-                + "   <Price>9.90</Price><Year>1988</Year>" //
-                + "</Cd>" + //
-                "</Invalid>";
-    }
+	private String sampleXmlWrongEntity() {
+		return "<Invalid>" //
+				+ "<Cd>"
+				+ "  <Title>toto</Title>"
+				+ "  <Artist>Bob Dylan</Artist><Country>USA</Country>"
+				+ "  <Company>Columbia</Company>" //
+				+ "  <Price>10.90</Price><Year>1985</Year>"
+				+ "</Cd>"
+				+ "<Cd>"
+				+ "   <Title>toto</Title><Artist>Bonnie Tyler</Artist><Country>UK</Country>"
+				+ "   <Company>CBS Records</Company>" //
+				+ "   <Price>9.90</Price><Year>1988</Year>" //
+				+ "</Cd>" + //
+				"</Invalid>";
+	}
 
-    @Test
-    public void testAttachReadOnly() throws Exception {
-        XmlFieldReader reader = new XmlFieldReader();
-        Catalog catalog = reader.attachReadOnly(sampleXml1(), Catalog.class);
-        assertNotNull(catalog);
-    }
+	@Test
+	public void testAttachReadOnly() throws Exception {
+		XmlFieldReader reader = new XmlFieldReader();
+		Catalog catalog = reader.attachReadOnly(sampleXml1(), Catalog.class);
+		assertNotNull(catalog);
+	}
 
-    /**
-     * Check launched exceptions for buggy xml.
-     */
-    @Test(expected = SAXParseException.class)
-    public void testAttachReadOnlyInvalidXml() throws Exception {
-        XmlFieldReader reader = new XmlFieldReader();
-        Catalog catalog = reader.attachReadOnly(sampleXmlBuggy(), Catalog.class);
-        assertNotNull(catalog);
-    }
+	/**
+	 * Check launched exceptions for buggy xml.
+	 */
+	@Test(expected = SAXParseException.class)
+	public void testAttachReadOnlyInvalidXml() throws Exception {
+		XmlFieldReader reader = new XmlFieldReader();
+		Catalog catalog = reader
+				.attachReadOnly(sampleXmlBuggy(), Catalog.class);
+		assertNotNull(catalog);
+	}
 
-    /**
-     * Test null returned for non matching xml and type.
-     */
-    @Test
-    public void testAttachReadOnlyWrongEntityXml() throws Exception {
-        XmlFieldReader reader = new XmlFieldReader();
-        Catalog catalog = reader.attachReadOnly(sampleXmlWrongEntity(), Catalog.class);
-        assertNull(catalog);
-    }
+	/**
+	 * Test null returned for non matching xml and type.
+	 */
+	@Test
+	public void testAttachReadOnlyWrongEntityXml() throws Exception {
+		XmlFieldReader reader = new XmlFieldReader();
+		Catalog catalog = reader.attachReadOnly(sampleXmlWrongEntity(),
+				Catalog.class);
+		assertNull(catalog);
+	}
 
-    @Test
-    public void testGetNodeFromInterface() throws Exception {
-        XmlFieldReader reader = new XmlFieldReader();
-        Catalog catalog = reader.attachReadOnly(sampleXml1(), Catalog.class);
+	@Test
+	public void testGetNodeFromInterface() throws Exception {
+		XmlFieldReader reader = new XmlFieldReader();
+		Catalog catalog = reader.attachReadOnly(sampleXml1(), Catalog.class);
 
-        assertNotNull(catalog);
+		assertNotNull(catalog);
 
-        Node node = XmlUtils.getNode(catalog);
-        String xml = XmlUtils.nodeToXml(node);
+		Node node = XmlUtils.getNode(catalog);
+		String xml = XmlUtils.nodeToXml(node);
 
-        assertEquals(
-                "<Catalog><Cd>  <Title>toto</Title>  <Artist>Bob Dylan</Artist><Country>USA</Country>  <Company>Columbia</Company>  <Price>10.90</Price><Year>1985</Year></Cd><Cd>   <Title>toto</Title><Artist>Bonnie Tyler</Artist><Country>UK</Country>   <Company>CBS Records</Company>   <Price>9.90</Price><Year>1988</Year></Cd></Catalog>",
-                xml);
-    }
+		assertEquals(
+				"<Catalog><Cd>  <id>64546</id>  <Title>toto</Title>  <Artist>Bob Dylan</Artist><Country>USA</Country>  <Company>Columbia</Company>  <Price>10.90</Price><Year>1985</Year></Cd><Cd>   <Title>toto</Title><Artist>Bonnie Tyler</Artist><Country>UK</Country>   <Company>CBS Records</Company>   <Price>9.90</Price><Year>1988</Year></Cd></Catalog>",
+				xml);
+	}
 
-    @Test
-    public void testSimple() throws Exception {
-        Map<String, String> map = XPathUtils.getElementSelectorAttributes("/cd/div[@class=\"title\"]");
+	@Test
+	public void testSimple() throws Exception {
+		Map<String, String> map = XPathUtils
+				.getElementSelectorAttributes("/cd/div[@class=\"title\"]");
 
-        assertEquals("title", map.get("class"));
-        assertEquals(1, map.size());
+		assertEquals("title", map.get("class"));
+		assertEquals(1, map.size());
 
-        map = XPathUtils.getElementSelectorAttributes("/cd/div[@class=\"title\"][@id=\'1\']");
-        assertEquals("title", map.get("class"));
-        assertEquals("1", map.get("id"));
-        assertEquals(2, map.size());
+		map = XPathUtils
+				.getElementSelectorAttributes("/cd/div[@class=\"title\"][@id=\'1\']");
+		assertEquals("title", map.get("class"));
+		assertEquals("1", map.get("id"));
+		assertEquals(2, map.size());
 
-    }
+	}
 
-    @Test
-    public void testInstantiate() throws Exception {
-        XmlFieldReader reader = new XmlFieldReader();
+	@Test
+	public void testInstantiate() throws Exception {
+		XmlFieldReader reader = new XmlFieldReader();
 
-        Catalog catalog = reader.instantiate(Catalog.class);
-        assertNotNull(catalog);
-        assertTrue(catalog.getCd().length == 0);
+		Catalog catalog = reader.instantiate(Catalog.class);
+		assertNotNull(catalog);
+		assertTrue(catalog.getCd().length == 0);
 
-        assertEquals("<Catalog/>", XmlUtils.nodeToXml(catalog));
+		assertEquals("<Catalog/>", XmlUtils.nodeToXml(catalog));
 
-        catalog.addToCd().setTitle("title");
-        catalog.addToCd().setPrice(987);
+		catalog.addToCd().setTitle("title");
+		catalog.addToCd().setPrice(987);
 
-        assertEquals("<Catalog><Cd><Title>title</Title></Cd><Cd><Price>987.0</Price></Cd></Catalog>",
-                XmlUtils.nodeToXml(catalog));
-    }
+		assertEquals(
+				"<Catalog><Cd><Title>title</Title></Cd><Cd><Price>987.0</Price></Cd></Catalog>",
+				XmlUtils.nodeToXml(catalog));
+	}
 
-    @Test
-    public void testInstantiateWithNamespaces() throws Exception {
-        XmlFieldReader reader = new XmlFieldReader();
+	@Test
+	public void testInstantiateWithNamespaces() throws Exception {
+		XmlFieldReader reader = new XmlFieldReader();
 
-        AtomCatalog catalog = reader.instantiate(AtomCatalog.class);
-        assertNotNull(catalog);
-        assertTrue(catalog.getCd().length == 0);
+		AtomCatalog catalog = reader.instantiate(AtomCatalog.class);
+		assertNotNull(catalog);
+		assertTrue(catalog.getCd().length == 0);
 
-        assertEquals("<a:entry xmlns:a=\"http://www.w3.org/2005/Atom\" xmlns:x=\"http://www.w3.org/1999/xhtml\"/>",
-                XmlUtils.nodeToXml(catalog));
+		assertEquals(
+				"<a:entry xmlns:a=\"http://www.w3.org/2005/Atom\" xmlns:x=\"http://www.w3.org/1999/xhtml\"/>",
+				XmlUtils.nodeToXml(catalog));
 
-        catalog.addToCd().setTitle("title");
-        catalog.addToCd().setPrice(987);
+		catalog.addToCd().setTitle("title");
+		catalog.addToCd().setPrice(987);
 
-        assertEquals(
-                "<a:entry xmlns:a=\"http://www.w3.org/2005/Atom\" xmlns:x=\"http://www.w3.org/1999/xhtml\">"
-                        + "<content xmlns=\"http://www.w3.org/2005/Atom\"><div xmlns=\"http://www.w3.org/1999/xhtml\"><div class=\"cd\"><span class=\"title\">title</span></div><div class=\"cd\"><span class=\"price\">987.0</span></div></div></content></a:entry>",
-                XmlUtils.nodeToXml(catalog));
-    }
+		assertEquals(
+				"<a:entry xmlns:a=\"http://www.w3.org/2005/Atom\" xmlns:x=\"http://www.w3.org/1999/xhtml\">"
+						+ "<content xmlns=\"http://www.w3.org/2005/Atom\"><div xmlns=\"http://www.w3.org/1999/xhtml\"><div class=\"cd\"><span class=\"title\">title</span></div><div class=\"cd\"><span class=\"price\">987.0</span></div></div></content></a:entry>",
+				XmlUtils.nodeToXml(catalog));
+	}
+
+	@Test
+	public void testNonPrimitiveNumbers() throws Exception {
+		XmlFieldReader binder = new XmlFieldReader();
+		Catalog catalog = binder.attachReadOnly(sampleXml1(), Catalog.class);
+		assertNotNull(catalog);
+
+		Cd cd1 = catalog.getCd()[0];
+		assertNotNull(cd1);
+		assertEquals(64546, cd1.getId().intValue());
+
+		Cd cd2 = catalog.getCd()[1];
+		assertNotNull(cd2);
+		assertNull(cd2.getId());
+
+		cd2.setId(Integer.valueOf(15646984));
+
+		assertEquals(
+				"<Cd>   <Title>toto</Title><Artist>Bonnie Tyler</Artist><Country>UK</Country>   <Company>CBS Records</Company>   <Price>9.90</Price><Year>1988</Year><id>15646984</id></Cd>",
+				XmlUtils.nodeToXml(cd2));
+	}
 }

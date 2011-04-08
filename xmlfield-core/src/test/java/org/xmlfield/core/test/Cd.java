@@ -23,6 +23,7 @@ import org.xmlfield.annotations.ResourceXPath;
  */
 @ResourceXPath("/Cd")
 public interface Cd {
+	
 	@FieldXPath("Title")
 	String getTitle();
 
@@ -32,4 +33,9 @@ public interface Cd {
 	float getPrice();
 
 	void setPrice(float price);
+	
+	@FieldXPath("id")
+	Integer getId();
+	
+	void setId(Integer id);
 }
