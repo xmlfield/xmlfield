@@ -16,6 +16,7 @@
 package org.xmlfield.core.exception;
 
 /**
+ * General exception.
  * 
  * @author Guillaume Mary <guillaume.mary@capgemini.com>
  * 

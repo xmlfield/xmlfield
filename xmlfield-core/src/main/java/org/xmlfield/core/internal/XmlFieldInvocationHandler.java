@@ -27,6 +27,7 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -48,13 +49,14 @@ import org.xmlfield.core.XmlFieldNodeList;
 import org.xmlfield.core.XmlFieldNodeModifier;
 import org.xmlfield.core.XmlFieldNodeModifierFactory;
 import org.xmlfield.core.XmlFieldSelector;
+import org.xmlfield.core.XmlFieldSelectorFactory;
+import org.xmlfield.core.exception.XmlFieldTechnicalException;
 import org.xmlfield.core.exception.XmlFieldXPathException;
 import org.xmlfield.core.internal.XmlFieldUtils.NamespaceMap;
 import org.xmlfield.utils.XPathUtils;
 
 /**
- * l'objet {@link InvocationHandler} à utiliser sur les proxies chargés à la
- * lecture des nœuds XML.
+ * l'objet {@link InvocationHandler} à utiliser sur les proxies chargés à la lecture des nœuds XML.
  * 
  * @author David Andrianavalontsalama
  * @author Nicolas Richeton <nicolas.richeton@capgemini.com>
@@ -62,1054 +64,1079 @@ import org.xmlfield.utils.XPathUtils;
  */
 public class XmlFieldInvocationHandler implements InvocationHandler {
 
-	private static final Logger logger = LoggerFactory
-			.getLogger(XmlFieldInvocationHandler.class);
+    private static final Logger logger = LoggerFactory.getLogger(XmlFieldInvocationHandler.class);
 
-	private final Set<String> methodNames = new TreeSet<String>();
+    private final Map<String, Object> cache = new HashMap<String, Object>();
 
-	private final NamespaceMap namespaces;
+    private final Set<String> methodNames = new TreeSet<String>();
 
-	private final XmlFieldNode<?> node;
+    private final NamespaceMap namespaces;
 
-	private final Class<?> type;
+    private final XmlFieldNode<?> node;
 
-	private final XmlFieldBinder xmlFieldBinder;
+    private final Class<?> type;
 
-	/**
-	 * constructeur, qui dit ce que doit renvoyer chaque méthode <em>getter</em>
-	 * .
-	 * 
-	 * @param xmlFieldBinder
-	 *            l'objet reader, qui permet notamment de récupérer des
-	 *            sous-champs.
-	 * @param type
-	 *            le type de l'objet Java.
-	 * @param node
-	 *            le nœud de l'objet Java.
-	 */
-	public XmlFieldInvocationHandler(final XmlFieldBinder xmlFieldBinder,
-			final XmlFieldNode<?> node, final Class<?> type) {
+    private final XmlFieldBinder xmlFieldBinder;
 
-		this.xmlFieldBinder = checkNotNull(xmlFieldBinder, "xmlFieldBinder");
-		this.node = checkNotNull(node, "node");
-		this.type = checkNotNull(type, "type");
-		this.namespaces = getResourceNamespaces(type);
+    /**
+     * constructeur, qui dit ce que doit renvoyer chaque méthode <em>getter</em> .
+     * 
+     * @param xmlFieldBinder
+     *            l'objet reader, qui permet notamment de récupérer des sous-champs.
+     * @param type
+     *            le type de l'objet Java.
+     * @param node
+     *            le nœud de l'objet Java.
+     */
+    public XmlFieldInvocationHandler(final XmlFieldBinder xmlFieldBinder, final XmlFieldNode<?> node,
+            final Class<?> type) {
 
-		for (final Method method : type.getMethods()) {
+        this.xmlFieldBinder = checkNotNull(xmlFieldBinder, "xmlFieldBinder");
+        this.node = checkNotNull(node, "node");
+        this.type = checkNotNull(type, "type");
+        this.namespaces = getResourceNamespaces(type);
 
-			final String methodName = method.getName();
+        for (final Method method : type.getMethods()) {
 
-			if (method.isAnnotationPresent(FieldXPath.class)
-					&& isMethodNameGetter(methodName)) {
+            final String methodName = method.getName();
 
-				final Class<?>[] paramTypes = method.getParameterTypes();
+            if (method.isAnnotationPresent(FieldXPath.class) && isMethodNameGetter(methodName)) {
 
-				if (paramTypes == null || paramTypes.length == 0) {
+                final Class<?>[] paramTypes = method.getParameterTypes();
 
-					methodNames.add(methodName);
-				}
-			}
-		}
-	}
+                if (paramTypes == null || paramTypes.length == 0) {
 
-	/**
-	 * vérifie qu'un type réel est compatible avec un type déclaré.
-	 */
-	private static boolean isCompatible(final Class<?> realType,
-			final Class<?> declaredType) {
+                    methodNames.add(methodName);
+                }
+            }
+        }
+    }
 
-		if (declaredType.isAssignableFrom(realType)) {
+    /**
+     * vérifie qu'un type réel est compatible avec un type déclaré.
+     */
+    private static boolean isCompatible(final Class<?> realType, final Class<?> declaredType) {
 
-			return true;
-		}
+        if (declaredType.isAssignableFrom(realType)) {
 
-		if (declaredType.isPrimitive()) {
+            return true;
+        }
 
-			// TODO : voir si on peut faire mieux
+        if (declaredType.isPrimitive()) {
 
-			final Field primitiveTypeField;
+            // TODO : voir si on peut faire mieux
 
-			try {
+            final Field primitiveTypeField;
 
-				primitiveTypeField = realType.getField("TYPE");
+            try {
 
-			} catch (final NoSuchFieldException e) {
+                primitiveTypeField = realType.getField("TYPE");
 
-				return false;
-			}
+            } catch (final NoSuchFieldException e) {
 
-			final int modifiers = primitiveTypeField.getModifiers();
+                return false;
+            }
 
-			if (!Modifier.isStatic(modifiers) || !Modifier.isFinal(modifiers)
-					|| !Modifier.isPublic(modifiers)) {
+            final int modifiers = primitiveTypeField.getModifiers();
 
-				return false;
-			}
+            if (!Modifier.isStatic(modifiers) || !Modifier.isFinal(modifiers) || !Modifier.isPublic(modifiers)) {
 
-			final Object primitiveType;
+                return false;
+            }
 
-			try {
+            final Object primitiveType;
 
-				primitiveType = primitiveTypeField.get(null);
+            try {
 
-			} catch (final IllegalAccessException e) {
+                primitiveType = primitiveTypeField.get(null);
 
-				return false;
-			}
+            } catch (final IllegalAccessException e) {
 
-			return declaredType.equals(primitiveType);
-		}
+                return false;
+            }
 
-		return false;
-	}
+            return declaredType.equals(primitiveType);
+        }
 
-	/**
-	 * vérifie qu'un nom de méthode est un nom de getter, en <tt>"getXxx()"</tt>
-	 * , <tt>"hasXxx()"</tt> ou <tt>"isXxx()"</tt>, mais pas
-	 * <tt>"isNullXxx()"</tt>.
-	 */
-	private static boolean isMethodNameGetter(final String methodName) {
+        return false;
+    }
 
-		return methodName.startsWith("get")
-				|| methodName.startsWith("has")
-				|| (methodName.startsWith("is") && !methodName
-						.startsWith("isNull"));
-	}
+    /**
+     * vérifie qu'un nom de méthode est un nom de getter, en <tt>"getXxx()"</tt> , <tt>"hasXxx()"</tt> ou
+     * <tt>"isXxx()"</tt>, mais pas <tt>"isNullXxx()"</tt>.
+     */
+    private static boolean isMethodNameGetter(final String methodName) {
 
-	public XmlFieldNode<?> getNode() {
-		return node;
-	}
+        return methodName.startsWith("get") || methodName.startsWith("has")
+                || (methodName.startsWith("is") && !methodName.startsWith("isNull"));
+    }
 
-	@Override
-	public Object invoke(final Object proxy, final Method method,
-			final Object[] args) throws Throwable {
+    public XmlFieldNode<?> getNode() {
+        return node;
+    }
 
-		final String methodName = method.getName();
+    @Override
+    public Object invoke(final Object proxy, final Method method, final Object[] args) throws Throwable {
 
-		final boolean noArg = (args == null) || args.length == 0;
+        final String methodName = method.getName();
 
-		if ("toString".equals(methodName) && noArg) {
+        final boolean noArg = (args == null) || args.length == 0;
 
-			return doToString();
+        if ("toString".equals(methodName) && noArg) {
 
-		} else if ("hashCode".equals(methodName) && noArg) {
+            return doToString();
 
-			return doHashCode();
+        } else if ("hashCode".equals(methodName) && noArg) {
 
-		} else if ("equals".equals(methodName) && !noArg && args.length == 1) {
+            return doHashCode();
 
-			return doEquals(proxy, args[0]);
+        } else if ("equals".equals(methodName) && !noArg && args.length == 1) {
 
-		} else if ("toNode".equals(methodName) && noArg) {
+            return doEquals(proxy, args[0]);
 
-			return node;
+        } else if ("toNode".equals(methodName) && noArg) {
 
-		} else if (isMethodNameGetter(methodName) && noArg) {
+            return node;
 
-			return doGet(methodName);
+        } else if (isMethodNameGetter(methodName) && noArg) {
 
-		} else if (methodName.startsWith("set") && !noArg && args.length == 1) {
+            return doGet(methodName);
 
-			return doSet(method, args[0]);
+        } else if (methodName.startsWith("set") && !noArg && args.length == 1) {
 
-		} else if (methodName.startsWith("addTo") && noArg) {
+            return doSet(method, args[0]);
 
-			return doAddTo(proxy, method, method.getReturnType());
+        } else if (methodName.startsWith("addTo") && noArg) {
 
-		} else if (methodName.startsWith("addTo") && !noArg) {
+            return doAddTo(proxy, method, method.getReturnType());
 
-			return doAddTo(proxy, method, args[0]);
+        } else if (methodName.startsWith("addTo") && !noArg) {
 
-		} else if (methodName.startsWith("new") && noArg) {
-			Object presentObject = doGet(methodName);
-			if (presentObject != null) {
-				return presentObject;
-			}
-			return doNew(proxy, method, method.getReturnType());
+            return doAddTo(proxy, method, args[0]);
 
-		} else if (methodName.startsWith("isNull") && noArg) {
+        } else if (methodName.startsWith("new") && noArg) {
+            Object presentObject = doGet(methodName);
+            if (presentObject != null) {
+                return presentObject;
+            }
+            return doNew(proxy, method, method.getReturnType());
 
-			return doIsNull(methodName);
+        } else if (methodName.startsWith("isNull") && noArg) {
 
-		} else if (methodName.startsWith("sizeOf") && noArg) {
+            return doIsNull(methodName);
 
-			return doSizeOf(methodName);
-		} else if (methodName.startsWith("removeFrom") && args.length == 1) {
+        } else if (methodName.startsWith("sizeOf") && noArg) {
 
-			return doRemoveFrom(method, args[0]);
-		}
+            return doSizeOf(methodName);
+        } else if (methodName.startsWith("removeFrom") && args.length == 1) {
 
-		return null;
-	}
+            return doRemoveFrom(method, args[0]);
+        }
 
-	/**
-	 * invoque une méthode "<tt>addToXxx()</tt>".
-	 */
-	private Object doAddTo(final Object proxy, final Method method,
-			final Class<?> type) throws Exception {
+        return null;
+    }
 
-		final String fieldXPath = getFieldXPath(method);
+    /**
+     * Is there a value in cache associated to the specified invoked method?
+     * 
+     * @param methodName
+     *            invoked method name.
+     * @return <code>true</code> if a value exists, <code>false</code> otherwise
+     */
+    private boolean cacheExists(final String methodName) {
+        return cache.containsKey(getCacheKey(methodName));
+    }
 
-		return XmlFieldUtils.add(proxy, fieldXPath, type);
-	}
+    /**
+     * invoque une méthode "<tt>addToXxx()</tt>".
+     */
+    private Object doAddTo(final Object proxy, final Method method, final Class<?> type) throws Exception {
+        removeFromCache(method);
 
-	/**
-	 * invoque une méthode "<tt>addToXxx(Xxx.class)</tt>".
-	 * 
-	 * <p>
-	 * La méthode récupère les champs FieldXPath et ExplicitCollection(avec les
-	 * associations) de la méthode "get" associée à la méthode "addTo". Elle
-	 * cherche ensuite un match entre une Association et le type d'objet à
-	 * ajouter.
-	 * </p>
-	 * 
-	 */
-	private Object doAddTo(final Object proxy, final Method method,
-			final Object objectType) throws Exception {
+        final String fieldXPath = getFieldXPath(method);
 
-		final String fieldXPath = getFieldXPath(method);
+        return XmlFieldUtils.add(proxy, fieldXPath, type);
+    }
 
-		final Class<?> objectClass = (Class<?>) objectType;
+    /**
+     * invoque une méthode "<tt>addToXxx(Xxx.class)</tt>".
+     * 
+     * <p>
+     * La méthode récupère les champs FieldXPath et ExplicitCollection(avec les associations) de la méthode "get"
+     * associée à la méthode "addTo". Elle cherche ensuite un match entre une Association et le type d'objet à ajouter.
+     * </p>
+     * 
+     */
+    private Object doAddTo(final Object proxy, final Method method, final Object objectType) throws Exception {
+        removeFromCache(method);
 
-		Map<String, Class<?>> explicitCollectionAssociations = getExplicitCollections(method);
+        final String fieldXPath = getFieldXPath(method);
 
-		Set<String> keysAssociations = explicitCollectionAssociations.keySet();
+        final Class<?> objectClass = (Class<?>) objectType;
 
-		String specificFieldXPath = "";
+        Map<String, Class<?>> explicitCollectionAssociations = getExplicitCollections(method);
 
-		for (String key : keysAssociations) {
-			if (objectClass.isAssignableFrom(explicitCollectionAssociations
-					.get(key))) {
-				specificFieldXPath = fieldXPath.replace("*", key);
-			}
-		}
+        Set<String> keysAssociations = explicitCollectionAssociations.keySet();
 
-		if (StringUtils.isEmpty(specificFieldXPath)) {
-			throw new XmlFieldXPathException("Aucune @Association du type "
-					+ objectClass.getName() + " n'a été définie.");
-		}
+        String specificFieldXPath = "";
 
-		return XmlFieldUtils.add(proxy, specificFieldXPath, objectClass);
-	}
+        for (String key : keysAssociations) {
+            if (objectClass.isAssignableFrom(explicitCollectionAssociations.get(key))) {
+                specificFieldXPath = fieldXPath.replace("*", key);
+            }
+        }
 
-	/**
-	 * invoque la méthode "<tt>equals(Object)</tt>".
-	 * 
-	 * @throws XmlFieldXPathException
-	 */
-	private Object doEquals(final Object proxy, final Object ob)
-			throws IllegalAccessException, InvocationTargetException,
-			NoSuchMethodException, XmlFieldXPathException {
+        if (StringUtils.isEmpty(specificFieldXPath)) {
+            throw new XmlFieldXPathException("Aucune @Association du type " + objectClass.getName()
+                    + " n'a été définie.");
+        }
 
-		if (ob == null) {
-			return false;
-		}
+        return XmlFieldUtils.add(proxy, specificFieldXPath, objectClass);
+    }
 
-		final Class<?> proxyClass = proxy.getClass();
+    /**
+     * invoque la méthode "<tt>equals(Object)</tt>".
+     * 
+     * @throws XmlFieldXPathException
+     */
+    private Object doEquals(final Object proxy, final Object ob) throws IllegalAccessException,
+            InvocationTargetException, NoSuchMethodException, XmlFieldXPathException {
 
-		final Class<?> obClass = ob.getClass();
+        if (ob == null) {
+            return false;
+        }
 
-		if (!proxyClass.equals(obClass)) {
-			return false;
-		}
+        final Class<?> proxyClass = proxy.getClass();
 
-		for (final String methodName : methodNames) {
+        final Class<?> obClass = ob.getClass();
 
-			if (!isMethodNameGetter(methodName)) {
+        if (!proxyClass.equals(obClass)) {
+            return false;
+        }
 
-				continue;
-			}
+        for (final String methodName : methodNames) {
 
-			final Object value = getMethodValue(methodName);
+            if (!isMethodNameGetter(methodName)) {
 
-			final Object obValue = obClass.getMethod(methodName).invoke(ob);
+                continue;
+            }
 
-			if (value == null && obValue == null) {
-				continue;
-			}
+            final Object value = getMethodValue(methodName);
 
-			if (value == null || obValue == null) {
-				return false;
-			}
+            final Object obValue = obClass.getMethod(methodName).invoke(ob);
 
-			if (!value.equals(obValue)) {
-				return false;
-			}
-		}
+            if (value == null && obValue == null) {
+                continue;
+            }
 
-		return true;
-	}
+            if (value == null || obValue == null) {
+                return false;
+            }
 
-	/**
-	 * invoque une méthode "<tt>getXxx()</tt>".
-	 * 
-	 * @throws XmlFieldXPathException
-	 */
-	private Object doGet(final String methodName) throws NoSuchMethodException,
-			XmlFieldXPathException {
+            if (!value.equals(obValue)) {
+                return false;
+            }
+        }
 
-		final Object value = getMethodValue(methodName);
+        return true;
+    }
 
-		if (value == null) {
+    /**
+     * invoque une méthode "<tt>getXxx()</tt>".
+     * 
+     * @throws XmlFieldXPathException
+     */
+    private Object doGet(final String methodName) throws NoSuchMethodException, XmlFieldXPathException {
+        if (cacheExists(methodName)) {
+            return getFromCache(methodName);
+        }
 
-			return null;
-		}
+        final Object value = getMethodValue(methodName);
 
-		final Class<?> returnType = type.getMethod(methodName).getReturnType();
+        if (value == null) {
+            setIntoCache(methodName, value);
+            return null;
+        }
 
-		final Class<? extends Object> valueClass = value.getClass();
+        final Class<?> returnType = type.getMethod(methodName).getReturnType();
 
-		if (!isCompatible(valueClass, returnType)) {
+        final Class<? extends Object> valueClass = value.getClass();
 
-			throw new RuntimeException("Expected: " + returnType.getName()
-					+ " on method " + methodName
-					+ "(), but stored value has type: " + valueClass.getName()
-					+ " for class: " + type.getName());
-		}
+        if (!isCompatible(valueClass, returnType)) {
 
-		return value;
-	}
+            throw new RuntimeException("Expected: " + returnType.getName() + " on method " + methodName
+                    + "(), but stored value has type: " + valueClass.getName() + " for class: " + type.getName());
+        }
+        setIntoCache(methodName, value);
+        return value;
+    }
 
-	/**
-	 * invoque la méthode "<tt>hashCode()</tt>".
-	 * 
-	 * @throws XmlFieldXPathException
-	 */
-	private Object doHashCode() throws XmlFieldXPathException {
-		int hash = 0;
+    /**
+     * invoque la méthode "<tt>hashCode()</tt>".
+     * 
+     * @throws XmlFieldXPathException
+     */
+    private Object doHashCode() throws XmlFieldXPathException {
+        int hash = 0;
 
-		for (final String methodName : methodNames) {
+        for (final String methodName : methodNames) {
 
-			if (!isMethodNameGetter(methodName)) {
+            if (!isMethodNameGetter(methodName)) {
 
-				continue;
-			}
+                continue;
+            }
 
-			final Object value = getMethodValue(methodName);
+            final Object value = getMethodValue(methodName);
 
-			hash *= 5;
+            hash *= 5;
 
-			hash += methodName.hashCode();
+            hash += methodName.hashCode();
 
-			hash *= 3;
+            hash *= 3;
 
-			if (value != null) {
+            if (value != null) {
 
-				hash += value.hashCode();
-			}
-		}
+                hash += value.hashCode();
+            }
+        }
 
-		return hash;
-	}
+        return hash;
+    }
 
-	/**
-	 * invoque une méthode "<tt>isNullXxx()</tt>".
-	 * 
-	 * @throws XmlFieldXPathException
-	 */
-	private Object doIsNull(final String methodName)
-			throws XmlFieldXPathException {
+    /**
+     * invoque une méthode "<tt>isNullXxx()</tt>".
+     * 
+     * @throws XmlFieldXPathException
+     */
+    private Object doIsNull(final String methodName) throws XmlFieldXPathException {
+        if (cacheExists(methodName)) {
+            return getFromCache(methodName);
+        }
 
-		final Object rawValue = getMethodDomValue("get"
-				+ methodName.substring(6));
+        final Object rawValue = getMethodDomValue("get" + methodName.substring(6));
 
-		if (rawValue instanceof XmlFieldNode<?>) {
-			return ((XmlFieldNode<?>) rawValue).getNode() == null;
-		}
+        final Boolean isNull;
+        if (rawValue instanceof XmlFieldNode<?>) {
+            isNull = ((XmlFieldNode<?>) rawValue).getNode() == null;
+            setIntoCache(methodName, isNull);
+            return isNull;
+        }
+        isNull = rawValue == null;
+        setIntoCache(methodName, isNull);
+        return isNull;
+    }
 
-		return rawValue == null;
-	}
+    /**
+     * invoque une méthode "<tt>addToXxx()</tt>".
+     */
+    private Object doNew(final Object proxy, final Method method, final Class<?> type) throws Exception {
+        removeFromCache(method);
 
-	/**
-	 * invoque une méthode "<tt>addToXxx()</tt>".
-	 */
-	private Object doNew(final Object proxy, final Method method,
-			final Class<?> type) throws Exception {
+        final String fieldXPath = getFieldXPath(method);
 
-		final String fieldXPath = getFieldXPath(method);
+        return XmlFieldUtils.add(proxy, fieldXPath, type);
+    }
 
-		return XmlFieldUtils.add(proxy, fieldXPath, type);
-	}
+    /**
+     * Remove object from xml.
+     */
+    private Object doRemoveFrom(Method method, Object obj) throws Exception {
+        removeFromCache(method);
 
-	/**
-	 * Remove object from xml.
-	 */
-	private Object doRemoveFrom(Method method, Object obj) throws Exception {
+        XmlFieldUtils.remove(obj);
 
-		XmlFieldUtils.remove(obj);
+        return null;
+    }
 
-		return null;
-	}
+    /**
+     * Invoke method "<tt>setXxx(Object obj)</tt>".
+     * <p>
+     * Behavior :
+     * <ul>
+     * <li>if obj == null -> remove node</li>
+     * <li>if obj == null -> remove node</li>
+     * 
+     * </ul>
+     * 
+     * @throws XmlFieldXPathException
+     */
+    private Object doSet(final Method method, final Object value) throws XmlFieldXPathException {
+        removeFromCache(method);
+
+        final String fieldXPath = getFieldXPath(method);
+
+        final XmlFieldNode<?> contextNode;
+
+        XmlFieldNode<?> n;
+
+        XmlFieldNodeModifier modifier = XmlFieldNodeModifierFactory.newInstance().newModifier();
+
+        XmlFieldSelector selector = XmlFieldSelectorFactory.newInstance().newSelector();
+
+        if (value == null) {
+            // Value is null. We have to delete the current value.
+            n = selector.selectXPathToNode(namespaces, fieldXPath, node);
+            if (n == null) {
+                // No node was matching the Xpath. Value is already null
+                if (logger.isDebugEnabled()) {
+                    logger.debug("value null, node null");
+                }
+            } else if (n.getNodeType() == XmlFieldNode.ATTRIBUTE_NODE) {
+                final String attributeName = n.getNodeName();
+                n = node;
+                if (!n.hasAttributes()) {
+                    // the resource is not the node who contains the attributes
+                    String elementXPath = XPathUtils.getElementXPath(fieldXPath);
+                    n = selector.selectXPathToNode(namespaces, elementXPath, node);
+                }
+                modifier.removeAttribute(n, attributeName);
+            } else {
+                // Remove all matching nodes.
+                XmlFieldNodeList nodesToRemove = selector.selectXPathToNodeList(namespaces, fieldXPath, node);
+                modifier.removeChildren(nodesToRemove);
+            }
+
+        } else {
+            // We have to set a value.
+            // First : create all parent nodes.
+            contextNode = XmlFieldUtils.addParentNodes(node, fieldXPath, type);
+
+            // Ensure we have an array to loop on. If single item, convert to
+            // array.
+            Object[] items = null;
+            if (value instanceof Object[]) {
+                items = (Object[]) value;
+
+                if (!(items[0] instanceof INodeable)) {
+                    if (logger.isWarnEnabled()) {
+                        logger.warn("You are using "
+                                + type.getName()
+                                + "#"
+                                + method.getName()
+                                + "()"
+                                + " with an array of a Java primitive type."
+                                + " This usage is not able to ensure that additionnal data (such as org.xmlfield.tests.attribute)"
+                                + " are not erased during call. Please use the corresponding xml-field type implementation instead."
+                                + " String -> XmlString for instance.");
+                    }
+                }
+            } else {
+                items = new Object[] { value };
+            }
+
+            // Get all matching nodes
+            XmlFieldNodeList nodeXmlFieldList = selector.selectXPathToNodeList(namespaces,
+                    XPathUtils.getElementNameWithSelector(fieldXPath), contextNode);
+
+            // Loop on new values
+            XmlFieldNode<?> currentNode = null;
+            Object currentValue = null;
+            String stringValue = null;
+
+            // Loop 1 : reorder
+            XmlFieldNode<?> valueNode = null;
+            boolean listUpdated = false;
+            for (int i = 0; i < items.length; i++) {
+                // Get current existing node and value.
+                // Note: currentNode may be null, node will be created.
+                currentNode = nodeXmlFieldList.item(i);
+                currentValue = items[i];
+
+                if (currentValue instanceof INodeable) {
+                    valueNode = ((INodeable<?>) currentValue).toNode();
+                    modifier.insertBefore(valueNode.getParentNode(), valueNode, currentNode);
+                    listUpdated = true;
+                }
+            }
 
-	/**
-	 * Invoke method "<tt>setXxx(Object obj)</tt>".
-	 * <p>
-	 * Behavior :
-	 * <ul>
-	 * <li>if obj == null -> remove node</li>
-	 * <li>if obj == null -> remove node</li>
-	 * 
-	 * </ul>
-	 * 
-	 * @throws XmlFieldXPathException
-	 */
-	private Object doSet(final Method method, final Object value)
-			throws XmlFieldXPathException {
+            // Update list if necessary
+            if (listUpdated) {
+                nodeXmlFieldList = selector.selectXPathToNodeList(namespaces,
+                        XPathUtils.getElementNameWithSelector(fieldXPath), contextNode);
+            }
 
-		final String fieldXPath = getFieldXPath(method);
+            // Java bug : we have to call item() once with a valid node to make
+            // this method work again.
+            // see : http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6333993
+            // currentNode = nodeList.item(0);
 
-		final XmlFieldNode<?> contextNode;
+            // Loop 2 :Assign values
+            for (int i = 0; i < items.length; i++) {
+                // Get current existing node and value.
+                // Note: currentNode may be null, node will be created.
+                currentNode = nodeXmlFieldList.item(i);
+                currentValue = items[i];
 
-		XmlFieldNode<?> n;
+                if (currentValue instanceof INodeable) {
+                    // Values are already set by setter methods
+                    continue;
+                }
 
-		XmlFieldNodeModifier modifier = XmlFieldNodeModifierFactory
-				.newInstance().newModifier();
+                if (currentValue instanceof DateTime) {
 
-		XmlFieldSelector selector = xmlFieldBinder.getSelector();
+                    final String pattern = getFieldFormat(method);
 
-		if (value == null) {
-			// Value is null. We have to delete the current value.
-			n = selector.selectXPathToNode(namespaces, fieldXPath, node);
-			if (n == null) {
-				// No node was matching the Xpath. Value is already null
-				if (logger.isDebugEnabled()) {
-					logger.debug("value null, node null");
-				}
-			} else if (n.getNodeType() == XmlFieldNode.ATTRIBUTE_NODE) {
-				final String attributeName = n.getNodeName();
-				n = node;
-				if (!n.hasAttributes()) {
-					// the resource is not the node who contains the attributes
-					String elementXPath = XPathUtils
-							.getElementXPath(fieldXPath);
-					n = selector.selectXPathToNode(namespaces, elementXPath,
-							node);
-				}
-				modifier.removeAttribute(n, attributeName);
-			} else {
-				// Remove all matching nodes.
-				XmlFieldNodeList nodesToRemove = selector
-						.selectXPathToNodeList(namespaces, fieldXPath, node);
-				modifier.removeChildren(nodesToRemove);
-			}
-
-		} else {
-			// We have to set a value.
-			// First : create all parent nodes.
-			contextNode = XmlFieldUtils.addParentNodes(node, fieldXPath, type);
-
-			// Ensure we have an array to loop on. If single item, convert to
-			// array.
-			Object[] items = null;
-			if (value instanceof Object[]) {
-				items = (Object[]) value;
-
-				if (!(items[0] instanceof INodeable)) {
-					if (logger.isWarnEnabled()) {
-						logger.warn("You are using "
-								+ type.getName()
-								+ "#"
-								+ method.getName()
-								+ "()"
-								+ " with an array of a Java primitive type."
-								+ " This usage is not able to ensure that additionnal data (such as org.xmlfield.tests.attribute)"
-								+ " are not erased during call. Please use the corresponding xml-field type implementation instead."
-								+ " String -> XmlString for instance.");
-					}
-				}
-			} else {
-				items = new Object[] { value };
-			}
-
-			// Get all matching nodes
-			XmlFieldNodeList nodeXmlFieldList = selector.selectXPathToNodeList(
-					namespaces,
-					XPathUtils.getElementNameWithSelector(fieldXPath),
-					contextNode);
-
-			// Loop on new values
-			XmlFieldNode<?> currentNode = null;
-			Object currentValue = null;
-			String stringValue = null;
-
-			// Loop 1 : reorder
-			XmlFieldNode<?> valueNode = null;
-			boolean listUpdated = false;
-			for (int i = 0; i < items.length; i++) {
-				// Get current existing node and value.
-				// Note: currentNode may be null, node will be created.
-				currentNode = nodeXmlFieldList.item(i);
-				currentValue = items[i];
-
-				if (currentValue instanceof INodeable) {
-					valueNode = ((INodeable<?>) currentValue).toNode();
-					modifier.insertBefore(valueNode.getParentNode(), valueNode,
-							currentNode);
-					listUpdated = true;
-				}
-			}
+                    DateTimeFormatter formatter = ISODateTimeFormat.timeParser();
+                    if (pattern != null) {
+                        formatter = DateTimeFormat.forPattern(pattern).withChronology(ISOChronology.getInstanceUTC());
+                    }
+                    final DateTime d = (DateTime) currentValue;
+                    stringValue = d.toString(formatter);
+                } else {
+                    stringValue = currentValue.toString();
+                }
 
-			// Update list if necessary
-			if (listUpdated) {
-				nodeXmlFieldList = selector.selectXPathToNodeList(namespaces,
-						XPathUtils.getElementNameWithSelector(fieldXPath),
-						contextNode);
-			}
+                if (currentNode == null) {
+                    // Node didn't exist : create new node
+                    XmlFieldUtils.createComplexElement(namespaces, contextNode,
+                            XPathUtils.getElementNameWithSelector(fieldXPath), stringValue);
+                } else {
+                    // Node exists : set value.
+                    currentNode.setTextContent(stringValue);
+                }
+            }
+
+            // Remove additional items
+            for (int i = items.length; i < nodeXmlFieldList.getLength(); i++) {
+                currentNode = nodeXmlFieldList.item(i);
+                modifier.removeChild(currentNode.getParentNode(), currentNode);
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * invoque une méthode "<tt>sizeOfXxx()</tt>".
+     * 
+     * @throws XmlFieldXPathException
+     */
+    private Object doSizeOf(final String methodName) throws XmlFieldXPathException {
+
+        final Object value = getMethodValue("get" + methodName.substring(6));
+
+        if (value == null) {
+
+            return 0;
+        }
+
+        if (value.getClass().isArray()) {
+
+            return ((Object[]) value).length;
+        }
+
+        return 1;
+    }
 
-			// Java bug : we have to call item() once with a valid node to make
-			// this method work again.
-			// see : http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6333993
-			// currentNode = nodeList.item(0);
+    /**
+     * invoque la méthode "<tt>toString()</tt>".
+     * 
+     * @throws XmlFieldXPathException
+     */
+    private Object doToString() throws XmlFieldXPathException {
 
-			// Loop 2 :Assign values
-			for (int i = 0; i < items.length; i++) {
-				// Get current existing node and value.
-				// Note: currentNode may be null, node will be created.
-				currentNode = nodeXmlFieldList.item(i);
-				currentValue = items[i];
+        final StringBuilder sb = new StringBuilder("{");
 
-				if (currentValue instanceof INodeable) {
-					// Values are already set by setter methods
-					continue;
-				}
+        boolean start = true;
 
-				if (currentValue instanceof DateTime) {
+        for (final String methodName : methodNames) {
 
-					final String pattern = getFieldFormat(method);
+            if (!isMethodNameGetter(methodName)) {
 
-					DateTimeFormatter formatter = ISODateTimeFormat
-							.timeParser();
-					if (pattern != null) {
-						formatter = DateTimeFormat.forPattern(pattern)
-								.withChronology(ISOChronology.getInstanceUTC());
-					}
-					final DateTime d = (DateTime) currentValue;
-					stringValue = d.toString(formatter);
-				} else {
-					stringValue = currentValue.toString();
-				}
+                continue;
+            }
 
-				if (currentNode == null) {
-					// Node didn't exist : create new node
-					XmlFieldUtils.createComplexElement(namespaces, contextNode,
-							XPathUtils.getElementNameWithSelector(fieldXPath),
-							stringValue);
-				} else {
-					// Node exists : set value.
-					currentNode.setTextContent(stringValue);
-				}
-			}
+            final Object value = getMethodValue(methodName);
 
-			// Remove additional items
-			for (int i = items.length; i < nodeXmlFieldList.getLength(); i++) {
-				currentNode = nodeXmlFieldList.item(i);
-				modifier.removeChild(currentNode.getParentNode(), currentNode);
-			}
-		}
+            if (value == null) {
 
-		return null;
-	}
+                continue;
+            }
 
-	/**
-	 * invoque une méthode "<tt>sizeOfXxx()</tt>".
-	 * 
-	 * @throws XmlFieldXPathException
-	 */
-	private Object doSizeOf(final String methodName)
-			throws XmlFieldXPathException {
+            if (start) {
 
-		final Object value = getMethodValue("get" + methodName.substring(6));
+                start = false;
 
-		if (value == null) {
+            } else {
 
-			return 0;
-		}
+                sb.append(", ");
+            }
 
-		if (value.getClass().isArray()) {
+            sb.append(Character.toLowerCase(methodName.charAt(3)));
+            sb.append(methodName.substring(4));
+            sb.append(": ");
 
-			return ((Object[]) value).length;
-		}
+            if (value.getClass().isArray()) {
+                sb.append(ArrayUtils.toString(value));
+            } else {
+                sb.append(value.toString());
+            }
+        }
 
-		return 1;
-	}
+        sb.append("}");
 
-	/**
-	 * invoque la méthode "<tt>toString()</tt>".
-	 * 
-	 * @throws XmlFieldXPathException
-	 */
-	private Object doToString() throws XmlFieldXPathException {
+        return sb.toString();
+    }
 
-		final StringBuilder sb = new StringBuilder("{");
+    /**
+     * Builds cache key from method name.<br/>
+     * Method name can be either getter, setters or others. Normalize all these names.
+     * 
+     * @param methodName
+     *            method name
+     * @return cache key
+     */
+    private String getCacheKey(final String methodName) {
+        final String[] prefixes = new String[] { "get", "set", "addTo", "removeFrom", "new", "is" };
+        for (String p : prefixes) {
+            if (methodName.startsWith(p)) {
+                return methodName.substring(p.length());
+            }
+        }
+        throw new XmlFieldTechnicalException("Methode non cacheable: " + methodName);
+    }
 
-		boolean start = true;
+    /**
+     * Retrieves a value from cache.
+     * 
+     * @param methodName
+     *            invoked method name.
+     * @return value contained in cache.
+     */
+    private Object getFromCache(final String methodName) {
+        return cache.get(getCacheKey(methodName));
+    }
 
-		for (final String methodName : methodNames) {
+    private Method getMethodByName(final String methodName) {
 
-			if (!isMethodNameGetter(methodName)) {
+        for (final Method method : type.getMethods()) {
 
-				continue;
-			}
+            if (methodName.equals(method.getName())) {
 
-			final Object value = getMethodValue(methodName);
+                final Class<?>[] paramTypes = method.getParameterTypes();
 
-			if (value == null) {
+                if (paramTypes == null || paramTypes.length == 0) {
 
-				continue;
-			}
+                    return method;
+                }
+            }
+        }
 
-			if (start) {
+        return null;
+    }
 
-				start = false;
+    private Object getMethodDomValue(final String methodName) throws XmlFieldXPathException {
 
-			} else {
+        Method method = getMethodByName(methodName);
 
-				sb.append(", ");
-			}
+        if (method == null) {
+            return null;
+        }
 
-			sb.append(Character.toLowerCase(methodName.charAt(3)));
-			sb.append(methodName.substring(4));
-			sb.append(": ");
+        final String fieldXPath = getFieldXPath(method);
 
-			if (value.getClass().isArray()) {
-				sb.append(ArrayUtils.toString(value));
-			} else {
-				sb.append(value.toString());
-			}
-		}
+        if (fieldXPath == null) {
+            return null;
+        }
 
-		sb.append("}");
+        XmlFieldSelector selector = XmlFieldSelectorFactory.newInstance().newSelector();
 
-		return sb.toString();
-	}
+        final Object value;
 
-	private Method getMethodByName(final String methodName) {
+        final Class<?> xpathType = getFieldXPathType(method);
 
-		for (final Method method : type.getMethods()) {
+        if (Number.class.equals(xpathType)) {
 
-			if (methodName.equals(method.getName())) {
+            final Double d = selector.selectXPathToNumber(namespaces, fieldXPath, node);
 
-				final Class<?>[] paramTypes = method.getParameterTypes();
+            final double v = (d == null) ? 0 : d.doubleValue();
 
-				if (paramTypes == null || paramTypes.length == 0) {
+            value = v;
 
-					return method;
-				}
-			}
-		}
+        } else if (String.class.equals(xpathType)) {
 
-		return null;
-	}
+            final String s = selector.selectXPathToString(namespaces, fieldXPath, node);
 
-	private Object getMethodDomValue(final String methodName)
-			throws XmlFieldXPathException {
+            value = s;
 
-		Method method = getMethodByName(methodName);
+        } else if (Boolean.class.equals(xpathType)) {
 
-		if (method == null) {
-			return null;
-		}
+            final Boolean b = selector.selectXPathToBoolean(namespaces, fieldXPath, node);
 
-		final String fieldXPath = getFieldXPath(method);
+            final boolean v = (b == null) ? false : b.booleanValue();
 
-		if (fieldXPath == null) {
-			return null;
-		}
+            value = v;
 
-		XmlFieldSelector selector = xmlFieldBinder.getSelector();
+        } else {
 
-		final Object value;
+            final XmlFieldNode<?> n = selector.selectXPathToNode(namespaces, fieldXPath, node);
 
-		final Class<?> xpathType = getFieldXPathType(method);
+            value = n;
+        }
 
-		if (Number.class.equals(xpathType)) {
+        return value;
+    }
 
-			final Double d = selector.selectXPathToNumber(namespaces,
-					fieldXPath, node);
+    /**
+     * récupère de façon dynamique la valeur d'un champ repéré par une expression XPath, donnée en annotation d'une
+     * méthode.
+     * 
+     * @param methodName
+     *            le nom de la méthode.
+     * @return la valeur du champ repéré par le XPath donné en annotation de la méthode, ou <tt>null</tt> si le champ
+     *         n'existe pas.
+     * @throws XmlFieldXPathException
+     */
+    private Object getMethodValue(final String methodName) throws XmlFieldXPathException {
 
-			final double v = (d == null) ? 0 : d.doubleValue();
+        final Object domValue = getMethodDomValue(methodName);
 
-			value = v;
+        final Method method = getMethodByName(methodName);
 
-		} else if (String.class.equals(xpathType)) {
+        final Class<?> fieldType = method.getReturnType();
 
-			final String s = selector.selectXPathToString(namespaces,
-					fieldXPath, node);
+        final String fieldXPath = getFieldXPath(method);
 
-			value = s;
+        // research Explicit collections
+        final Map<String, Class<?>> explicitAssociations = getExplicitCollections(method);
 
-		} else if (Boolean.class.equals(xpathType)) {
+        final Object value;
 
-			final Boolean b = selector.selectXPathToBoolean(namespaces,
-					fieldXPath, node);
+        if (String.class.equals(fieldType)) {
 
-			final boolean v = (b == null) ? false : b.booleanValue();
+            value = parseString(domValue);
 
-			value = v;
+        } else if (int.class.equals(fieldType)) {
 
-		} else {
+            value = parseInt(methodName, domValue, fieldXPath);
 
-			final XmlFieldNode<?> n = selector.selectXPathToNode(namespaces,
-					fieldXPath, node);
+        } else if (long.class.equals(fieldType)) {
 
-			value = n;
-		}
+            value = parseLong(methodName, domValue, fieldXPath);
 
-		return value;
-	}
+        } else if (short.class.equals(fieldType)) {
 
-	/**
-	 * récupère de façon dynamique la valeur d'un champ repéré par une
-	 * expression XPath, donnée en annotation d'une méthode.
-	 * 
-	 * @param methodName
-	 *            le nom de la méthode.
-	 * @return la valeur du champ repéré par le XPath donné en annotation de la
-	 *         méthode, ou <tt>null</tt> si le champ n'existe pas.
-	 * @throws XmlFieldXPathException
-	 */
-	private Object getMethodValue(final String methodName)
-			throws XmlFieldXPathException {
+            value = parseShort(methodName, domValue, fieldXPath);
 
-		final Object domValue = getMethodDomValue(methodName);
+        } else if (float.class.equals(fieldType)) {
 
-		final Method method = getMethodByName(methodName);
+            value = parseFloat(methodName, domValue, fieldXPath);
 
-		final Class<?> fieldType = method.getReturnType();
+        } else if (double.class.equals(fieldType)) {
 
-		final String fieldXPath = getFieldXPath(method);
+            value = parseDouble(methodName, domValue, fieldXPath);
 
-		// research Explicit collections
-		final Map<String, Class<?>> explicitAssociations = getExplicitCollections(method);
+        } else if (boolean.class.equals(fieldType)) {
 
-		final Object value;
+            value = parseBoolean(methodName, domValue, fieldXPath);
 
-		if (String.class.equals(fieldType)) {
+        } else if (Number.class.isAssignableFrom(fieldType)) {
 
-			value = parseString(domValue);
+            value = parseNumber(methodName, fieldType, domValue, fieldXPath);
 
-		} else if (int.class.equals(fieldType)) {
+        } else if (DateTime.class.equals(fieldType)) {
 
-			value = parseInt(methodName, domValue, fieldXPath);
+            value = parseDateTime(methodName, domValue, method, fieldXPath);
 
-		} else if (long.class.equals(fieldType)) {
+        } else if (fieldType.isArray() && explicitAssociations.size() != 0) {
+            // case of an explicit collection
+            value = xmlFieldBinder.bindToExplicitArray(fieldXPath, node, explicitAssociations);
 
-			value = parseLong(methodName, domValue, fieldXPath);
+        } else if (fieldType.isArray()) {
+            // cas nominal
+            value = xmlFieldBinder.bindToArray(fieldXPath, node, fieldType.getComponentType());
 
-		} else if (short.class.equals(fieldType)) {
+        } else if (fieldType.isEnum()) {
+            value = parseEnum(domValue, (Class<? extends Enum>) fieldType);
+        } else if (isXmlFieldInterface(fieldType)) {
+            value = xmlFieldBinder.bind(fieldXPath, node, fieldType);
 
-			value = parseShort(methodName, domValue, fieldXPath);
+        } else {
 
-		} else if (float.class.equals(fieldType)) {
+            throw new NotImplementedException("fieldType: " + type + ", method: " + method);
+        }
 
-			value = parseFloat(methodName, domValue, fieldXPath);
+        return value;
+    }
 
-		} else if (double.class.equals(fieldType)) {
+    private boolean isXmlFieldInterface(final Class<?> fieldType) {
+        return XmlFieldUtils.getResourceXPath(fieldType) != null;
+    }
 
-			value = parseDouble(methodName, domValue, fieldXPath);
+    private boolean parseBoolean(final String methodName, final Object domValue, final String fieldXPath) {
+        if (Boolean.class.isInstance(domValue)) {
+            return (Boolean) domValue;
+        }
+        if (domValue instanceof XmlFieldNode<?>) {
+            String textContent = ((XmlFieldNode<?>) domValue).getTextContent();
+            try {
+                return Boolean.parseBoolean(textContent);
+            } catch (final RuntimeException e) {
+                logger.error("Cannot parse boolean: " + textContent + //
+                        ", xpath=" + fieldXPath + ", method=" + methodName + "()");
+                logger.warn("Cannot parse boolean (details) : ", e);
+            }
+        }
 
-		} else if (boolean.class.equals(fieldType)) {
+        return false;
+    }
 
-			value = parseBoolean(methodName, domValue, fieldXPath);
+    private DateTime parseDateTime(final String methodName, final Object domValue, final Method method,
+            final String fieldXPath) {
 
-		} else if (Number.class.isAssignableFrom(fieldType)) {
+        final XmlFieldNode<?> n = (XmlFieldNode<?>) domValue;
 
-			value = parseNumber(methodName, fieldType, domValue, fieldXPath);
+        if (n != null) {
 
-		} else if (DateTime.class.equals(fieldType)) {
+            final String textContent = n.getTextContent();
 
-			value = parseDateTime(methodName, domValue, method, fieldXPath);
+            final String pattern = getFieldFormat(method);
 
-		} else if (fieldType.isArray() && explicitAssociations.size() != 0) {
-			// case of an explicit collection
-			value = xmlFieldBinder.bindToExplicitArray(fieldXPath, node,
-					explicitAssociations);
+            DateTimeFormatter formatter = ISODateTimeFormat.timeParser();
+            if (pattern != null) {
+                formatter = DateTimeFormat.forPattern(pattern).withChronology(ISOChronology.getInstanceUTC());
+            }
 
-		} else if (fieldType.isArray()) {
-			// cas nominal
-			value = xmlFieldBinder.bindToArray(fieldXPath, node,
-					fieldType.getComponentType());
+            try {
 
-		} else if (fieldType.isEnum()) {
-			value = parseEnum(domValue, (Class<? extends Enum>) fieldType);
-		} else if (isXmlFieldInterface(fieldType)) {
-			value = xmlFieldBinder.bind(fieldXPath, node, fieldType);
+                return formatter.parseDateTime(textContent);
 
-		} else {
+            } catch (final RuntimeException e) {
 
-			throw new NotImplementedException("fieldType: " + type
-					+ ", method: " + method);
-		}
+                e.printStackTrace();
 
-		return value;
-	}
+                logger.error("Cannot parse DateTime: " + textContent + ", xpath=" + fieldXPath + ", method="
+                        + methodName + "()");
+                logger.warn("Cannot parse DateTime (details) : ", e);
+            }
+        }
 
-	private Number parseNumber(String methodName, Class<?> fieldType,
-			Object domValue, String fieldXPath) {
-		
-		if (Number.class.isInstance(domValue)) {
-			if (fieldType == Byte.class) {
-				return ((Number) domValue).byteValue();
-			}
-			if (fieldType == Double.class) {
-				return ((Number) domValue).doubleValue();
-			}
-			if (fieldType == Float.class) {
-				return ((Number) domValue).floatValue();
-			}
-			if (fieldType == Short.class) {
-				return ((Number) domValue).shortValue();
-			}
+        return null;
+    }
 
-			if (fieldType == Integer.class) {
-				return ((Number) domValue).intValue();
-			}
-			if (fieldType == Long.class) {
-				return ((Number) domValue).longValue();
-			}
-		}
+    private double parseDouble(final String methodName, final Object domValue, final String fieldXPath) {
 
-		if (domValue instanceof XmlFieldNode<?>) {
-			String textContent = ((XmlFieldNode<?>) domValue).getTextContent();
-			try {
-				if (fieldType == Byte.class) {
-					return Byte.parseByte(textContent);
-				}
-				if (fieldType == Double.class) {
-					return Double.parseDouble(textContent);
-				}
-				if (fieldType == Float.class) {
-					return Float.parseFloat(textContent);
-				}
-				if (fieldType == Short.class) {
-					return Short.parseShort(textContent);
-				}
-				if (fieldType == Integer.class) {
-					return Integer.parseInt(textContent);
-				}
-				if (fieldType == Long.class) {
-					return Long.parseLong(textContent);
-				}
-			} catch (final NumberFormatException e) {
-				logger.error(
-						"Cannot parse Number: {} , xpath= {} , method= {}()",
-						new Object[] { textContent, fieldXPath, methodName, e });
-			}
-		}
-		return null;
-	}
+        if (Double.class.isInstance(domValue)) {
 
-	private boolean isXmlFieldInterface(final Class<?> fieldType) {
-		return XmlFieldUtils.getResourceXPath(fieldType) != null;
-	}
+            return (Double) domValue;
 
-	private boolean parseBoolean(final String methodName,
-			final Object domValue, final String fieldXPath) {
-		if (Boolean.class.isInstance(domValue)) {
-			return (Boolean) domValue;
-		}
-		if (domValue instanceof XmlFieldNode<?>) {
-			String textContent = ((XmlFieldNode<?>) domValue).getTextContent();
-			try {
-				return Boolean.parseBoolean(textContent);
-			} catch (final RuntimeException e) {
-				logger.error("Cannot parse boolean: " + textContent
-						+ //
-						", xpath=" + fieldXPath + ", method=" + methodName
-						+ "()");
-				logger.warn("Cannot parse boolean (details) : ", e);
-			}
-		}
+        } else if (Integer.class.isInstance(domValue)) {
 
-		return false;
-	}
+            return ((Integer) domValue).intValue();
 
-	private DateTime parseDateTime(final String methodName,
-			final Object domValue, final Method method, final String fieldXPath) {
+        } else if (Long.class.isInstance(domValue)) {
 
-		final XmlFieldNode<?> n = (XmlFieldNode<?>) domValue;
+            return ((Long) domValue).longValue();
 
-		if (n != null) {
+        } else if (Short.class.isInstance(domValue)) {
 
-			final String textContent = n.getTextContent();
+            return ((Short) domValue).shortValue();
 
-			final String pattern = getFieldFormat(method);
+        } else if (Float.class.isInstance(domValue)) {
 
-			DateTimeFormatter formatter = ISODateTimeFormat.timeParser();
-			if (pattern != null) {
-				formatter = DateTimeFormat.forPattern(pattern).withChronology(
-						ISOChronology.getInstanceUTC());
-			}
+            return ((Float) domValue).floatValue();
 
-			try {
+        } else {
 
-				return formatter.parseDateTime(textContent);
+            final XmlFieldNode<?> n = (XmlFieldNode<?>) domValue;
 
-			} catch (final RuntimeException e) {
+            if (n != null) {
 
-				e.printStackTrace();
+                final String textContent = n.getTextContent();
 
-				logger.error("Cannot parse DateTime: " + textContent
-						+ ", xpath=" + fieldXPath + ", method=" + methodName
-						+ "()");
-				logger.warn("Cannot parse DateTime (details) : ", e);
-			}
-		}
+                try {
 
-		return null;
-	}
+                    return Double.parseDouble(textContent);
 
-	private double parseDouble(final String methodName, final Object domValue,
-			final String fieldXPath) {
+                } catch (final RuntimeException e) {
 
-		if (Double.class.isInstance(domValue)) {
+                    logger.error("Cannot parse double: " + textContent + ", xpath=" + fieldXPath + ", method="
+                            + methodName + "()");
+                    logger.warn("Cannot parse double (details) : ", e);
+                }
+            }
+        }
 
-			return (Double) domValue;
+        return 0;
+    }
 
-		} else if (Integer.class.isInstance(domValue)) {
+    private Object parseEnum(final Object domValue, final Class<? extends Enum> fieldType) {
+        String s = parseString(domValue);
+        if (StringUtils.isEmpty(s)) {
+            return null;
+        }
+        return Enum.valueOf(fieldType, s);
+    }
 
-			return ((Integer) domValue).intValue();
+    private float parseFloat(final String methodName, final Object domValue, final String fieldXPath) {
+        if (domValue instanceof Number) {
+            return ((Number) domValue).floatValue();
+        }
+        if (domValue instanceof XmlFieldNode<?>) {
+            String textContent = ((XmlFieldNode<?>) domValue).getTextContent();
+            try {
+                return Float.parseFloat(textContent);
+            } catch (final RuntimeException e) {
+                logger.error("Cannot parse float: " + textContent + //
+                        ", xpath=" + fieldXPath + ", method=" + methodName + "()");
+                logger.warn("Cannot parse float (details) : ", e);
+            }
+        }
+        return 0;
+    }
 
-		} else if (Long.class.isInstance(domValue)) {
+    private int parseInt(final String methodName, final Object domValue, final String fieldXPath) {
+        if (domValue instanceof Number) {
+            return ((Number) domValue).intValue();
+        }
+        if (domValue instanceof XmlFieldNode<?>) {
+            String textContent = ((XmlFieldNode<?>) domValue).getTextContent();
+            try {
+                return Integer.parseInt(textContent);
+            } catch (final RuntimeException e) {
+                logger.error("Cannot parse int: " + textContent + //
+                        ", xpath=" + fieldXPath + ", method=" + methodName + "()");
+                logger.warn("Cannot parse int (details) : ", e);
+            }
+        }
 
-			return ((Long) domValue).longValue();
+        return 0;
+    }
 
-		} else if (Short.class.isInstance(domValue)) {
+    private long parseLong(final String methodName, final Object domValue, final String fieldXPath) {
 
-			return ((Short) domValue).shortValue();
+        if (domValue instanceof Number) {
+            return ((Number) domValue).longValue();
+        }
 
-		} else if (Float.class.isInstance(domValue)) {
+        if (domValue instanceof XmlFieldNode<?>) {
+            String textContent = ((XmlFieldNode<?>) domValue).getTextContent();
+            try {
+                return Long.parseLong(textContent);
+            } catch (final RuntimeException e) {
+                logger.error("Cannot parse long: " + textContent + ", xpath=" + fieldXPath + //
+                        ", method=" + methodName + "()");
+                logger.warn("Cannot parse long (details) : ", e);
+            }
+        }
 
-			return ((Float) domValue).floatValue();
+        return 0;
+    }
 
-		} else {
+    private Number parseNumber(String methodName, Class<?> fieldType, Object domValue, String fieldXPath) {
 
-			final XmlFieldNode<?> n = (XmlFieldNode<?>) domValue;
+        if (Number.class.isInstance(domValue)) {
+            if (fieldType == Byte.class) {
+                return ((Number) domValue).byteValue();
+            }
+            if (fieldType == Double.class) {
+                return ((Number) domValue).doubleValue();
+            }
+            if (fieldType == Float.class) {
+                return ((Number) domValue).floatValue();
+            }
+            if (fieldType == Short.class) {
+                return ((Number) domValue).shortValue();
+            }
 
-			if (n != null) {
+            if (fieldType == Integer.class) {
+                return ((Number) domValue).intValue();
+            }
+            if (fieldType == Long.class) {
+                return ((Number) domValue).longValue();
+            }
+        }
 
-				final String textContent = n.getTextContent();
+        if (domValue instanceof XmlFieldNode<?>) {
+            String textContent = ((XmlFieldNode<?>) domValue).getTextContent();
+            try {
+                if (fieldType == Byte.class) {
+                    return Byte.parseByte(textContent);
+                }
+                if (fieldType == Double.class) {
+                    return Double.parseDouble(textContent);
+                }
+                if (fieldType == Float.class) {
+                    return Float.parseFloat(textContent);
+                }
+                if (fieldType == Short.class) {
+                    return Short.parseShort(textContent);
+                }
+                if (fieldType == Integer.class) {
+                    return Integer.parseInt(textContent);
+                }
+                if (fieldType == Long.class) {
+                    return Long.parseLong(textContent);
+                }
+            } catch (final NumberFormatException e) {
+                logger.error("Cannot parse Number: {} , xpath= {} , method= {}()", new Object[] { textContent,
+                        fieldXPath, methodName, e });
+            }
+        }
+        return null;
+    }
 
-				try {
+    private short parseShort(final String methodName, final Object domValue, final String fieldXPath) {
 
-					return Double.parseDouble(textContent);
+        if (domValue instanceof Number) {
+            return ((Number) domValue).shortValue();
+        }
+        if (domValue instanceof XmlFieldNode<?>) {
 
-				} catch (final RuntimeException e) {
+            XmlFieldNode<?> n = (XmlFieldNode<?>) domValue;
+            String textContent = n.getTextContent();
 
-					logger.error("Cannot parse double: " + textContent
-							+ ", xpath=" + fieldXPath + ", method="
-							+ methodName + "()");
-					logger.warn("Cannot parse double (details) : ", e);
-				}
-			}
-		}
+            try {
+                return Short.parseShort(textContent);
+            } catch (final RuntimeException e) {
+                logger.error("Cannot parse short: " + textContent + ", xpath=" + fieldXPath + //
+                        ", method=" + methodName + "()");
+                logger.warn("Cannot parse short (details) : ", e);
+            }
+        }
 
-		return 0;
-	}
+        return 0;
+    }
 
-	private Object parseEnum(final Object domValue,
-			final Class<? extends Enum> fieldType) {
-		String s = parseString(domValue);
-		if (StringUtils.isEmpty(s)) {
-			return null;
-		}
-		return Enum.valueOf(fieldType, s);
-	}
+    private String parseString(final Object domValue) {
+        if (domValue instanceof String) {
+            return (String) domValue;
+        }
+        if (domValue instanceof XmlFieldNode<?>) {
+            return ((XmlFieldNode<?>) domValue).getTextContent();
+        }
+        return null;
+    }
 
-	private float parseFloat(final String methodName, final Object domValue,
-			final String fieldXPath) {
-		if (domValue instanceof Number) {
-			return ((Number) domValue).floatValue();
-		}
-		if (domValue instanceof XmlFieldNode<?>) {
-			String textContent = ((XmlFieldNode<?>) domValue).getTextContent();
-			try {
-				return Float.parseFloat(textContent);
-			} catch (final RuntimeException e) {
-				logger.error("Cannot parse float: " + textContent
-						+ //
-						", xpath=" + fieldXPath + ", method=" + methodName
-						+ "()");
-				logger.warn("Cannot parse float (details) : ", e);
-			}
-		}
-		return 0;
-	}
+    /**
+     * Removes any value contained in cache for the specified invoked method.
+     * 
+     * @param method
+     *            invoked method.
+     */
+    private void removeFromCache(final Method method) {
+        removeFromCache(method.getName());
+    }
 
-	private int parseInt(final String methodName, final Object domValue,
-			final String fieldXPath) {
-		if (domValue instanceof Number) {
-			return ((Number) domValue).intValue();
-		}
-		if (domValue instanceof XmlFieldNode<?>) {
-			String textContent = ((XmlFieldNode<?>) domValue).getTextContent();
-			try {
-				return Integer.parseInt(textContent);
-			} catch (final RuntimeException e) {
-				logger.error("Cannot parse int: " + textContent
-						+ //
-						", xpath=" + fieldXPath + ", method=" + methodName
-						+ "()");
-				logger.warn("Cannot parse int (details) : ", e);
-			}
-		}
+    /**
+     * Removes any value contained in cache for the specified invoked method name.
+     * 
+     * @param methodName
+     *            invoked method name.
+     */
+    private void removeFromCache(final String methodName) {
+        cache.remove(getCacheKey(methodName));
+    }
 
-		return 0;
-	}
-
-	private long parseLong(final String methodName, final Object domValue,
-			final String fieldXPath) {
-
-		if (domValue instanceof Number) {
-			return ((Number) domValue).longValue();
-		}
-
-		if (domValue instanceof XmlFieldNode<?>) {
-			String textContent = ((XmlFieldNode<?>) domValue).getTextContent();
-			try {
-				return Long.parseLong(textContent);
-			} catch (final RuntimeException e) {
-				logger.error("Cannot parse long: " + textContent + ", xpath="
-						+ fieldXPath + //
-						", method=" + methodName + "()");
-				logger.warn("Cannot parse long (details) : ", e);
-			}
-		}
-
-		return 0;
-	}
-
-	private short parseShort(final String methodName, final Object domValue,
-			final String fieldXPath) {
-
-		if (domValue instanceof Number) {
-			return ((Number) domValue).shortValue();
-		}
-		if (domValue instanceof XmlFieldNode<?>) {
-
-			XmlFieldNode<?> n = (XmlFieldNode<?>) domValue;
-			String textContent = n.getTextContent();
-
-			try {
-				return Short.parseShort(textContent);
-			} catch (final RuntimeException e) {
-				logger.error("Cannot parse short: " + textContent + ", xpath="
-						+ fieldXPath + //
-						", method=" + methodName + "()");
-				logger.warn("Cannot parse short (details) : ", e);
-			}
-		}
-
-		return 0;
-	}
-
-	private String parseString(final Object domValue) {
-		if (domValue instanceof String) {
-			return (String) domValue;
-		}
-		if (domValue instanceof XmlFieldNode<?>) {
-			return ((XmlFieldNode<?>) domValue).getTextContent();
-		}
-		return null;
-	}
+    /**
+     * Put a value into cache.
+     * 
+     * @param methodName
+     *            method name
+     * @param value
+     *            value to put
+     */
+    private void setIntoCache(final String methodName, final Object value) {
+        cache.put(getCacheKey(methodName), value);
+    }
 }

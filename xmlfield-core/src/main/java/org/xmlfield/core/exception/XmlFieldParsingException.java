@@ -16,6 +16,7 @@
 package org.xmlfield.core.exception;
 
 /**
+ * Parsing exception
  * 
  * @author Guillaume Mary <guillaume.mary@capgemini.com>
  * 

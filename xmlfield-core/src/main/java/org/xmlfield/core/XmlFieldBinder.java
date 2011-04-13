@@ -86,7 +86,7 @@ public class XmlFieldBinder {
 
             try {
 
-                subNode = getSelector().selectXPathToNode(namespaces, resourceXPath, node);
+                subNode = selector.selectXPathToNode(namespaces, resourceXPath, node);
 
             } catch (final XmlFieldXPathException e) {
 
@@ -136,7 +136,7 @@ public class XmlFieldBinder {
      * @throws XmlFieldParsingException
      */
     public <T> T bindReadOnly(String xml, Class<T> type) throws XmlFieldParsingException {
-        XmlFieldNode<?> node = getParser().xmlToNode(xml);
+        XmlFieldNode<?> node = parser.xmlToNode(xml);
         return bind(node, type);
     }
 
@@ -145,7 +145,7 @@ public class XmlFieldBinder {
 
         final NamespaceMap namespaces = getResourceNamespaces(type);
 
-        final XmlFieldNodeList xmlFieldNodes = getSelector().selectXPathToNodeList(namespaces, resourceXPath, node);
+        final XmlFieldNodeList xmlFieldNodes = selector.selectXPathToNodeList(namespaces, resourceXPath, node);
 
         final List<T> list = new ArrayList<T>();
         for (int i = 0; i < xmlFieldNodes.getLength(); i++) {
@@ -161,7 +161,7 @@ public class XmlFieldBinder {
 
         final NamespaceMap namespaces = getResourceNamespaces(type);
 
-        final XmlFieldNodeList xmlFieldNodes = getSelector().selectXPathToNodeList(namespaces,
+        final XmlFieldNodeList xmlFieldNodes = selector.selectXPathToNodeList(namespaces,
                 resourceXPath + xpathSelector, node);
 
         final List<T> list = new ArrayList<T>();
@@ -210,8 +210,7 @@ public class XmlFieldBinder {
         // TODO
         final NamespaceMap namespaces = getResourceNamespaces(null);
 
-        final XmlFieldNodeList xmlFieldNodes = getSelector().selectXPathToNodeList(namespaces, resourceXPathGlobal,
-                node);
+        final XmlFieldNodeList xmlFieldNodes = selector.selectXPathToNodeList(namespaces, resourceXPathGlobal, node);
 
         final List<Object> list = new ArrayList<Object>();
 
@@ -225,14 +224,6 @@ public class XmlFieldBinder {
         }
 
         return toArray(list, Object.class);
-    }
-
-    public XmlFieldNodeParser<?> getParser() {
-        return parser;
-    }
-
-    public XmlFieldSelector getSelector() {
-        return selector;
     }
 
     /**

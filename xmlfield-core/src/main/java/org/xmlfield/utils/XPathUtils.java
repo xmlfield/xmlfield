@@ -17,6 +17,7 @@ package org.xmlfield.utils;
 
 import static org.apache.commons.lang.StringUtils.substringAfterLast;
 import static org.apache.commons.lang.StringUtils.substringBefore;
+import static org.apache.commons.lang.StringUtils.substringBetween;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -65,6 +66,31 @@ public class XPathUtils {
         return name;
     }
 
+    /**
+     * Return element position if it exist.
+     * 
+     * @param xPath
+     *            the XPath query
+     * @return element position
+     */
+    public static int getElementPosition(String xPath) {
+        String name = XPathUtils.getElementNameWithSelector(xPath);
+
+        // Remove org.xmlfield.tests.attribute selector
+        name = substringBetween(name, "[", "]");
+        if (name == null) {
+            return 1;
+        }
+        return Integer.parseInt(name);
+    }
+
+    /**
+     * Retrieve the element prefix
+     * 
+     * @param xPath
+     *            the XPath query
+     * @return element prefix
+     */
     public static String getElementPrefix(String xPath) {
         String name = XPathUtils.getElementNameWithSelector(xPath);
 
@@ -77,6 +103,13 @@ public class XPathUtils {
 
     }
 
+    /**
+     * Returns the selector attributes of this XPath
+     * 
+     * @param xPath
+     *            XPath
+     * @return attributes map
+     */
     public static Map<String, String> getElementSelectorAttributes(String xPath) {
         String name = XPathUtils.getElementNameWithSelector(xPath);
         HashMap<String, String> result = null;
