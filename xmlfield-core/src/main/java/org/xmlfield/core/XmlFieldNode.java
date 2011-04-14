@@ -44,6 +44,13 @@ public interface XmlFieldNode<T> {
     static final short UNKNOW_NODE = -1;
 
     /**
+     * Get the document node
+     * 
+     * @return document node
+     */
+    XmlFieldNode<T> getDocumentNode();
+
+    /**
      * Get the underlying node
      * 
      * @return the underlying node

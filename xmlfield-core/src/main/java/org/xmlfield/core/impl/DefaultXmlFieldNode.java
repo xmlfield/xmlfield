@@ -34,6 +34,14 @@ public class DefaultXmlFieldNode implements XmlFieldNode<Node> {
     }
 
     @Override
+    public XmlFieldNode<Node> getDocumentNode() {
+        if (this.node != null) {
+            return new DefaultXmlFieldNode(this.node.getOwnerDocument().getDocumentElement());
+        }
+        return null;
+    }
+
+    @Override
     public Node getNode() {
         return this.node;
     }
