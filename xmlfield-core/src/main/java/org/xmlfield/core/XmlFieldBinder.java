@@ -31,6 +31,7 @@ import java.util.Map;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.xml.sax.SAXException;
+import org.xmlfield.core.exception.XmlFieldException;
 import org.xmlfield.core.exception.XmlFieldParsingException;
 import org.xmlfield.core.exception.XmlFieldXPathException;
 import org.xmlfield.core.internal.INodeable;
@@ -126,13 +127,28 @@ public class XmlFieldBinder {
 		return bind(resourceXPath, node, type);
 	}
 
+	/**
+	 * Bind an xml string to an array of entities.
+	 * 
+	 * the xml should be a list of entities enclosed by a root element.
+	 * 
+	 * @param <T>
+	 *            interface type
+	 * @param xml
+	 *            an xml string with a root element enclosing a list of node to
+	 *            bind
+	 * @param type
+	 *            interface to bind to
+	 * @return an array
+	 * @throws XmlFieldParsingException
+	 * @throws XmlFieldXPathException
+	 */
 	public <T> T[] bindArray(String xml, Class<T> type)
-			throws XmlFieldParsingException, XmlFieldXPathException {
+			throws XmlFieldException {
 
 		XmlFieldNode<?> node = xmlToXmlFieldNode(xml);
 		T[] resultArray = new XmlFieldBinder().bindToArray(
 				getElementNameWithSelector(getResourceXPath(type)), node, type);
-
 		return resultArray;
 
 	}
