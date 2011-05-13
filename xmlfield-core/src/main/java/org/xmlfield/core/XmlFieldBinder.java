@@ -19,6 +19,7 @@ import static com.google.common.collect.Iterables.toArray;
 import static org.xmlfield.core.internal.XmlFieldUtils.getResourceNamespaces;
 import static org.xmlfield.core.internal.XmlFieldUtils.getResourceXPath;
 import static org.xmlfield.utils.XPathUtils.getElementNameWithSelector;
+import static org.xmlfield.utils.XmlUtils.xmlToXmlFieldNode;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationHandler;
@@ -40,242 +41,274 @@ import org.xmlfield.utils.XPathUtils;
 import org.xmlfield.utils.XmlUtils;
 
 /**
- * Class which bind an interface annotated with some xpath expressions to an xml field node which represent an xml
- * content.
+ * Class which bind an interface annotated with some xpath expressions to an xml
+ * field node which represent an xml content.
  * 
  * @author Guillaume Mary <guillaume.mary@capgemini.com>
  */
 public class XmlFieldBinder {
-    /**
-     * Classloader used to load the proxies.
-     */
-    private static final ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+	/**
+	 * Classloader used to load the proxies.
+	 */
+	private static final ClassLoader classLoader = Thread.currentThread()
+			.getContextClassLoader();
 
-    /**
-     * Parser used to parse the xml to node
-     */
-    private final XmlFieldNodeParser<?> parser = XmlFieldNodeParserFactory.newInstance().newParser();
+	/**
+	 * Parser used to parse the xml to node
+	 */
+	private final XmlFieldNodeParser<?> parser = XmlFieldNodeParserFactory
+			.newInstance().newParser();
 
-    /**
-     * Selector used to execute xpath expression
-     */
-    private final XmlFieldSelector selector = XmlFieldSelectorFactory.newInstance().newSelector();
+	/**
+	 * Selector used to execute xpath expression
+	 */
+	private final XmlFieldSelector selector = XmlFieldSelectorFactory
+			.newInstance().newSelector();
 
-    /**
-     * Bind a node located by the xpath expression to the specified type
-     * 
-     * @param resourceXPath
-     *            xpath expression used to locate the node to bind
-     * @param node
-     *            the root node {@link XmlFieldNode}
-     * @param resourceType
-     *            the expected interface class
-     * @return null for non matching xml/type.
-     */
-    public <T> T bind(final String resourceXPath, final XmlFieldNode<?> node, final Class<T> resourceType) {
+	/**
+	 * Bind a node located by the xpath expression to the specified type
+	 * 
+	 * @param resourceXPath
+	 *            xpath expression used to locate the node to bind
+	 * @param node
+	 *            the root node {@link XmlFieldNode}
+	 * @param resourceType
+	 *            the expected interface class
+	 * @return null for non matching xml/type.
+	 */
+	public <T> T bind(final String resourceXPath, final XmlFieldNode<?> node,
+			final Class<T> resourceType) {
 
-        final NamespaceMap namespaces = getResourceNamespaces(resourceType);
+		final NamespaceMap namespaces = getResourceNamespaces(resourceType);
 
-        final XmlFieldNode<?> subNode;
+		final XmlFieldNode<?> subNode;
 
-        if (resourceXPath == null) {
+		if (resourceXPath == null) {
 
-            subNode = node;
+			subNode = node;
 
-        } else {
+		} else {
 
-            try {
+			try {
 
-                subNode = selector.selectXPathToNode(namespaces, resourceXPath, node);
+				subNode = selector.selectXPathToNode(namespaces, resourceXPath,
+						node);
 
-            } catch (final XmlFieldXPathException e) {
+			} catch (final XmlFieldXPathException e) {
 
-                throw new RuntimeException(e);
-            }
-        }
+				throw new RuntimeException(e);
+			}
+		}
 
-        if (subNode == null || subNode.getNode() == null) {
-            return null;
-        } else {
-            return loadProxy(subNode, resourceType);
-        }
-    }
+		if (subNode == null || subNode.getNode() == null) {
+			return null;
+		} else {
+			return loadProxy(subNode, resourceType);
+		}
+	}
 
-    /**
-     * Bind an xml field node to the specified type. This type should have some xpath annotations.
-     * 
-     * @param <T>
-     *            interface type
-     * @param node
-     *            node
-     * @param type
-     *            interface to bind to
-     * @return instance binded to the xml
-     */
-    public <T> T bind(final XmlFieldNode<?> node, final Class<T> type) {
+	/**
+	 * Bind an xml field node to the specified type. This type should have some
+	 * xpath annotations.
+	 * 
+	 * @param <T>
+	 *            interface type
+	 * @param node
+	 *            node
+	 * @param type
+	 *            interface to bind to
+	 * @return instance binded to the xml
+	 */
+	public <T> T bind(final XmlFieldNode<?> node, final Class<T> type) {
 
-        final String resourceXPath = getResourceXPath(type);
+		final String resourceXPath = getResourceXPath(type);
 
-        return bind(resourceXPath, node, type);
-    }
+		return bind(resourceXPath, node, type);
+	}
 
-    /**
-     * Create an interface for the given xml and matching the given interface.
-     * 
-     * @param xml
-     *            the xml String to load
-     * @param type
-     *            the expected interface
-     * @return a proxy object responding to given type, return null if type does'n match the xml string.
-     * @throws ParserConfigurationException
-     *             when parsing xml failed
-     * @throws SAXException
-     *             when parsing xml failed
-     * @throws IOException
-     *             when parsing xml failed
-     * @throws XmlFieldParsingException
-     */
-    public <T> T bindReadOnly(String xml, Class<T> type) throws XmlFieldParsingException {
-        XmlFieldNode<?> node = parser.xmlToNode(xml);
-        return bind(node, type);
-    }
+	public <T> T[] bindArray(String xml, Class<T> type)
+			throws XmlFieldParsingException, XmlFieldXPathException {
 
-    public <T> T[] bindToArray(final String resourceXPath, final XmlFieldNode<?> node, final Class<T> type)
-            throws XmlFieldXPathException {
+		XmlFieldNode<?> node = xmlToXmlFieldNode(xml);
+		T[] resultArray = new XmlFieldBinder().bindToArray(
+				getElementNameWithSelector(getResourceXPath(type)), node, type);
 
-        final NamespaceMap namespaces = getResourceNamespaces(type);
+		return resultArray;
 
-        final XmlFieldNodeList xmlFieldNodes = selector.selectXPathToNodeList(namespaces, resourceXPath, node);
+	}
 
-        final List<T> list = new ArrayList<T>();
-        for (int i = 0; i < xmlFieldNodes.getLength(); i++) {
-            final T proxy = loadProxy(xmlFieldNodes.item(i), type);
+	/**
+	 * Create an interface for the given xml and matching the given interface.
+	 * 
+	 * @param xml
+	 *            the xml String to load
+	 * @param type
+	 *            the expected interface
+	 * @return a proxy object responding to given type, return null if type
+	 *         does'n match the xml string.
+	 * @throws ParserConfigurationException
+	 *             when parsing xml failed
+	 * @throws SAXException
+	 *             when parsing xml failed
+	 * @throws IOException
+	 *             when parsing xml failed
+	 * @throws XmlFieldParsingException
+	 */
+	public <T> T bindReadOnly(String xml, Class<T> type)
+			throws XmlFieldParsingException {
+		XmlFieldNode<?> node = parser.xmlToNode(xml);
+		return bind(node, type);
+	}
 
-            list.add(proxy);
-        }
-        return toArray(list, type);
-    }
+	public <T> T[] bindToArray(final String resourceXPath,
+			final XmlFieldNode<?> node, final Class<T> type)
+			throws XmlFieldXPathException {
 
-    public <T> T[] bindToArray(final String resourceXPath, final XmlFieldNode<?> node, final Class<T> type,
-            final String xpathSelector) throws XmlFieldXPathException {
+		final NamespaceMap namespaces = getResourceNamespaces(type);
 
-        final NamespaceMap namespaces = getResourceNamespaces(type);
+		final XmlFieldNodeList xmlFieldNodes = selector.selectXPathToNodeList(
+				namespaces, resourceXPath, node);
 
-        final XmlFieldNodeList xmlFieldNodes = selector.selectXPathToNodeList(namespaces,
-                resourceXPath + xpathSelector, node);
+		final List<T> list = new ArrayList<T>();
+		for (int i = 0; i < xmlFieldNodes.getLength(); i++) {
+			final T proxy = loadProxy(xmlFieldNodes.item(i), type);
 
-        final List<T> list = new ArrayList<T>();
-        for (int i = 0; i < xmlFieldNodes.getLength(); i++) {
-            final T proxy = loadProxy(xmlFieldNodes.item(i), type);
+			list.add(proxy);
+		}
+		return toArray(list, type);
+	}
 
-            list.add(proxy);
-        }
-        return toArray(list, type);
-    }
+	public <T> T[] bindToArray(final String resourceXPath,
+			final XmlFieldNode<?> node, final Class<T> type,
+			final String xpathSelector) throws XmlFieldXPathException {
 
-    public <T> T[] bindToArray(final XmlFieldNode<?> node, final Class<T> type) throws XmlFieldXPathException {
+		final NamespaceMap namespaces = getResourceNamespaces(type);
 
-        final String resourceXPath = getResourceXPath(type);
+		final XmlFieldNodeList xmlFieldNodes = selector.selectXPathToNodeList(
+				namespaces, resourceXPath + xpathSelector, node);
 
-        return bindToArray(resourceXPath, node, type);
-    }
+		final List<T> list = new ArrayList<T>();
+		for (int i = 0; i < xmlFieldNodes.getLength(); i++) {
+			final T proxy = loadProxy(xmlFieldNodes.item(i), type);
 
-    public <T> T[] bindToArray(final XmlFieldNode<?> node, final Class<T> type, final String xpathSelector)
-            throws XmlFieldXPathException {
+			list.add(proxy);
+		}
+		return toArray(list, type);
+	}
 
-        final String resourceXPath = getResourceXPath(type);
+	public <T> T[] bindToArray(final XmlFieldNode<?> node, final Class<T> type)
+			throws XmlFieldXPathException {
 
-        return bindToArray(resourceXPath, node, type, xpathSelector);
-    }
+		final String resourceXPath = getResourceXPath(type);
 
-    /**
-     * Function to attach an array of different objects type .
-     * 
-     * @param resourceXPath
-     *            Xpath to the collection.
-     * @param explicitCollection
-     *            Hashmap for matching name of xpath and clas.
-     * @param node
-     *            node of java object.
-     * @throws XmlFieldXPathException
-     */
-    public Object[] bindToExplicitArray(final String resourceXPath, final XmlFieldNode<?> node,
-            final Map<String, Class<?>> explicitCollection) throws XmlFieldXPathException {
+		return bindToArray(resourceXPath, node, type);
+	}
 
-        // we should replace the last occurance of the last xpath name with a *
-        String toReplace = XPathUtils.getElementName(resourceXPath);
-        StringBuilder b = new StringBuilder(resourceXPath);
-        b.replace(resourceXPath.lastIndexOf(toReplace), resourceXPath.lastIndexOf(toReplace) + 1, "*");
-        final String resourceXPathGlobal = b.toString();
-        // TODO
-        final NamespaceMap namespaces = getResourceNamespaces(null);
+	public <T> T[] bindToArray(final XmlFieldNode<?> node, final Class<T> type,
+			final String xpathSelector) throws XmlFieldXPathException {
 
-        final XmlFieldNodeList xmlFieldNodes = selector.selectXPathToNodeList(namespaces, resourceXPathGlobal, node);
+		final String resourceXPath = getResourceXPath(type);
 
-        final List<Object> list = new ArrayList<Object>();
+		return bindToArray(resourceXPath, node, type, xpathSelector);
+	}
 
-        for (int i = 0; i < xmlFieldNodes.getLength(); i++) {
-            XmlFieldNode<?> xmlFieldNode = xmlFieldNodes.item(i);
-            if (explicitCollection.containsKey(xmlFieldNode.getNodeName())) {
-                final Object proxy = loadProxy(xmlFieldNode, explicitCollection.get(xmlFieldNode.getNodeName()));
-                list.add(proxy);
-            }
+	/**
+	 * Function to attach an array of different objects type .
+	 * 
+	 * @param resourceXPath
+	 *            Xpath to the collection.
+	 * @param explicitCollection
+	 *            Hashmap for matching name of xpath and clas.
+	 * @param node
+	 *            node of java object.
+	 * @throws XmlFieldXPathException
+	 */
+	public Object[] bindToExplicitArray(final String resourceXPath,
+			final XmlFieldNode<?> node,
+			final Map<String, Class<?>> explicitCollection)
+			throws XmlFieldXPathException {
 
-        }
+		// we should replace the last occurance of the last xpath name with a *
+		String toReplace = XPathUtils.getElementName(resourceXPath);
+		StringBuilder b = new StringBuilder(resourceXPath);
+		b.replace(resourceXPath.lastIndexOf(toReplace),
+				resourceXPath.lastIndexOf(toReplace) + 1, "*");
+		final String resourceXPathGlobal = b.toString();
+		// TODO
+		final NamespaceMap namespaces = getResourceNamespaces(null);
 
-        return toArray(list, Object.class);
-    }
+		final XmlFieldNodeList xmlFieldNodes = selector.selectXPathToNodeList(
+				namespaces, resourceXPathGlobal, node);
 
-    /**
-     * instantiate a new XmlField interface.
-     * 
-     * the return object can be manipulated by Xmlfield like any object obtained by {@link #bind} methods
-     * 
-     * @param <T>
-     *            Class of interface to instantiate
-     * @param type
-     *            Class of interface to instantiate
-     * @return an object implementing Class <code>type<code> and {@link INodeable}
-     * 
-     * @throws ParserConfigurationException
-     * @throws SAXException
-     * @throws IOException
-     * @throws XmlFieldParsingException
-     */
-    public <T> T instantiate(Class<T> type) throws XmlFieldParsingException {
-        String resourceXPath = getResourceXPath(type);
-        String tag = getElementNameWithSelector(resourceXPath);
-        NamespaceMap namespaces = getResourceNamespaces(type);
-        String xml = XmlUtils.emptyTag(tag, namespaces);
-        return bindReadOnly(xml, type);
-    }
+		final List<Object> list = new ArrayList<Object>();
 
-    /**
-     * Changes interface of an already attached node.
-     * 
-     * @param o
-     *            an object obtained by any {@link #attach} call.
-     * @param type
-     *            the new interface for dom manipulation.
-     * @return an objet implementing the given interface.
-     */
-    public <T> T rebind(Object o, Class<T> type) {
-        return loadProxy(XmlFieldUtils.getXmlFieldNode(o), type);
-    }
+		for (int i = 0; i < xmlFieldNodes.getLength(); i++) {
+			XmlFieldNode<?> xmlFieldNode = xmlFieldNodes.item(i);
+			if (explicitCollection.containsKey(xmlFieldNode.getNodeName())) {
+				final Object proxy = loadProxy(xmlFieldNode,
+						explicitCollection.get(xmlFieldNode.getNodeName()));
+				list.add(proxy);
+			}
 
-    private <T> T loadProxy(final XmlFieldNode<?> node, final Class<T> type) {
+		}
 
-        if (String.class.equals(type)) {
+		return toArray(list, Object.class);
+	}
 
-            return type.cast(node.getTextContent());
-        }
+	/**
+	 * instantiate a new XmlField interface.
+	 * 
+	 * the return object can be manipulated by Xmlfield like any object obtained
+	 * by {@link #bind} methods
+	 * 
+	 * @param <T>
+	 *            Class of interface to instantiate
+	 * @param type
+	 *            Class of interface to instantiate
+	 * @return an object implementing Class
+	 *         <code>type<code> and {@link INodeable}
+	 * 
+	 * @throws ParserConfigurationException
+	 * @throws SAXException
+	 * @throws IOException
+	 * @throws XmlFieldParsingException
+	 */
+	public <T> T instantiate(Class<T> type) throws XmlFieldParsingException {
+		String resourceXPath = getResourceXPath(type);
+		String tag = getElementNameWithSelector(resourceXPath);
+		NamespaceMap namespaces = getResourceNamespaces(type);
+		String xml = XmlUtils.emptyTag(tag, namespaces);
+		return bindReadOnly(xml, type);
+	}
 
-        final Class<?>[] types = new Class<?>[] { type, INodeable.class };
+	private <T> T loadProxy(final XmlFieldNode<?> node, final Class<T> type) {
 
-        final InvocationHandler invocationHandler = new XmlFieldInvocationHandler(this, node, type);
+		if (String.class.equals(type)) {
 
-        final T proxy = type.cast(Proxy.newProxyInstance(classLoader, types, invocationHandler));
+			return type.cast(node.getTextContent());
+		}
 
-        return proxy;
-    }
+		final Class<?>[] types = new Class<?>[] { type, INodeable.class };
+
+		final InvocationHandler invocationHandler = new XmlFieldInvocationHandler(
+				this, node, type);
+
+		final T proxy = type.cast(Proxy.newProxyInstance(classLoader, types,
+				invocationHandler));
+
+		return proxy;
+	}
+
+	/**
+	 * Changes interface of an already attached node.
+	 * 
+	 * @param o
+	 *            an object obtained by any {@link #attach} call.
+	 * @param type
+	 *            the new interface for dom manipulation.
+	 * @return an objet implementing the given interface.
+	 */
+	public <T> T rebind(Object o, Class<T> type) {
+		return loadProxy(XmlFieldUtils.getXmlFieldNode(o), type);
+	}
 }
