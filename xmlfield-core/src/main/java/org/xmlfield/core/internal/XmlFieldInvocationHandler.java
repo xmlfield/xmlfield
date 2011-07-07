@@ -36,6 +36,7 @@ import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.StringUtils;
 import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 import org.joda.time.chrono.ISOChronology;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
@@ -576,7 +577,7 @@ public class XmlFieldInvocationHandler implements InvocationHandler {
 
                     final String pattern = getFieldFormat(method);
 
-                    DateTimeFormatter formatter = ISODateTimeFormat.timeParser();
+                    DateTimeFormatter formatter = ISODateTimeFormat.dateTime();
                     if (pattern != null) {
                         formatter = DateTimeFormat.forPattern(pattern).withChronology(ISOChronology.getInstanceUTC());
                     }
@@ -892,14 +893,14 @@ public class XmlFieldInvocationHandler implements InvocationHandler {
 
             final String pattern = getFieldFormat(method);
 
-            DateTimeFormatter formatter = ISODateTimeFormat.timeParser();
+            DateTimeFormatter formatter = ISODateTimeFormat.dateTime();
             if (pattern != null) {
-                formatter = DateTimeFormat.forPattern(pattern).withChronology(ISOChronology.getInstanceUTC());
-            }
+                     formatter = DateTimeFormat.forPattern(pattern).withChronology(ISOChronology.getInstanceUTC());
+       }
 
             try {
 
-                return formatter.parseDateTime(textContent);
+           return formatter.parseDateTime(textContent);
 
             } catch (final RuntimeException e) {
 
