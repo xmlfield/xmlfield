@@ -3,10 +3,10 @@
   <parent>
     <artifactId>xmlfield</artifactId>
     <groupId>org.xmlfield</groupId>
-    <version>0.4.0-SNAPSHOT</version>
+    <version>0.4.0</version>
   </parent>
   <groupId>org.xmlfield</groupId>
   <artifactId>xmlfield-repository</artifactId>
-  <version>0.4.0-SNAPSHOT</version>
+  <version>0.4.0</version>
   <name>XMLField Document repository</name>
 </project>
