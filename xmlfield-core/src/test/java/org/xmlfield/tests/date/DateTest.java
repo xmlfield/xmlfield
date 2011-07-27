@@ -41,7 +41,7 @@ public class DateTest {
 	 * @throws Exception
 	 */
 	@Test
-	@Ignore
+//	@Ignore
 	public void testSimple() throws Exception {
 		XmlFieldBinder binder = new XmlFieldBinder();
 		DateStorage xml = binder.instantiate(DateStorage.class);
@@ -55,9 +55,9 @@ public class DateTest {
 
 		System.out.println( XmlUtils.xmlFieldNodeToXml(xml));
 		
-		Assert.assertEquals(dateTime.getHourOfDay(), dateTime2.getHourOfDay());
 	
 		Assert.assertEquals(dateTime.getHourOfDay(), dateTime2Default.getHourOfDay());
+		Assert.assertEquals(dateTime.getHourOfDay(), dateTime2.getHourOfDay());
 
 		// Nouveau cycle avec une date lue par XmlField, écrite puis relue
 		xml.setDate(dateTime2);
