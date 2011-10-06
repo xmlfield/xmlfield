@@ -21,7 +21,6 @@ import static org.apache.commons.lang.StringUtils.substringAfterLast;
 import static org.apache.commons.lang.StringUtils.substringBeforeLast;
 import static org.apache.commons.lang.StringUtils.substringBetween;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -30,14 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathConstants;
-import javax.xml.xpath.XPathExpressionException;
-
 import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
 import org.xmlfield.annotations.Association;
 import org.xmlfield.annotations.ExplicitCollection;
 import org.xmlfield.annotations.FieldXPath;
@@ -48,11 +40,9 @@ import org.xmlfield.core.XmlFieldNode;
 import org.xmlfield.core.XmlFieldNodeList;
 import org.xmlfield.core.XmlFieldNodeModifier;
 import org.xmlfield.core.XmlFieldNodeModifierFactory;
-import org.xmlfield.core.XmlFieldReader;
 import org.xmlfield.core.XmlFieldSelector;
 import org.xmlfield.core.XmlFieldSelectorFactory;
 import org.xmlfield.core.exception.XmlFieldXPathException;
-import org.xmlfield.utils.JaxpUtils;
 import org.xmlfield.utils.XPathUtils;
 
 /**
@@ -126,31 +116,6 @@ public abstract class XmlFieldUtils {
             "removeFrom" };
 
     /**
-     * ajouter un élément d'un certain type en fin de liste.
-     * 
-     * @param root
-     *            l'élément racine.
-     * @param xpath
-     *            la localisation XPath, dans cet élément, des autres éléments de la liste à laquelle ajouter le nouvel
-     *            élément.
-     * @param type
-     *            le type d'élément à ajouter.
-     * @return l'élément créé et ajouté.
-     * @throws ParserConfigurationException
-     * @throws SAXException
-     * @throws XPathExpressionException
-     * @deprecated use {@link XmlFieldUtils#add(XmlFieldNode, String, Class)} instead
-     */
-    @Deprecated
-    public static <T> T add(final Node root, final String xpath, final Class<T> type) throws XPathExpressionException,
-            SAXException, ParserConfigurationException {
-
-        final Node node = addNode(root, xpath, type);
-
-        return new XmlFieldReader().attach(null, node, type);
-    }
-
-    /**
      * Add a bonded element add the end of a list located by the xpath.
      * 
      * @param root
@@ -191,38 +156,6 @@ public abstract class XmlFieldUtils {
     }
 
     /**
-     * ajouter un nœud qui correspond à un certain type, en fin de liste.
-     * 
-     * @param root
-     *            l'élément racine.
-     * @param fieldXPath
-     *            la localisation XPath, dans cet élément, des autres éléments de la liste à laquelle ajouter le nouvel
-     *            élément.
-     * @param type
-     *            le type d'élément à ajouter.
-     * @return le nœud créé et ajouté.
-     * @throws XPathExpressionException
-     * @throws ParserConfigurationException
-     * @throws SAXException
-     * @deprecated use {@link XmlFieldUtils#addNode(XmlFieldNode, String, Class)} instead
-     */
-    @Deprecated
-    public static Node addNode(final Node root, final String fieldXPath, final Class<?> type)
-            throws XPathExpressionException, SAXException, ParserConfigurationException {
-
-        final NamespaceMap namespaces = getResourceNamespaces(type);
-        final Node parentNode = addParentNodes(root, fieldXPath, type);
-
-        // Create requested node.
-
-        // final String elementName = getElementName(type);
-        final String elementName = XPathUtils.getElementNameWithSelector(fieldXPath);
-        final Node node = JaxpUtils.createComplexElement(namespaces, parentNode, elementName, null);
-
-        return node;
-    }
-
-    /**
      * Add the specified binded node at the end of the xpath location.
      * 
      * @param root
@@ -247,109 +180,6 @@ public abstract class XmlFieldUtils {
         final XmlFieldNode<?> node = createComplexElement(namespaces, parentNode, elementName, null);
 
         return node;
-    }
-
-    /**
-     * @param root
-     * @param fieldXPath
-     * @param type
-     * @return
-     * @throws XPathExpressionException
-     * @deprecated use {@link XmlFieldUtils#addParentNodes(XmlFieldNode, String, Class)} instead
-     */
-    @Deprecated
-    public static Node addParentNodes(final Node root, final String fieldXPath, final Class<?> type)
-            throws XPathExpressionException {
-
-        final NamespaceMap namespaces = getResourceNamespaces(type);
-        final XPath xpath = JaxpUtils.getXPath(namespaces);
-        final Node parentNode;
-
-        // Check if this type of element already exists in the document.
-        final NodeList nodeList = (NodeList) xpath.evaluate(fieldXPath, root, XPathConstants.NODESET);
-
-        if (nodeList != null && nodeList.getLength() > 0) {
-            // Siblings exist. We will add item to their parent.
-            if (nodeList.item(0).getNodeType() == Node.ATTRIBUTE_NODE) {
-                String xPathElement = getElementXPath(fieldXPath, type);
-                if (xPathElement != null) {
-                    parentNode = (Node) xpath.evaluate(xPathElement, root, XPathConstants.NODE);
-                } else {
-                    parentNode = root;
-                }
-            } else {
-                if (".".equals(fieldXPath)) {
-                    parentNode = nodeList.item(0);
-                } else {
-                    parentNode = nodeList.item(0).getParentNode();
-                }
-            }
-
-        } else {
-            // Sibling do not exist. We need to create the appropriate node
-            // hierarchy :
-
-            // Do we even need a hierarchy ?
-            if (!fieldXPath.contains("/")) {
-                // We can create this node directly in the parent.
-                parentNode = root;
-            } else {
-                // Get hierarchy
-                final List<String> elementsToCreate = new ArrayList<String>();
-                Node node;
-
-                // Loop over the XPath hierarchy
-                for (String xPathBuffer = fieldXPath;;) {
-                    // Remove field name. Keep only parents
-                    xPathBuffer = substringBeforeLast(xPathBuffer, "/");
-
-                    // Ensure xpath was valid.
-                    if (isBlank(xPathBuffer)) {
-                        throw new IllegalStateException("Unable to create child in list with XPath: " + fieldXPath);
-                    }
-
-                    // If parent node already exists, we can create the element
-                    // directly.
-                    final NodeList nList = (NodeList) xpath.evaluate(xPathBuffer, root, XPathConstants.NODESET);
-                    if (nList != null && nList.getLength() != 0) {
-                        node = nList.item(0);
-                        break; // Escape from the loop and go to node creation.
-                    }
-
-                    // We have not parent, we need to create a node.
-                    final String elementName;
-                    if (xPathBuffer.contains("/")) {
-                        // Keep only parent name
-                        elementName = substringAfterLast(xPathBuffer, "/");
-                    } else {
-                        // This was the last element.
-                        elementName = xPathBuffer;
-                        xPathBuffer = null;
-                    }
-
-                    // Remenber we have to create elementName
-                    elementsToCreate.add(0, elementName);
-
-                    // If that was the last parent, exit the loop.
-                    if (xPathBuffer == null) {
-                        node = root;
-                        break;
-                    }
-                }
-
-                // Create all required elements
-                for (final String elementName : elementsToCreate) {
-                    final Node n = JaxpUtils.createComplexElement(namespaces, node, elementName, null);
-                    node = n;
-                }
-
-                // The request node will be attached to the last node created
-                // (the parent).
-                parentNode = node;
-            }
-        }
-
-        return parentNode;
     }
 
     /**

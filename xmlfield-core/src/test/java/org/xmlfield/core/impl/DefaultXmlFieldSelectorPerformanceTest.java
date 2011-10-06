@@ -13,7 +13,7 @@
  * limitations under the License. 
  * 
  */
-package org.xmlfield.utils;
+package org.xmlfield.core.impl;
 
 import static org.junit.Assert.assertTrue;
 import static org.xmlfield.utils.XmlUtils.xmlToXmlFieldNode;
@@ -33,17 +33,18 @@ import org.junit.runner.Result;
 import org.junit.runner.notification.Failure;
 import org.junit.runner.notification.RunListener;
 import org.xmlfield.core.XmlFieldNode;
+import org.xmlfield.core.impl.DefaultXmlFieldSelector;
 
 /**
  * Test class of the JaxpUtils tool in a multithreaded environment.
  * 
  * @author Guillaume Mary <guillaume.mary@capgemini.com>
  */
-public class JaxpUtilsPerformanceTest {
+public class DefaultXmlFieldSelectorPerformanceTest {
 
-    private static final int TASK_COUNT = 100;
+    private static final int TASK_COUNT = 2000;
 
-    private static final int THREAD_POOL_SIZE = 2;
+    private static final int THREAD_POOL_SIZE = 100;
 
     private static final int XPATH_REQUEST_COUNT = 100;
 
@@ -68,7 +69,7 @@ public class JaxpUtilsPerformanceTest {
                 testListener.testRunStarted(description);
                 try {
                     for (int i = 0; i < XPATH_REQUEST_COUNT; i++) {
-                        XPath xPath = JaxpUtils.getXPath(null);
+                        XPath xPath = DefaultXmlFieldSelector.getXPath(null);
                         String result = xPath.evaluate("/Catalog/Cd[Artist=\"Percy Sledge\"]/Title/text()",
                                 node.getNode());
                         if (!"When a man loves a woman".equals(result)) {

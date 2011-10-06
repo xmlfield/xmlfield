@@ -15,14 +15,17 @@
  */
 package org.xmlfield.core.impl;
 
-import static org.xmlfield.utils.JaxpUtils.getXPath;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
+import javax.xml.namespace.NamespaceContext;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
 
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -39,7 +42,14 @@ import org.xmlfield.core.internal.XmlFieldUtils.NamespaceMap;
  * 
  */
 public class DefaultXmlFieldSelector implements XmlFieldSelector {
+    private static final ThreadLocal<XPathFactory> xPathFactory = new ThreadLocal<XPathFactory>() {
 
+        @Override
+        protected XPathFactory initialValue() {
+            return XPathFactory.newInstance();
+        }
+
+    };
     @Override
     public Boolean selectXPathToBoolean(NamespaceMap namespaces, String xpath, XmlFieldNode<?> node)
             throws XmlFieldXPathException {
@@ -129,6 +139,68 @@ public class DefaultXmlFieldSelector implements XmlFieldSelector {
         if (xpath == null) {
             throw new XmlFieldXPathException("The requested xpath is null");
         }
+    }
+    
+    private static XPathFactory getXPathFactory() {
+        return xPathFactory.get();
+    }
+    
+    public static XPath getXPath(final NamespaceMap namespaces) {
+
+        final XPath xpath = getXPathFactory().newXPath();
+
+        if (namespaces != null) {
+
+            final Map<String, String> prefixesURIs = namespaces.getPrefixesURIs();
+
+            final NamespaceContext ns = new NamespaceContext() {
+
+                @Override
+                public String getNamespaceURI(final String prefix) {
+
+                    if (prefix == null) {
+
+                        return null;
+                    }
+
+                    final String nsURI = prefixesURIs.get(prefix);
+
+                    return nsURI;
+                }
+
+                @Override
+                public String getPrefix(final String namespaceURI) {
+
+                    if (namespaceURI == null) {
+
+                        return null;
+                    }
+
+                    if (prefixesURIs.containsValue(namespaceURI)) {
+
+                        for (final Map.Entry<String, String> e : prefixesURIs.entrySet()) {
+
+                            if (namespaceURI.equals(e.getValue())) {
+
+                                return e.getKey();
+                            }
+                        }
+                    }
+
+                    return null;
+                }
+
+                @Override
+                public Iterator<?> getPrefixes(final String namespaceURI) {
+
+                    return prefixesURIs.keySet().iterator();
+                }
+            };
+
+            xpath.setNamespaceContext(ns);
+        }
+
+        return xpath;
     }
 
 }
