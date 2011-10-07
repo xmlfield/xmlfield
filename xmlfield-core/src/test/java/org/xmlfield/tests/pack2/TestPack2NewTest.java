@@ -45,10 +45,15 @@ public class TestPack2NewTest {
      */
     @Test
     public void testAddCd() throws Exception {
+        //we extract namespaces from xml becuse we cannot warranty the output orders od the namespaces
+        String ns1="xmlns:a=\"http://www.w3.org/2005/Atom\"";
+        String ns2="xmlns=\"http://www.w3.org/1999/xhtml\"";
+        String xml1 = "<a:title type=\"xhtml\">   <div>     <span class=\"name\">CD Catalog</span>     <span class=\"format\">Atom</span>   </div> </a:title> <a:id>12345</a:id> <a:updated>2003-12-14T18:30:02Z</a:updated> <a:author>   <a:name>15</a:name> </a:author> <a:content type=\"xhtml\">   <div>     <div class=\"cd\">       <span class=\"title\">01</span>       <span class=\"price\">999999</span>       <span class=\"artist\">QL0001</span>     </div>   </div> </a:content></a:entry>";
+        String expected = "<a:title type=\"xhtml\">   <div>     <span class=\"name\">CD Catalog</span>     <span class=\"format\">Atom</span>   </div> </a:title> <a:id>12345</a:id> <a:updated>2003-12-14T18:30:02Z</a:updated> <a:author>   <a:name>15</a:name> </a:author> <a:content type=\"xhtml\">   <div>     <div class=\"cd\">       <span class=\"title\">01</span>       <span class=\"price\">999999</span>       <span class=\"artist\">QL0001</span>     </div>   <div class=\"cd\"><span class=\"title\">title</span></div></div> </a:content></a:entry>";
 
-        final String xml = "<a:entry xmlns:a=\"http://www.w3.org/2005/Atom\" xmlns=\"http://www.w3.org/1999/xhtml\" > <a:title type=\"xhtml\">   <div>     <span class=\"name\">CD Catalog</span>     <span class=\"format\">Atom</span>   </div> </a:title> <a:id>12345</a:id> <a:updated>2003-12-14T18:30:02Z</a:updated> <a:author>   <a:name>15</a:name> </a:author> <a:content type=\"xhtml\">   <div>     <div class=\"cd\">       <span class=\"title\">01</span>       <span class=\"price\">999999</span>       <span class=\"artist\">QL0001</span>     </div>   </div> </a:content></a:entry>";
-
-        final XmlFieldNode<?> node = xmlToXmlFieldNode(xml);
+        final String xml2 = "<a:entry "+ns1+" "+ns2+" >" +xml1;
+        
+        final XmlFieldNode<?> node = xmlToXmlFieldNode(xml2);
 
         final AtomCatalog catalog = binder.bind(node, AtomCatalog.class);
 
@@ -59,9 +64,10 @@ public class TestPack2NewTest {
 
         String result = xmlFieldNodeToXml(node);
         log.info(result);
-        assertEquals(
-                "<a:entry xmlns:a=\"http://www.w3.org/2005/Atom\" xmlns=\"http://www.w3.org/1999/xhtml\"> <a:title type=\"xhtml\">   <div>     <span class=\"name\">CD Catalog</span>     <span class=\"format\">Atom</span>   </div> </a:title> <a:id>12345</a:id> <a:updated>2003-12-14T18:30:02Z</a:updated> <a:author>   <a:name>15</a:name> </a:author> <a:content type=\"xhtml\">   <div>     <div class=\"cd\">       <span class=\"title\">01</span>       <span class=\"price\">999999</span>       <span class=\"artist\">QL0001</span>     </div>   <div class=\"cd\"><span class=\"title\">title</span></div></div> </a:content></a:entry>",
-                result);
+        assertTrue(result.contains(ns1));
+        assertTrue(result.contains(ns2));
+        assertTrue(result.contains(expected));
+
 
     }
 

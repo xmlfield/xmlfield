@@ -29,7 +29,7 @@ public class DefaultXmlFieldNodeModifierTest {
 
     private final XmlFieldNodeParser<Node> parser = new DefaultXmlFieldNodeParser();
 
-    private final XmlFieldSelector selector = new DefaultXmlFieldSelector();
+    private final XmlFieldSelector selector = new DefaultXmlFieldJaxenSelector();
 
     private final String xml = "<Catalog><Cd><Title>Empire Burlesque</Title><Artist>Bob Dylan</Artist><Country>USA</Country><Company>Columbia</Company><Price>10.90</Price><Year>1985</Year></Cd><Cd><Title>Hide your heart</Title><Artist>Bonnie Tyler</Artist><Country>UK</Country><Company>CBS Records</Company><Price>9.90</Price><Year>1988</Year></Cd><Cd><Title>Greatest Hits</Title><Artist>Dolly Parton</Artist><Country>USA</Country><Company>RCA</Company><Price>9.90</Price><Year>1982</Year></Cd></Catalog>";
 

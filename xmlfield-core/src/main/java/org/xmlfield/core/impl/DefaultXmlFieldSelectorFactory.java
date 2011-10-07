@@ -28,7 +28,7 @@ public class DefaultXmlFieldSelectorFactory extends XmlFieldSelectorFactory {
 
     @Override
     public XmlFieldSelector newSelector() {
-        return new DefaultXmlFieldSelector();
+        return new DefaultXmlFieldJaxenSelector();
     }
 
 }

@@ -41,7 +41,7 @@ import org.xmlfield.core.internal.XmlFieldUtils.NamespaceMap;
  * @author Guillaume Mary <guillaume.mary@capgemini.com>
  * 
  */
-public class DefaultXmlFieldSelector implements XmlFieldSelector {
+public class DefaultXmlFieldXalanSelector implements XmlFieldSelector {
     private static final ThreadLocal<XPathFactory> xPathFactory = new ThreadLocal<XPathFactory>() {
 
         @Override
