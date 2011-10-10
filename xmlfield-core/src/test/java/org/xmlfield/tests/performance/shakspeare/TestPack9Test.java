@@ -13,7 +13,7 @@
  * limitations under the License. 
  * 
  */
-package org.xmlfield.tests.pack9;
+package org.xmlfield.tests.performance.shakspeare;
 
 import static org.junit.Assert.assertTrue;
 
@@ -26,22 +26,18 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
-import org.w3c.dom.Node;
 import org.xmlfield.core.XmlFieldBinder;
-import org.xmlfield.core.XmlFieldNodeParser;
-import org.xmlfield.core.impl.DefaultXmlFieldNodeParser;
 import org.xmlfield.core.impl.DefaultXmlFieldSelectorTest;
 
 /**
- * @author Mabrouk Belhout
+ * @author Olivier Lafon
  */
 @Ignore
 public class TestPack9Test {
 
     private final XmlFieldBinder binder = new XmlFieldBinder();
-    private final XmlFieldNodeParser<Node> parser = new DefaultXmlFieldNodeParser();
+
 
     String hugeRomeoAndFatPrincess;
     @Before

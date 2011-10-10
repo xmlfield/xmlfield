@@ -13,7 +13,7 @@
  * limitations under the License. 
  * 
  */
-package org.xmlfield.tests.pack9;
+package org.xmlfield.tests.performance.shakspeare;
 
 import org.xmlfield.annotations.FieldXPath;
 import org.xmlfield.annotations.ResourceXPath;
