@@ -2,7 +2,7 @@
 <project name="XMLField">
   <bannerLeft>
     <name>XMLField</name>
-  
+   <src>images/logo.png</src>
   </bannerLeft>
   
    <bannerRight>
@@ -23,7 +23,7 @@
     </links>
    
     <menu name="XMLField">
-      <item name="About" href="index.html"/>
+      <item name="Introduction" href="index.html"/>
      </menu>
  <menu ref="modules" />
    <menu ref="reports"/>
