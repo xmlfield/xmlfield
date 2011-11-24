@@ -29,7 +29,7 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.xmlfield.core.XmlField;
-import org.xmlfield.core.impl.XmlFieldDomSelectorTest;
+import org.xmlfield.core.impl.dom.XmlFieldDomSelectorTest;
 
 /**
  * @author Olivier Lafon

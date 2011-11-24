@@ -1,4 +1,4 @@
-package org.xmlfield.core.impl;
+package org.xmlfield.core.impl.dom;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
