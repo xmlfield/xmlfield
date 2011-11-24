@@ -41,8 +41,20 @@ import org.xmlfield.core.internal.XmlFieldUtils;
 import org.xmlfield.core.internal.XmlFieldUtils.NamespaceMap;
 
 /**
- * Class which bind an interface annotated with some xpath expressions to an xml
- * field node which represent an xml content.
+ * This class is the entry point of XmlField. It can convert xml data to objects
+ * (both ways).
+ * 
+ * <pre>
+ * // Source Xml
+ * String xml ="&lt;modelRootTag&gt;&lt;/modelRootTag&gt;"; 
+ * 
+ * // Read doc
+ * XmlField xf = new XmlField();
+ * IModel model = xf.xmlToObject(xmlRessource, IModel.class)
+ * 
+ * // Back to XML.
+ * xml = xf.objectToXml( model);
+ * </pre>
  * 
  * @author Guillaume Mary <guillaume.mary@capgemini.com>
  */
