@@ -12,12 +12,12 @@ import org.w3c.dom.Node;
 import org.xmlfield.core.XmlField;
 import org.xmlfield.core.XmlFieldNode;
 import org.xmlfield.core.XmlFieldNodeParser;
-import org.xmlfield.core.impl.dom.XmlFieldDomNodeParser;
+import org.xmlfield.core.impl.dom.DomNodeParser;
 import org.xmlfield.core.test.Catalog;
 
 public class XmlFieldDomNodeParserTest {
 
-    XmlFieldNodeParser<Node> parser = new XmlFieldDomNodeParser();
+    XmlFieldNodeParser<Node> parser = new DomNodeParser();
 
     @Test
     public void testParser() throws Exception {

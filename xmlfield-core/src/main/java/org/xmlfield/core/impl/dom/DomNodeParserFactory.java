@@ -15,19 +15,20 @@
  */
 package org.xmlfield.core.impl.dom;
 
-import org.xmlfield.core.XmlFieldNodeModifier;
-import org.xmlfield.core.XmlFieldNodeModifierFactory;
+import org.xmlfield.core.XmlFieldNodeParser;
+import org.xmlfield.core.XmlFieldNodeParserFactory;
 
 /**
- * Default xml field node modifier factory implementation.
+ * Default xml field node parser factory implementation.
  * 
  * @author Guillaume Mary <guillaume.mary@capgemini.com>
+ * 
  */
-public class XmlFieldDomNodeModifierFactory extends XmlFieldNodeModifierFactory {
+public class DomNodeParserFactory extends XmlFieldNodeParserFactory {
 
     @Override
-    public XmlFieldNodeModifier newModifier() {
-        return new XmlFieldDomNodeModifier();
+    public XmlFieldNodeParser<?> newParser() {
+        return new DomNodeParser();
     }
 
 }

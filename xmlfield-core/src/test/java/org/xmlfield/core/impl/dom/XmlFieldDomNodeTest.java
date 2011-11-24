@@ -10,12 +10,12 @@ import org.junit.Test;
 import org.w3c.dom.Node;
 import org.xmlfield.core.XmlFieldNode;
 import org.xmlfield.core.XmlFieldNodeParser;
-import org.xmlfield.core.impl.dom.XmlFieldDomNode;
-import org.xmlfield.core.impl.dom.XmlFieldDomNodeParser;
+import org.xmlfield.core.impl.dom.DomNode;
+import org.xmlfield.core.impl.dom.DomNodeParser;
 
 public class XmlFieldDomNodeTest {
 
-    private final XmlFieldNodeParser<Node> parser = new XmlFieldDomNodeParser();
+    private final XmlFieldNodeParser<Node> parser = new DomNodeParser();
 
     @Test
     public void testGetNode() throws Exception {
@@ -47,7 +47,7 @@ public class XmlFieldDomNodeTest {
 
         assertThat(node.getParentNode().getNode(), not(nullValue()));
 
-        XmlFieldNode<Node> subNode = new XmlFieldDomNode(newNode);
+        XmlFieldNode<Node> subNode = new DomNode(newNode);
         assertThat(subNode.getNodeName(), is("Cd"));
         assertThat(subNode.getParentNode().getNodeName(), is("Catalog"));
     }

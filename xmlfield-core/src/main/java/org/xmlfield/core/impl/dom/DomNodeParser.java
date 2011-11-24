@@ -47,7 +47,7 @@ import org.xmlfield.core.internal.XmlFieldUtils;
  * @author Guillaume Mary <guillaume.mary@capgemini.com>
  * 
  */
-public class XmlFieldDomNodeParser implements XmlFieldNodeParser<Node> {
+public class DomNodeParser implements XmlFieldNodeParser<Node> {
 
     @Override
     public String nodeToXml(Object object) throws XmlFieldParsingException {
@@ -84,12 +84,12 @@ public class XmlFieldDomNodeParser implements XmlFieldNodeParser<Node> {
 
     @Override
     public XmlFieldNode<Node> xmlToNode(InputStream xmlContent) throws XmlFieldParsingException {
-        return new XmlFieldDomNode(xmlToNode(new InputSource(xmlContent)));
+        return new DomNode(xmlToNode(new InputSource(xmlContent)));
     }
 
     @Override
     public XmlFieldNode<Node> xmlToNode(String xml) throws XmlFieldParsingException {
-        return new XmlFieldDomNode(xmlToNode(new InputSource(new StringReader(xml))));
+        return new DomNode(xmlToNode(new InputSource(new StringReader(xml))));
     }
 
     /**

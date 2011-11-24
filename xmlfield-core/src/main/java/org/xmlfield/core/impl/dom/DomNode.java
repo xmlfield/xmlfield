@@ -24,11 +24,11 @@ import org.xmlfield.core.XmlFieldNode;
  * @author Guillaume Mary <guillaume.mary@capgemini.com>
  * 
  */
-public class XmlFieldDomNode implements XmlFieldNode<Node> {
+public class DomNode implements XmlFieldNode<Node> {
 
     private Node node;
 
-    public XmlFieldDomNode(Node node) {
+    public DomNode(Node node) {
         super();
         this.node = node;
     }
@@ -36,7 +36,7 @@ public class XmlFieldDomNode implements XmlFieldNode<Node> {
     @Override
     public XmlFieldNode<Node> getDocumentNode() {
         if (this.node != null) {
-            return new XmlFieldDomNode(this.node.getOwnerDocument().getDocumentElement());
+            return new DomNode(this.node.getOwnerDocument().getDocumentElement());
         }
         return null;
     }
@@ -80,7 +80,7 @@ public class XmlFieldDomNode implements XmlFieldNode<Node> {
         if (this.node == null) {
             return null;
         }
-        return new XmlFieldDomNode(this.node.getParentNode());
+        return new DomNode(this.node.getParentNode());
     }
 
     @Override

@@ -15,20 +15,37 @@
  */
 package org.xmlfield.core.impl.dom;
 
-import org.xmlfield.core.XmlFieldSelector;
-import org.xmlfield.core.XmlFieldSelectorFactory;
+import java.util.List;
+
+import org.xmlfield.core.XmlFieldNode;
+import org.xmlfield.core.XmlFieldNodeList;
 
 /**
- * Default xml field selector factory implementation.
+ * Default xml field node list implementation.
  * 
  * @author Guillaume Mary <guillaume.mary@capgemini.com>
  * 
  */
-public class XmlFieldDomSelectorFactory extends XmlFieldSelectorFactory {
+public class DomNodeList implements XmlFieldNodeList {
+
+    private final List<XmlFieldNode<?>> nodeList;
+
+    public DomNodeList(List<XmlFieldNode<?>> nodeList) {
+        super();
+        this.nodeList = nodeList;
+    }
 
     @Override
-    public XmlFieldSelector newSelector() {
-        return new XmlFieldDomJaxenSelector();
+    public int getLength() {
+        return nodeList.size();
+    }
+
+    @Override
+    public XmlFieldNode<?> item(int index) {
+        if (index < nodeList.size()) {
+            return nodeList.get(index);
+        }
+        return null;
     }
 
 }

@@ -17,23 +17,23 @@ import org.xmlfield.core.XmlFieldNodeList;
 import org.xmlfield.core.XmlFieldNodeModifier;
 import org.xmlfield.core.XmlFieldNodeParser;
 import org.xmlfield.core.XmlFieldSelector;
-import org.xmlfield.core.impl.dom.XmlFieldDomJaxenSelector;
-import org.xmlfield.core.impl.dom.XmlFieldDomNodeList;
-import org.xmlfield.core.impl.dom.XmlFieldDomNodeModifier;
-import org.xmlfield.core.impl.dom.XmlFieldDomNodeParser;
+import org.xmlfield.core.impl.dom.DomJaxenSelector;
+import org.xmlfield.core.impl.dom.DomNodeList;
+import org.xmlfield.core.impl.dom.DomNodeModifier;
+import org.xmlfield.core.impl.dom.DomNodeParser;
 import org.xmlfield.core.internal.XmlFieldUtils.NamespaceMap;
 
 public class XmlFieldDomNodeModifierTest {
 
-    private final XmlFieldNodeModifier modifier = new XmlFieldDomNodeModifier();
+    private final XmlFieldNodeModifier modifier = new DomNodeModifier();
 
     private XmlFieldNode<Node> node;
 
     private XmlFieldNode<Node> nodeNs;
 
-    private final XmlFieldNodeParser<Node> parser = new XmlFieldDomNodeParser();
+    private final XmlFieldNodeParser<Node> parser = new DomNodeParser();
 
-    private final XmlFieldSelector selector = new XmlFieldDomJaxenSelector();
+    private final XmlFieldSelector selector = new DomJaxenSelector();
 
     private final String xml = "<Catalog><Cd><Title>Empire Burlesque</Title><Artist>Bob Dylan</Artist><Country>USA</Country><Company>Columbia</Company><Price>10.90</Price><Year>1985</Year></Cd><Cd><Title>Hide your heart</Title><Artist>Bonnie Tyler</Artist><Country>UK</Country><Company>CBS Records</Company><Price>9.90</Price><Year>1988</Year></Cd><Cd><Title>Greatest Hits</Title><Artist>Dolly Parton</Artist><Country>USA</Country><Company>RCA</Company><Price>9.90</Price><Year>1982</Year></Cd></Catalog>";
 
@@ -313,7 +313,7 @@ public class XmlFieldDomNodeModifierTest {
         }
 
         // test to remove nodes with an empty list
-        modifier.removeChildren(new XmlFieldDomNodeList(new ArrayList<XmlFieldNode<?>>()));
+        modifier.removeChildren(new DomNodeList(new ArrayList<XmlFieldNode<?>>()));
         assertThat(parser.nodeToXml(node), is(xml));
 
         // test to remove nodes with a list

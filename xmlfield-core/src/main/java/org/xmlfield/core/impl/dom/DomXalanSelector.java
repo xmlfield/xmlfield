@@ -41,7 +41,7 @@ import org.xmlfield.core.internal.XmlFieldUtils.NamespaceMap;
  * @author Guillaume Mary <guillaume.mary@capgemini.com>
  * 
  */
-public class XmlFieldDomXalanSelector implements XmlFieldSelector {
+public class DomXalanSelector implements XmlFieldSelector {
     private static final ThreadLocal<XPathFactory> xPathFactory = new ThreadLocal<XPathFactory>() {
 
         @Override
@@ -78,7 +78,7 @@ public class XmlFieldDomXalanSelector implements XmlFieldSelector {
         if (selectedNode == null) {
             return null;
         }
-        return new XmlFieldDomNode(selectedNode);
+        return new DomNode(selectedNode);
     }
 
     @Override
@@ -100,11 +100,11 @@ public class XmlFieldDomXalanSelector implements XmlFieldSelector {
 
         for (int i = 0; i < nodeCount; ++i) {
 
-            final XmlFieldNode<Node> subNode = new XmlFieldDomNode(nodeList.item(i));
+            final XmlFieldNode<Node> subNode = new DomNode(nodeList.item(i));
 
             list.add(subNode);
         }
-        return new XmlFieldDomNodeList(list);
+        return new DomNodeList(list);
     }
 
     @Override

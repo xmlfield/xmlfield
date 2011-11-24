@@ -25,9 +25,9 @@ import java.util.Properties;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.xmlfield.core.impl.dom.XmlFieldDomNodeModifierFactory;
-import org.xmlfield.core.impl.dom.XmlFieldDomNodeParserFactory;
-import org.xmlfield.core.impl.dom.XmlFieldDomSelectorFactory;
+import org.xmlfield.core.impl.dom.DomNodeModifierFactory;
+import org.xmlfield.core.impl.dom.DomNodeParserFactory;
+import org.xmlfield.core.impl.dom.DomSelectorFactory;
 
 /**
  * XmlFieldFactory finder instanciate an XmlFieldFactory instance. This finder lookup in the classpath a file named
@@ -59,10 +59,10 @@ public class XmlFieldFactoryFinder {
 
     static {
         defaultFactoriesClass = new HashMap<String, Class<?>>();
-        defaultFactoriesClass.put(XmlFieldSelectorFactory.class.getName(), XmlFieldDomSelectorFactory.class);
-        defaultFactoriesClass.put(XmlFieldNodeParserFactory.class.getName(), XmlFieldDomNodeParserFactory.class);
+        defaultFactoriesClass.put(XmlFieldSelectorFactory.class.getName(), DomSelectorFactory.class);
+        defaultFactoriesClass.put(XmlFieldNodeParserFactory.class.getName(), DomNodeParserFactory.class);
         defaultFactoriesClass
-                .put(XmlFieldNodeModifierFactory.class.getName(), XmlFieldDomNodeModifierFactory.class);
+                .put(XmlFieldNodeModifierFactory.class.getName(), DomNodeModifierFactory.class);
     }
 
     private final ClassLoader classloader;
