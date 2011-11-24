@@ -13,7 +13,9 @@
  * limitations under the License. 
  * 
  */
-package org.xmlfield.core.internal;
+package org.xmlfield.core.api;
+
+import org.xmlfield.core.internal.XmlFieldFactory;
 
 /**
  * <p>

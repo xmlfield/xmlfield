@@ -13,9 +13,9 @@
  * limitations under the License. 
  * 
  */
-package org.xmlfield.core.internal;
+package org.xmlfield.core.api;
 
-import org.xmlfield.core.internal.impl.XmlFieldUtils.NamespaceMap;
+import org.xmlfield.core.internal.XmlFieldUtils.NamespaceMap;
 
 /**
  * Modifier interface, this interface describe the diffrent operation needed to

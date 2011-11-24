@@ -17,8 +17,8 @@ package org.xmlfield.core.impl.dom;
 
 import java.util.List;
 
-import org.xmlfield.core.internal.XmlFieldNode;
-import org.xmlfield.core.internal.XmlFieldNodeList;
+import org.xmlfield.core.api.XmlFieldNode;
+import org.xmlfield.core.api.XmlFieldNodeList;
 
 /**
  * Default xml field node list implementation.

@@ -13,10 +13,10 @@
  * limitations under the License. 
  * 
  */
-package org.xmlfield.core.internal;
+package org.xmlfield.core.api;
 
 import org.xmlfield.core.exception.XmlFieldXPathException;
-import org.xmlfield.core.internal.impl.XmlFieldUtils.NamespaceMap;
+import org.xmlfield.core.internal.XmlFieldUtils.NamespaceMap;
 
 /**
  * The XPath selector interface used to select xpath expression on an xml field

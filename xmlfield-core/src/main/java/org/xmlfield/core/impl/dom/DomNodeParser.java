@@ -36,10 +36,10 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+import org.xmlfield.core.api.XmlFieldNode;
+import org.xmlfield.core.api.XmlFieldNodeParser;
 import org.xmlfield.core.exception.XmlFieldParsingException;
-import org.xmlfield.core.internal.XmlFieldNode;
-import org.xmlfield.core.internal.XmlFieldNodeParser;
-import org.xmlfield.core.internal.impl.XmlFieldUtils;
+import org.xmlfield.core.internal.XmlFieldUtils;
 
 /**
  * Default xml field node parser. This implementation deal with a {@link Node} object

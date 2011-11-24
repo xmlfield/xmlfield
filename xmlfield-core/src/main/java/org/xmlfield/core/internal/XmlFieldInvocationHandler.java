@@ -13,14 +13,14 @@
  * limitations under the License. 
  * 
  */
-package org.xmlfield.core.internal.impl;
+package org.xmlfield.core.internal;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static org.xmlfield.core.internal.impl.XmlFieldUtils.getExplicitCollections;
-import static org.xmlfield.core.internal.impl.XmlFieldUtils.getFieldFormat;
-import static org.xmlfield.core.internal.impl.XmlFieldUtils.getFieldXPath;
-import static org.xmlfield.core.internal.impl.XmlFieldUtils.getFieldXPathType;
-import static org.xmlfield.core.internal.impl.XmlFieldUtils.getResourceNamespaces;
+import static org.xmlfield.core.internal.XmlFieldUtils.getExplicitCollections;
+import static org.xmlfield.core.internal.XmlFieldUtils.getFieldFormat;
+import static org.xmlfield.core.internal.XmlFieldUtils.getFieldXPath;
+import static org.xmlfield.core.internal.XmlFieldUtils.getFieldXPathType;
+import static org.xmlfield.core.internal.XmlFieldUtils.getResourceNamespaces;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
@@ -45,16 +45,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xmlfield.annotations.FieldXPath;
 import org.xmlfield.core.XmlField;
+import org.xmlfield.core.api.XmlFieldNode;
+import org.xmlfield.core.api.XmlFieldNodeList;
+import org.xmlfield.core.api.XmlFieldNodeModifier;
+import org.xmlfield.core.api.XmlFieldNodeModifierFactory;
+import org.xmlfield.core.api.XmlFieldObject;
+import org.xmlfield.core.api.XmlFieldSelector;
+import org.xmlfield.core.api.XmlFieldSelectorFactory;
 import org.xmlfield.core.exception.XmlFieldTechnicalException;
 import org.xmlfield.core.exception.XmlFieldXPathException;
-import org.xmlfield.core.internal.XmlFieldObject;
-import org.xmlfield.core.internal.XmlFieldNode;
-import org.xmlfield.core.internal.XmlFieldNodeList;
-import org.xmlfield.core.internal.XmlFieldNodeModifier;
-import org.xmlfield.core.internal.XmlFieldNodeModifierFactory;
-import org.xmlfield.core.internal.XmlFieldSelector;
-import org.xmlfield.core.internal.XmlFieldSelectorFactory;
-import org.xmlfield.core.internal.impl.XmlFieldUtils.NamespaceMap;
+import org.xmlfield.core.internal.XmlFieldUtils.NamespaceMap;
 
 /**
  * l'objet {@link InvocationHandler} à utiliser sur les proxies chargés à la lecture des nœuds XML.

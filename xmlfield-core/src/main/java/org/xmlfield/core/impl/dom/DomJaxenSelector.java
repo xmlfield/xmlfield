@@ -27,11 +27,11 @@ import org.jaxen.JaxenException;
 import org.jaxen.XPath;
 import org.jaxen.dom.DOMXPath;
 import org.w3c.dom.Node;
+import org.xmlfield.core.api.XmlFieldNode;
+import org.xmlfield.core.api.XmlFieldNodeList;
+import org.xmlfield.core.api.XmlFieldSelector;
 import org.xmlfield.core.exception.XmlFieldXPathException;
-import org.xmlfield.core.internal.XmlFieldNode;
-import org.xmlfield.core.internal.XmlFieldNodeList;
-import org.xmlfield.core.internal.XmlFieldSelector;
-import org.xmlfield.core.internal.impl.XmlFieldUtils.NamespaceMap;
+import org.xmlfield.core.internal.XmlFieldUtils.NamespaceMap;
 
 /**
  * Default xml field selector implementation. Use the jaxp implementation.

@@ -25,6 +25,9 @@ import java.util.Properties;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.xmlfield.core.api.XmlFieldNodeModifierFactory;
+import org.xmlfield.core.api.XmlFieldNodeParserFactory;
+import org.xmlfield.core.api.XmlFieldSelectorFactory;
 import org.xmlfield.core.impl.dom.DomNodeModifierFactory;
 import org.xmlfield.core.impl.dom.DomNodeParserFactory;
 import org.xmlfield.core.impl.dom.DomSelectorFactory;

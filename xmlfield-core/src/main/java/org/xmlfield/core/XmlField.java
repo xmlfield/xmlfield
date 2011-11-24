@@ -16,9 +16,9 @@
 package org.xmlfield.core;
 
 import static com.google.common.collect.Iterables.toArray;
-import static org.xmlfield.core.internal.impl.XPathUtils.getElementNameWithSelector;
-import static org.xmlfield.core.internal.impl.XmlFieldUtils.getResourceNamespaces;
-import static org.xmlfield.core.internal.impl.XmlFieldUtils.getResourceXPath;
+import static org.xmlfield.core.internal.XPathUtils.getElementNameWithSelector;
+import static org.xmlfield.core.internal.XmlFieldUtils.getResourceNamespaces;
+import static org.xmlfield.core.internal.XmlFieldUtils.getResourceXPath;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -31,20 +31,20 @@ import java.util.Map;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.xml.sax.SAXException;
+import org.xmlfield.core.api.XmlFieldNode;
+import org.xmlfield.core.api.XmlFieldNodeList;
+import org.xmlfield.core.api.XmlFieldNodeParser;
+import org.xmlfield.core.api.XmlFieldNodeParserFactory;
+import org.xmlfield.core.api.XmlFieldObject;
+import org.xmlfield.core.api.XmlFieldSelector;
+import org.xmlfield.core.api.XmlFieldSelectorFactory;
 import org.xmlfield.core.exception.XmlFieldException;
 import org.xmlfield.core.exception.XmlFieldParsingException;
 import org.xmlfield.core.exception.XmlFieldXPathException;
-import org.xmlfield.core.internal.XmlFieldObject;
-import org.xmlfield.core.internal.XmlFieldNode;
-import org.xmlfield.core.internal.XmlFieldNodeList;
-import org.xmlfield.core.internal.XmlFieldNodeParser;
-import org.xmlfield.core.internal.XmlFieldNodeParserFactory;
-import org.xmlfield.core.internal.XmlFieldSelector;
-import org.xmlfield.core.internal.XmlFieldSelectorFactory;
-import org.xmlfield.core.internal.impl.XPathUtils;
-import org.xmlfield.core.internal.impl.XmlFieldInvocationHandler;
-import org.xmlfield.core.internal.impl.XmlFieldUtils;
-import org.xmlfield.core.internal.impl.XmlFieldUtils.NamespaceMap;
+import org.xmlfield.core.internal.XPathUtils;
+import org.xmlfield.core.internal.XmlFieldInvocationHandler;
+import org.xmlfield.core.internal.XmlFieldUtils;
+import org.xmlfield.core.internal.XmlFieldUtils.NamespaceMap;
 
 /**
  * This class is the entry point of XmlField. It can convert xml data to objects

@@ -25,11 +25,11 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
-import org.xmlfield.core.internal.XmlFieldNode;
-import org.xmlfield.core.internal.XmlFieldNodeList;
-import org.xmlfield.core.internal.XmlFieldNodeModifier;
-import org.xmlfield.core.internal.impl.XPathUtils;
-import org.xmlfield.core.internal.impl.XmlFieldUtils.NamespaceMap;
+import org.xmlfield.core.api.XmlFieldNode;
+import org.xmlfield.core.api.XmlFieldNodeList;
+import org.xmlfield.core.api.XmlFieldNodeModifier;
+import org.xmlfield.core.internal.XPathUtils;
+import org.xmlfield.core.internal.XmlFieldUtils.NamespaceMap;
 
 /**
  * Default xml field node modifier implementation

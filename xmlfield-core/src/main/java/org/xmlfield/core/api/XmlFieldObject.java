@@ -13,29 +13,23 @@
  * limitations under the License. 
  * 
  */
-package org.xmlfield.core.internal;
+package org.xmlfield.core.api;
+
 
 /**
- * XmlFieldNodeList interface
+ * interface essentiellement utilisée par le moteur de lecture du XML vers Java, mais rien n'empêche de déclarer une
+ * interface Java de manipulation du XML héritant de <tt>INodeable</tt> afin de récupérer le nœud XML correspondant.
  * 
+ * @author David Andrianavalontsalama
  * @author Guillaume Mary <guillaume.mary@capgemini.com>
  * 
  */
-public interface XmlFieldNodeList {
+public interface XmlFieldObject<T> {
 
     /**
-     * Get the node list length.
+     * renvoie le nœud XML correspondant à cet objet.
      * 
-     * @return node list length
+     * @return le nœud XML.
      */
-    public int getLength();
-
-    /**
-     * Retrieve the item positioned at the specified index.
-     * 
-     * @param index
-     *            index
-     * @return node
-     */
-    public XmlFieldNode<?> item(int index);
+    XmlFieldNode<T> toNode();
 }

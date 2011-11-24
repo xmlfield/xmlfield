@@ -12,16 +12,16 @@ import java.util.ArrayList;
 import org.junit.Before;
 import org.junit.Test;
 import org.w3c.dom.Node;
+import org.xmlfield.core.api.XmlFieldNode;
+import org.xmlfield.core.api.XmlFieldNodeList;
+import org.xmlfield.core.api.XmlFieldNodeModifier;
+import org.xmlfield.core.api.XmlFieldNodeParser;
+import org.xmlfield.core.api.XmlFieldSelector;
 import org.xmlfield.core.impl.dom.DomJaxenSelector;
 import org.xmlfield.core.impl.dom.DomNodeList;
 import org.xmlfield.core.impl.dom.DomNodeModifier;
 import org.xmlfield.core.impl.dom.DomNodeParser;
-import org.xmlfield.core.internal.XmlFieldNode;
-import org.xmlfield.core.internal.XmlFieldNodeList;
-import org.xmlfield.core.internal.XmlFieldNodeModifier;
-import org.xmlfield.core.internal.XmlFieldNodeParser;
-import org.xmlfield.core.internal.XmlFieldSelector;
-import org.xmlfield.core.internal.impl.XmlFieldUtils.NamespaceMap;
+import org.xmlfield.core.internal.XmlFieldUtils.NamespaceMap;
 
 public class XmlFieldDomNodeModifierTest {
 
