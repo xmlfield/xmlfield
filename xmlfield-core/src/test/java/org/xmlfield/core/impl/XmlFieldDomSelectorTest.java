@@ -13,6 +13,8 @@ import org.xmlfield.core.XmlFieldNodeList;
 import org.xmlfield.core.XmlFieldNodeParser;
 import org.xmlfield.core.XmlFieldSelector;
 import org.xmlfield.core.exception.XmlFieldXPathException;
+import org.xmlfield.core.impl.dom.XmlFieldDomJaxenSelector;
+import org.xmlfield.core.impl.dom.XmlFieldDomNodeParser;
 
 
 public class XmlFieldDomSelectorTest {

@@ -13,7 +13,7 @@
  * limitations under the License. 
  * 
  */
-package org.xmlfield.core.impl;
+package org.xmlfield.core.impl.dom;
 
 import org.w3c.dom.Node;
 import org.xmlfield.core.XmlFieldNode;

@@ -13,7 +13,7 @@
  * limitations under the License. 
  * 
  */
-package org.xmlfield.core.impl;
+package org.xmlfield.core.impl.dom;
 
 
 import java.util.ArrayList;

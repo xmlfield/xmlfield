@@ -10,6 +10,8 @@ import org.junit.Test;
 import org.w3c.dom.Node;
 import org.xmlfield.core.XmlFieldNode;
 import org.xmlfield.core.XmlFieldNodeParser;
+import org.xmlfield.core.impl.dom.XmlFieldDomNode;
+import org.xmlfield.core.impl.dom.XmlFieldDomNodeParser;
 
 public class XmlFieldDomNodeTest {
 

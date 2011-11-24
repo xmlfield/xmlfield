@@ -13,22 +13,22 @@
  * limitations under the License. 
  * 
  */
-package org.xmlfield.core.impl;
+package org.xmlfield.core.impl.dom;
 
-import org.xmlfield.core.XmlFieldNodeParser;
-import org.xmlfield.core.XmlFieldNodeParserFactory;
+import org.xmlfield.core.XmlFieldSelector;
+import org.xmlfield.core.XmlFieldSelectorFactory;
 
 /**
- * Default xml field node parser factory implementation.
+ * Default xml field selector factory implementation.
  * 
  * @author Guillaume Mary <guillaume.mary@capgemini.com>
  * 
  */
-public class XmlFieldDomNodeParserFactory extends XmlFieldNodeParserFactory {
+public class XmlFieldDomSelectorFactory extends XmlFieldSelectorFactory {
 
     @Override
-    public XmlFieldNodeParser<?> newParser() {
-        return new XmlFieldDomNodeParser();
+    public XmlFieldSelector newSelector() {
+        return new XmlFieldDomJaxenSelector();
     }
 
 }

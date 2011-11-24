@@ -13,21 +13,39 @@
  * limitations under the License. 
  * 
  */
-package org.xmlfield.core.impl;
+package org.xmlfield.core.impl.dom;
 
-import org.xmlfield.core.XmlFieldNodeModifier;
-import org.xmlfield.core.XmlFieldNodeModifierFactory;
+import java.util.List;
+
+import org.xmlfield.core.XmlFieldNode;
+import org.xmlfield.core.XmlFieldNodeList;
 
 /**
- * Default xml field node modifier factory implementation.
+ * Default xml field node list implementation.
  * 
  * @author Guillaume Mary <guillaume.mary@capgemini.com>
+ * 
  */
-public class XmlFieldDomNodeModifierFactory extends XmlFieldNodeModifierFactory {
+public class XmlFieldDomNodeList implements XmlFieldNodeList {
+
+    private final List<XmlFieldNode<?>> nodeList;
+
+    public XmlFieldDomNodeList(List<XmlFieldNode<?>> nodeList) {
+        super();
+        this.nodeList = nodeList;
+    }
 
     @Override
-    public XmlFieldNodeModifier newModifier() {
-        return new XmlFieldDomNodeModifier();
+    public int getLength() {
+        return nodeList.size();
+    }
+
+    @Override
+    public XmlFieldNode<?> item(int index) {
+        if (index < nodeList.size()) {
+            return nodeList.get(index);
+        }
+        return null;
     }
 
 }
