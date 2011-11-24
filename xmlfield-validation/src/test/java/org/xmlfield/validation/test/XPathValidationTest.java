@@ -21,8 +21,8 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 import org.w3c.dom.Node;
 import org.xmlfield.core.XmlField;
-import org.xmlfield.core.internal.XmlFieldNode;
-import org.xmlfield.validation.utils.XPathValidationUtils;
+import org.xmlfield.core.api.XmlFieldNode;
+import org.xmlfield.validation.XPathValidation;
 
 public class XPathValidationTest {
 
@@ -33,7 +33,7 @@ public class XPathValidationTest {
 
         final XmlFieldNode<?> node = new XmlField().xmlToNode(xml);
 
-        String[] errors = XPathValidationUtils.getValidationErrors(node,
+        String[] errors = XPathValidation.getValidationErrors(node,
                 CatalogXPathValidator.class);
         assertEquals(1, errors.length);
         assertTrue(errors[0].contains("Greatest Hits"));
@@ -46,7 +46,7 @@ public class XPathValidationTest {
 
         final  XmlFieldNode<?>  node = new XmlField().xmlToNode(xml);
 
-        XPathValidationUtils.validateExplosively(node,
+        XPathValidation.validateExplosively(node,
                 CatalogXPathValidator.class);
     }
 
@@ -57,7 +57,7 @@ public class XPathValidationTest {
 
         final  XmlFieldNode<?>  node = new XmlField().xmlToNode(xml);
 
-        XPathValidationUtils.validateExplosively(node,
+        XPathValidation.validateExplosively(node,
                 CatalogXPathValidator.class);
     }
 }
