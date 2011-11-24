@@ -22,8 +22,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.xmlfield.core.XmlFieldBinder;
-import org.xmlfield.utils.XmlUtils;
+import org.xmlfield.core.XmlField;
 
 /**
  * Test basic xmlfield usage, with a simple xml file (no namespace, no
@@ -43,8 +42,8 @@ public class DateTest {
 	@Test
 //	@Ignore
 	public void testSimple() throws Exception {
-		XmlFieldBinder binder = new XmlFieldBinder();
-		DateStorage xml = binder.instantiate(DateStorage.class);
+		XmlField binder = new XmlField();
+		DateStorage xml = binder.newObject(DateStorage.class);
 
 		// Création et relecture
 		DateTime dateTime = new DateTime();
@@ -53,7 +52,7 @@ public class DateTest {
 		DateTime dateTime2 = xml.getDate();
 		DateTime dateTime2Default = xml.getDateDefault();
 
-		System.out.println( XmlUtils.xmlFieldNodeToXml(xml));
+		System.out.println( binder.objectToXml(xml));
 		
 	
 		Assert.assertEquals(dateTime.getHourOfDay(), dateTime2Default.getHourOfDay());

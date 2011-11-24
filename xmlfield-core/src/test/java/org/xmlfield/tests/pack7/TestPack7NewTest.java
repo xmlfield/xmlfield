@@ -18,11 +18,9 @@ package org.xmlfield.tests.pack7;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.xmlfield.utils.XmlUtils.xmlFieldNodeToXml;
-import static org.xmlfield.utils.XmlUtils.xmlToXmlFieldNode;
 
 import org.junit.Test;
-import org.xmlfield.core.XmlFieldBinder;
+import org.xmlfield.core.XmlField;
 import org.xmlfield.core.XmlFieldNode;
 
 /**
@@ -30,14 +28,14 @@ import org.xmlfield.core.XmlFieldNode;
  */
 public class TestPack7NewTest {
 
-    private final XmlFieldBinder binder = new XmlFieldBinder();
+    private final XmlField binder = new XmlField();
 
     @Test
     public void testNull() throws Exception {
         final String xml = "<Catalog></Catalog>";
-        final XmlFieldNode<?> node = xmlToXmlFieldNode(xml);
+        final XmlFieldNode<?> node = binder.xmlToNode(xml);
 
-        final Catalog catalog = binder.bind(node, Catalog.class);
+        final Catalog catalog = binder.nodeToObject(node, Catalog.class);
         assertNull(catalog.getCd());
     }
 
@@ -45,15 +43,15 @@ public class TestPack7NewTest {
     public void testSet() throws Exception {
         String xml = "<Catalog></Catalog>";
         String title = "Space Oddity";
-        XmlFieldNode<?> node = xmlToXmlFieldNode(xml);
+        XmlFieldNode<?> node = binder.xmlToNode(xml);
 
-        final Catalog catalog = binder.bind(node, Catalog.class);
+        final Catalog catalog = binder.nodeToObject(node, Catalog.class);
 
         Cd cd = catalog.newCd();
         cd.setTitle(title);
 
         assertNotNull(catalog.getCd());
-        xml = xmlFieldNodeToXml(catalog);
+        xml = binder.objectToXml(catalog);
         assertEquals("<Catalog><Cd><Title>" + title + "</Title></Cd></Catalog>", xml);
 
         catalog.setCd(cd);
@@ -64,9 +62,9 @@ public class TestPack7NewTest {
     public void testSet2() throws Exception {
         String title = "Ça fait rire les oiseaux";
         String xml = "<Catalog><Cd><Title>" + title + "</Title></Cd></Catalog>";
-        XmlFieldNode<?> node = xmlToXmlFieldNode(xml);
+        XmlFieldNode<?> node = binder.xmlToNode(xml);
 
-        final Catalog catalog = binder.bind(node, Catalog.class);
+        final Catalog catalog = binder.nodeToObject(node, Catalog.class);
 
         Cd cd = catalog.newCd();
 
@@ -78,15 +76,15 @@ public class TestPack7NewTest {
     @Test
     public void testSimple() throws Exception {
         String xml = "<Catalog><Cd /></Catalog>";
-        final XmlFieldNode<?> node = xmlToXmlFieldNode(xml);
+        final XmlFieldNode<?> node = binder.xmlToNode(xml);
 
-        final Catalog catalog = binder.bind(node, Catalog.class);
+        final Catalog catalog = binder.nodeToObject(node, Catalog.class);
         assertNotNull(catalog.getCd());
         assertEquals(null, catalog.getCd().getTitle());
 
         catalog.getCd().setTitle("Wolfmother");
 
-        xml = xmlFieldNodeToXml(catalog);
+        xml = binder.objectToXml(catalog);
         assertEquals("<Catalog><Cd><Title>Wolfmother</Title></Cd></Catalog>", xml);
     }
 

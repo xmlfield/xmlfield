@@ -9,7 +9,7 @@ import java.io.InputStream;
 
 import org.junit.Test;
 import org.w3c.dom.Node;
-import org.xmlfield.core.XmlFieldBinder;
+import org.xmlfield.core.XmlField;
 import org.xmlfield.core.XmlFieldNode;
 import org.xmlfield.core.XmlFieldNodeParser;
 import org.xmlfield.core.test.Catalog;
@@ -39,8 +39,8 @@ public class DefaultXmlFieldNodeParserTest {
         XmlFieldNode<Node> node = parser.xmlToNode(xml);
         assertThat(node, notNullValue());
         assertThat(node.getNode(), notNullValue(Node.class));
-        XmlFieldBinder binder = new XmlFieldBinder();
-        Catalog catalog = binder.bind(node, Catalog.class);
+        XmlField binder = new XmlField();
+        Catalog catalog = binder.nodeToObject(node, Catalog.class);
         assertThat(catalog, notNullValue());
         assertThat(parser.nodeToXml(catalog), is(xml));
     }

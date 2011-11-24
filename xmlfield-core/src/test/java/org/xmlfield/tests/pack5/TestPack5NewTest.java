@@ -16,13 +16,11 @@
 package org.xmlfield.tests.pack5;
 
 import static org.junit.Assert.assertEquals;
-import static org.xmlfield.utils.XmlUtils.xmlFieldNodeToXml;
-import static org.xmlfield.utils.XmlUtils.xmlToXmlFieldNode;
 
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.xmlfield.core.XmlFieldBinder;
+import org.xmlfield.core.XmlField;
 import org.xmlfield.core.XmlFieldNode;
 
 /**
@@ -32,7 +30,7 @@ import org.xmlfield.core.XmlFieldNode;
  */
 public class TestPack5NewTest {
 
-    private final XmlFieldBinder binder = new XmlFieldBinder();
+    private final XmlField binder = new XmlField();
 
     Logger log = LoggerFactory.getLogger(TestPack5NewTest.class);
 
@@ -48,10 +46,10 @@ public class TestPack5NewTest {
         // Load initial XML
         final String xml = "<person><name first=\"John\" last=\"Abbitbol\"/><age value=\"52\"/><children age=\"10\" firstName=\"Paul\" lastName=\"Abbitbol\"/><children age=\"5\" firstName=\"Mia\" lastName=\"Abbitbol\"/></person>";
         String result = null;
-        final XmlFieldNode<?> node = xmlToXmlFieldNode(xml);
+        final XmlFieldNode<?> node = binder.xmlToNode(xml);
 
         // Attach and assert object values
-        final Person person = binder.bind(node, Person.class);
+        final Person person = binder.nodeToObject(node, Person.class);
         assertEquals("John", person.getFirstName());
         assertEquals("John", person.getFirstName());
         assertEquals("Abbitbol", person.getLastName());
@@ -64,7 +62,7 @@ public class TestPack5NewTest {
         person.getChildrens()[0].setFirstName(null);
         person.getChildrens()[0].setLastName(null);
 
-        result = xmlFieldNodeToXml(node);
+        result = binder.nodeToXml(node);
         log.info(result);
         assertEquals(
                 "<person><name/><age value=\"0\"/><children age=\"0\"/><children age=\"5\" firstName=\"Mia\" lastName=\"Abbitbol\"/></person>",
@@ -83,10 +81,10 @@ public class TestPack5NewTest {
         // Load initial XML
         final String xml = "<person><name first=\"John\" last=\"Abbitbol\"/><age value=\"52\"/><children age=\"10\" firstName=\"Paul\" lastName=\"Abbitbol\"/><children age=\"5\" firstName=\"Mia\" lastName=\"Abbitbol\"/></person>";
         String result = null;
-        final XmlFieldNode<?> node = xmlToXmlFieldNode(xml);
+        final XmlFieldNode<?> node = binder.xmlToNode(xml);
 
         // Attach and assert object values
-        final Person person = binder.bind(node, Person.class);
+        final Person person = binder.nodeToObject(node, Person.class);
         assertEquals(52, person.getAge());
         assertEquals("John", person.getFirstName());
         assertEquals("Abbitbol", person.getLastName());
@@ -108,7 +106,7 @@ public class TestPack5NewTest {
         person.getChildrens()[1].setAge(40);
         person.getChildrens()[1].setFirstName("Diane");
         person.getChildrens()[1].setLastName("Kruger");
-        result = xmlFieldNodeToXml(node);
+        result = binder.nodeToXml(node);
         assertEquals(
                 "<person><name first=\"Freddy\" last=\"Kruger\"/><age value=\"25\"/><children age=\"50\" firstName=\"Horror\" lastName=\"Kruger\"/><children age=\"40\" firstName=\"Diane\" lastName=\"Kruger\"/></person>",
                 result);

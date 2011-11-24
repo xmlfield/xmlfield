@@ -36,7 +36,6 @@ import org.xmlfield.core.XmlFieldNodeList;
 import org.xmlfield.core.XmlFieldSelector;
 import org.xmlfield.core.XmlFieldSelectorFactory;
 import org.xmlfield.core.exception.XmlFieldXPathException;
-import org.xmlfield.core.impl.DefaultXmlFieldNode;
 import org.xmlfield.core.internal.XmlFieldUtils.NamespaceMap;
 import org.xmlfield.validation.annotations.XPathEquals;
 
@@ -51,12 +50,6 @@ public class XPathValidationUtils {
     private static class ExplosiveValidatorInvocationHandler implements InvocationHandler {
 
         private final XmlFieldNode<?> node;
-
-        @Deprecated
-        public ExplosiveValidatorInvocationHandler(final Node node) {
-
-            this.node = new DefaultXmlFieldNode(checkNotNull(node, "node"));
-        }
 
         public ExplosiveValidatorInvocationHandler(final XmlFieldNode<?> node) {
 
@@ -80,12 +73,6 @@ public class XPathValidationUtils {
     private static class ValidatorWithErrorsInvocationHandler implements InvocationHandler {
 
         private final XmlFieldNode<?> node;
-
-        @Deprecated
-        public ValidatorWithErrorsInvocationHandler(final Node node) {
-
-            this.node = new DefaultXmlFieldNode(checkNotNull(node, "node"));
-        }
 
         public ValidatorWithErrorsInvocationHandler(final XmlFieldNode<?> node) {
 
@@ -120,16 +107,6 @@ public class XPathValidationUtils {
         }
     };
 
-    @Deprecated
-    public static <T> T getExplosiveValidator(final Node node, final Class<T> validatorClass) {
-
-        final Object proxy = Proxy.newProxyInstance(getClassLoader(), new Class<?>[] { validatorClass },
-                new ExplosiveValidatorInvocationHandler(node));
-
-        return validatorClass.cast(proxy);
-
-    }
-
     public static <T> T getExplosiveValidator(final Object object, final Class<T> validatorClass) {
 
         return getExplosiveValidator(getXmlFieldNode(object), validatorClass);
@@ -142,34 +119,6 @@ public class XPathValidationUtils {
 
         return validatorClass.cast(proxy);
 
-    }
-
-    @Deprecated
-    public static String[] getValidationErrors(final Node node, final Class<?>... validationClasses)
-            throws XPathExpressionException {
-
-        final List<String> errors = new ArrayList<String>();
-
-        try {
-            validate(new HandleXPathCallback() {
-
-                @Override
-                public void handleXPathEquals(final String message) {
-
-                    errors.add(message);
-                }
-
-            }, new DefaultXmlFieldNode(node), validationClasses);
-        } catch (XmlFieldXPathException e) {
-            Throwable cause = e.getCause();
-            if (cause instanceof XPathExpressionException) {
-                throw (XPathExpressionException) cause;
-            } else {
-                throw new RuntimeException(cause);
-            }
-        }
-
-        return toArray(errors, String.class);
     }
 
     public static String[] getValidationErrors(final Object object, final Class<?>... validationClasses)
@@ -196,15 +145,6 @@ public class XPathValidationUtils {
         return toArray(errors, String.class);
     }
 
-    @Deprecated
-    public static <T> T getValidatorWithErrors(final Node node, final Class<T> validatorClass) {
-
-        final Object proxy = Proxy.newProxyInstance(getClassLoader(), new Class<?>[] { validatorClass },
-                new ValidatorWithErrorsInvocationHandler(node));
-
-        return validatorClass.cast(proxy);
-    }
-
     public static <T> T getValidatorWithErrors(final Object object, final Class<T> validatorClass) {
         return getValidatorWithErrors(getXmlFieldNode(object), validatorClass);
     }
@@ -215,22 +155,6 @@ public class XPathValidationUtils {
                 new ValidatorWithErrorsInvocationHandler(node));
 
         return validatorClass.cast(proxy);
-    }
-
-    @Deprecated
-    public static void validateExplosively(final Node node, final Class<?>... validationClasses)
-            throws XPathExpressionException {
-
-        try {
-            validate(EXPLOSIVE_CALLBACK, new DefaultXmlFieldNode(node), validationClasses);
-        } catch (XmlFieldXPathException e) {
-            Throwable cause = e.getCause();
-            if (cause instanceof XPathExpressionException) {
-                throw (XPathExpressionException) cause;
-            } else {
-                throw new RuntimeException(cause);
-            }
-        }
     }
 
     public static void validateExplosively(final Object object, final Class<?>... validationClasses)

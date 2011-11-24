@@ -17,7 +17,7 @@ package org.xmlfield.tests.pack4;
 
 import org.xmlfield.annotations.FieldXPath;
 import org.xmlfield.annotations.ResourceXPath;
-import org.xmlfield.core.XmlString;
+import org.xmlfield.core.types.XmlString;
 
 @ResourceXPath("/list")
 public interface StringList {

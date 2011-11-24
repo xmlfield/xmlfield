@@ -35,7 +35,7 @@ import org.xmlfield.annotations.ExplicitCollection;
 import org.xmlfield.annotations.FieldXPath;
 import org.xmlfield.annotations.Namespaces;
 import org.xmlfield.annotations.ResourceXPath;
-import org.xmlfield.core.XmlFieldBinder;
+import org.xmlfield.core.XmlField;
 import org.xmlfield.core.XmlFieldNode;
 import org.xmlfield.core.XmlFieldNodeList;
 import org.xmlfield.core.XmlFieldNodeModifier;
@@ -43,7 +43,6 @@ import org.xmlfield.core.XmlFieldNodeModifierFactory;
 import org.xmlfield.core.XmlFieldSelector;
 import org.xmlfield.core.XmlFieldSelectorFactory;
 import org.xmlfield.core.exception.XmlFieldXPathException;
-import org.xmlfield.utils.XPathUtils;
 
 /**
  * Xml manipulation node utility class.
@@ -150,11 +149,37 @@ public abstract class XmlFieldUtils {
 
         final XmlFieldNode<?> node = addNode(root, xpath, type);
 
-        final XmlFieldBinder binder = new XmlFieldBinder();
+        final XmlField binder = new XmlField();
 
         return binder.bind(null, node, type);
     }
 
+    /**
+     * Create an empty tag matching the given data.
+     * 
+     * @param tag
+     *            an xml tag, can be of the form "ns:name" or "name"
+     * @param namespaces
+     *            the namespaces to use or null if none
+     * @return a string representing the given tag with the given namespaces
+     */
+    public static String emptyTag(String tag, NamespaceMap namespaces) {
+        StringBuilder builder = new StringBuilder("<");
+        builder.append(tag);
+
+        if (namespaces != null) {
+            for (Entry<String, String> entry : namespaces) {
+                builder.append(" xmlns:");
+                builder.append(entry.getKey());
+                builder.append("=\"");
+                builder.append(entry.getValue());
+                builder.append("\"");
+            }
+        }
+        builder.append(" />");
+
+        return builder.toString();
+    }
     /**
      * Add the specified binded node at the end of the xpath location.
      * 
@@ -481,24 +506,7 @@ public abstract class XmlFieldUtils {
         return xpathType;
     }
 
-    /**
-     * récupérer le nœud XML qui correspond à un objet.
-     * 
-     * @param object
-     *            l'objet.
-     * @return le nœud XML qui correspond à l'objet.
-     */
-    @Deprecated
-    public static Node getNode(final Object object) {
-        if (object instanceof INodeable<?>) {
-            return ((INodeable<Node>) object).toNode().getNode();
-        }
-        if (object instanceof Node) {
-            return (Node) object;
-        }
-
-        return null;
-    }
+  
 
     /**
      * récupère l'annotation @{@link Namespaces} sur une class, ou <tt>null</tt> .
@@ -574,30 +582,10 @@ public abstract class XmlFieldUtils {
         return null;
     }
 
-    /**
-     * retirer un nœud XML de son parent.
-     * 
-     * @param node
-     *            le nœud à retirer.
-     */
-    @Deprecated
-    public static void remove(final Node node) {
-
-        if (node == null) {
-            return;
-        }
-
-        final Node parent = node.getParentNode();
-
-        if (parent != null) {
-
-            parent.removeChild(node);
-        }
-    }
-
+  
     /**
      * Remove element from document. item must have been acquired either by calling
-     * {@link XmlFieldBinder#bind(Node, Class)} or any get or addTo method.
+     * {@link XmlField#nodeToObject(Node, Class)} or any get or addTo method.
      * 
      * @param item
      *            Item to remove

@@ -44,7 +44,7 @@ import org.joda.time.format.ISODateTimeFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xmlfield.annotations.FieldXPath;
-import org.xmlfield.core.XmlFieldBinder;
+import org.xmlfield.core.XmlField;
 import org.xmlfield.core.XmlFieldNode;
 import org.xmlfield.core.XmlFieldNodeList;
 import org.xmlfield.core.XmlFieldNodeModifier;
@@ -54,7 +54,6 @@ import org.xmlfield.core.XmlFieldSelectorFactory;
 import org.xmlfield.core.exception.XmlFieldTechnicalException;
 import org.xmlfield.core.exception.XmlFieldXPathException;
 import org.xmlfield.core.internal.XmlFieldUtils.NamespaceMap;
-import org.xmlfield.utils.XPathUtils;
 
 /**
  * l'objet {@link InvocationHandler} à utiliser sur les proxies chargés à la lecture des nœuds XML.
@@ -77,22 +76,22 @@ public class XmlFieldInvocationHandler implements InvocationHandler {
 
     private final Class<?> type;
 
-    private final XmlFieldBinder xmlFieldBinder;
+    private final XmlField xmlField;
 
     /**
      * constructeur, qui dit ce que doit renvoyer chaque méthode <em>getter</em> .
      * 
-     * @param xmlFieldBinder
+     * @param xmlField
      *            l'objet reader, qui permet notamment de récupérer des sous-champs.
      * @param type
      *            le type de l'objet Java.
      * @param node
      *            le nœud de l'objet Java.
      */
-    public XmlFieldInvocationHandler(final XmlFieldBinder xmlFieldBinder, final XmlFieldNode<?> node,
+    public XmlFieldInvocationHandler(final XmlField xmlField, final XmlFieldNode<?> node,
             final Class<?> type) {
 
-        this.xmlFieldBinder = checkNotNull(xmlFieldBinder, "xmlFieldBinder");
+        this.xmlField = checkNotNull(xmlField, "xmlFieldBinder");
         this.node = checkNotNull(node, "node");
         this.type = checkNotNull(type, "type");
         this.namespaces = getResourceNamespaces(type);
@@ -841,16 +840,16 @@ public class XmlFieldInvocationHandler implements InvocationHandler {
 
         } else if (fieldType.isArray() && explicitAssociations.size() != 0) {
             // case of an explicit collection
-            value = xmlFieldBinder.bindToExplicitArray(fieldXPath, node, explicitAssociations);
+            value = xmlField.bindToExplicitArray(fieldXPath, node, explicitAssociations);
 
         } else if (fieldType.isArray()) {
             // cas nominal
-            value = xmlFieldBinder.bindToArray(fieldXPath, node, fieldType.getComponentType());
+            value = xmlField.bindToArray(fieldXPath, node, fieldType.getComponentType());
 
         } else if (fieldType.isEnum()) {
             value = parseEnum(domValue, (Class<? extends Enum>) fieldType);
         } else if (isXmlFieldInterface(fieldType)) {
-            value = xmlFieldBinder.bind(fieldXPath, node, fieldType);
+            value = xmlField.bind(fieldXPath, node, fieldType);
 
         } else {
 
