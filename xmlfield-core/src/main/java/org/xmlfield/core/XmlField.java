@@ -34,7 +34,7 @@ import org.xml.sax.SAXException;
 import org.xmlfield.core.exception.XmlFieldException;
 import org.xmlfield.core.exception.XmlFieldParsingException;
 import org.xmlfield.core.exception.XmlFieldXPathException;
-import org.xmlfield.core.internal.INodeable;
+import org.xmlfield.core.internal.XmlFieldObject;
 import org.xmlfield.core.internal.XmlFieldNode;
 import org.xmlfield.core.internal.XmlFieldNodeList;
 import org.xmlfield.core.internal.XmlFieldNodeParser;
@@ -103,7 +103,7 @@ public class XmlField {
 			return type.cast(node.getTextContent());
 		}
 
-		final Class<?>[] types = new Class<?>[] { type, INodeable.class };
+		final Class<?>[] types = new Class<?>[] { type, XmlFieldObject.class };
 
 		final InvocationHandler invocationHandler = new XmlFieldInvocationHandler(
 				this, node, type);
@@ -125,7 +125,7 @@ public class XmlField {
 	 * @param type
 	 *            Class of interface to instantiate
 	 * @return an object implementing Class
-	 *         <code>type<code> and {@link INodeable}
+	 *         <code>type<code> and {@link XmlFieldObject}
 	 * 
 	 * @throws ParserConfigurationException
 	 * @throws SAXException

@@ -37,7 +37,7 @@ import org.xmlfield.annotations.Namespaces;
 import org.xmlfield.annotations.ResourceXPath;
 import org.xmlfield.core.XmlField;
 import org.xmlfield.core.exception.XmlFieldXPathException;
-import org.xmlfield.core.internal.INodeable;
+import org.xmlfield.core.internal.XmlFieldObject;
 import org.xmlfield.core.internal.XmlFieldNode;
 import org.xmlfield.core.internal.XmlFieldNodeList;
 import org.xmlfield.core.internal.XmlFieldNodeModifier;
@@ -574,8 +574,8 @@ public abstract class XmlFieldUtils {
      * @return le nœud XML qui correspond à l'objet.
      */
     public static XmlFieldNode<?> getXmlFieldNode(final Object object) {
-        if (object instanceof INodeable<?>) {
-            return ((INodeable<?>) object).toNode();
+        if (object instanceof XmlFieldObject<?>) {
+            return ((XmlFieldObject<?>) object).toNode();
         }
         if (object instanceof XmlFieldNode<?>) {
             return (XmlFieldNode<?>) object;

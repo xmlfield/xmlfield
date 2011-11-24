@@ -24,7 +24,7 @@ package org.xmlfield.core.internal;
  * @author Guillaume Mary <guillaume.mary@capgemini.com>
  * 
  */
-public interface INodeable<T> {
+public interface XmlFieldObject<T> {
 
     /**
      * renvoie le nœud XML correspondant à cet objet.

@@ -47,7 +47,7 @@ import org.xmlfield.annotations.FieldXPath;
 import org.xmlfield.core.XmlField;
 import org.xmlfield.core.exception.XmlFieldTechnicalException;
 import org.xmlfield.core.exception.XmlFieldXPathException;
-import org.xmlfield.core.internal.INodeable;
+import org.xmlfield.core.internal.XmlFieldObject;
 import org.xmlfield.core.internal.XmlFieldNode;
 import org.xmlfield.core.internal.XmlFieldNodeList;
 import org.xmlfield.core.internal.XmlFieldNodeModifier;
@@ -508,7 +508,7 @@ public class XmlFieldInvocationHandler implements InvocationHandler {
             if (value instanceof Object[]) {
                 items = (Object[]) value;
 
-                if (!(items[0] instanceof INodeable)) {
+                if (!(items[0] instanceof XmlFieldObject)) {
                     if (logger.isWarnEnabled()) {
                         logger.warn("You are using "
                                 + type.getName()
@@ -543,8 +543,8 @@ public class XmlFieldInvocationHandler implements InvocationHandler {
                 currentNode = nodeXmlFieldList.item(i);
                 currentValue = items[i];
 
-                if (currentValue instanceof INodeable) {
-                    valueNode = ((INodeable<?>) currentValue).toNode();
+                if (currentValue instanceof XmlFieldObject) {
+                    valueNode = ((XmlFieldObject<?>) currentValue).toNode();
                     modifier.insertBefore(valueNode.getParentNode(), valueNode, currentNode);
                     listUpdated = true;
                 }
@@ -568,7 +568,7 @@ public class XmlFieldInvocationHandler implements InvocationHandler {
                 currentNode = nodeXmlFieldList.item(i);
                 currentValue = items[i];
 
-                if (currentValue instanceof INodeable) {
+                if (currentValue instanceof XmlFieldObject) {
                     // Values are already set by setter methods
                     continue;
                 }
