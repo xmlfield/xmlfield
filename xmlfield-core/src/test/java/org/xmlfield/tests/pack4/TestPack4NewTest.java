@@ -16,16 +16,14 @@
 package org.xmlfield.tests.pack4;
 
 import static org.junit.Assert.assertEquals;
-import static org.xmlfield.utils.XmlUtils.xmlFieldNodeToXml;
-import static org.xmlfield.utils.XmlUtils.xmlToXmlFieldNode;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.xmlfield.core.XmlFieldBinder;
-import org.xmlfield.core.XmlFieldNode;
-import org.xmlfield.core.XmlString;
+import org.xmlfield.core.XmlField;
+import org.xmlfield.core.api.XmlFieldNode;
+import org.xmlfield.core.types.XmlString;
 
 /**
  * Test getter and setter with array of xmlfield types.
@@ -34,7 +32,7 @@ import org.xmlfield.core.XmlString;
  */
 public class TestPack4NewTest {
 
-    private final XmlFieldBinder binder = new XmlFieldBinder();
+    private final XmlField binder = new XmlField();
 
     Logger log = LoggerFactory.getLogger(TestPack4NewTest.class);
 
@@ -42,17 +40,17 @@ public class TestPack4NewTest {
     public void testAddItemList() throws Exception {
         // Load initial XML
         final String xml = "<list><string>String1</string><string>String2</string></list>";
-        final XmlFieldNode<?> node = xmlToXmlFieldNode(xml);
+        final XmlFieldNode<?> node = binder.xmlToNode(xml);
 
         // Attach and assert object values
-        final StringList list = binder.bind(node, StringList.class);
+        final StringList list = binder.nodeToObject(node, StringList.class);
         assertEquals(2, list.getStrings().length);
 
         XmlString s = list.addToStrings();
         s.setString("String3");
         assertEquals(3, list.getStrings().length);
 
-        String result = xmlFieldNodeToXml(node);
+        String result = binder.nodeToXml(node);
         assertEquals("<list><string>String1</string><string>String2</string><string>String3</string></list>", result);
 
     }
@@ -64,12 +62,12 @@ public class TestPack4NewTest {
         // should not be lost during the test
         final String xml = "<list><string>String1</string><string selected=\"true\">String2</string></list>";
         String result = null;
-        final XmlFieldNode<?> node = xmlToXmlFieldNode(xml);
+        final XmlFieldNode<?> node = binder.xmlToNode(xml);
 
         // Set new Value and assert
-        final StringList list = binder.bind(node, StringList.class);
+        final StringList list = binder.nodeToObject(node, StringList.class);
         list.setStrings((XmlString[]) ArrayUtils.remove(list.getStrings(), 0));
-        result = xmlFieldNodeToXml(node);
+        result = binder.nodeToXml(node);
         log.info(result);
         assertEquals("<list><string selected=\"true\">String2</string></list>", result);
 
@@ -81,15 +79,15 @@ public class TestPack4NewTest {
         // Load initial XML
         final String xml = "<list><string>String1</string><string>String2</string></list>";
         String result = null;
-        final XmlFieldNode<?> node = xmlToXmlFieldNode(xml);
+        final XmlFieldNode<?> node = binder.xmlToNode(xml);
 
         // Attach and assert object values
-        final StringList list = binder.bind(node, StringList.class);
+        final StringList list = binder.nodeToObject(node, StringList.class);
         assertEquals(2, list.getStrings().length);
 
         // Remove all tags 'string' by setting 'null' value
         list.setStrings(null);
-        result = xmlFieldNodeToXml(node);
+        result = binder.nodeToXml(node);
         log.info(result);
         assertEquals("<list/>", result);
     }
@@ -100,30 +98,30 @@ public class TestPack4NewTest {
         // Load initial XML
         final String xml = "<list><string>String1</string><string>String2</string></list>";
         String result = null;
-        final XmlFieldNode<?> node = xmlToXmlFieldNode(xml);
+        final XmlFieldNode<?> node = binder.xmlToNode(xml);
 
         // Attach and assert object values
-        final StringList list = binder.bind(node, StringList.class);
+        final StringList list = binder.nodeToObject(node, StringList.class);
         assertEquals(2, list.getStrings().length);
 
         XmlString[] tempList = list.getStrings();
 
         // Set new Value and assert
         XmlString s = list.addToStrings();
-        result = xmlFieldNodeToXml(node);
+        result = binder.nodeToXml(node);
         assertEquals("<list><string>String1</string><string>String2</string><string/></list>", result);
         s.setString("String3");
-        result = xmlFieldNodeToXml(node);
+        result = binder.nodeToXml(node);
         assertEquals("<list><string>String1</string><string>String2</string><string>String3</string></list>", result);
 
         list.setStrings((XmlString[]) ArrayUtils.add(tempList, s));
-        result = xmlFieldNodeToXml(node);
+        result = binder.nodeToXml(node);
         log.info(result);
         assertEquals("<list><string>String1</string><string>String2</string><string>String3</string></list>", result);
 
         // Set new Value and assert
         list.setStrings((XmlString[]) ArrayUtils.remove(list.getStrings(), 1));
-        result = xmlFieldNodeToXml(node);
+        result = binder.nodeToXml(node);
         log.info(result);
         assertEquals("<list><string>String1</string><string>String3</string></list>", result);
 

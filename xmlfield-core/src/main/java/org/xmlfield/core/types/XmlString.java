@@ -13,21 +13,23 @@
  * limitations under the License. 
  * 
  */
-package org.xmlfield.tests.pack4;
+package org.xmlfield.core.types;
 
 import org.xmlfield.annotations.FieldXPath;
 import org.xmlfield.annotations.ResourceXPath;
-import org.xmlfield.core.types.XmlString;
 
-@ResourceXPath("/list")
-public interface StringList {
-    @FieldXPath("string")
-    XmlString[] getStrings();
+/**
+ * 
+ * This type should be used instead of 'String' to ensure safety of setXXX()
+ * methods.
+ * 
+ * @author Nicolas Richeton <nicolas.richeton@capgemini.com>
+ * 
+ */
+@ResourceXPath("/")
+public interface XmlString {
+    @FieldXPath(".")
+    String getString();
 
-    void setStrings(XmlString[] strings);
-
-    XmlString addToStrings();
-
-    void removeFromStrings(XmlString s);
-
+    void setString(String s);
 }

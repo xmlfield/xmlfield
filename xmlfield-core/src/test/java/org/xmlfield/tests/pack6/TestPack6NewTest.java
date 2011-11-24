@@ -18,13 +18,12 @@ package org.xmlfield.tests.pack6;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.xmlfield.utils.XmlUtils.xmlToXmlFieldNode;
 
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.xmlfield.core.XmlFieldBinder;
-import org.xmlfield.core.XmlFieldNode;
+import org.xmlfield.core.XmlField;
+import org.xmlfield.core.api.XmlFieldNode;
 
 /**
  * Test explicit collection annotation : returning different types in a single get.
@@ -33,7 +32,7 @@ import org.xmlfield.core.XmlFieldNode;
  */
 public class TestPack6NewTest {
 
-    private final XmlFieldBinder binder = new XmlFieldBinder();
+    private final XmlField binder = new XmlField();
 
     Logger log = LoggerFactory.getLogger(TestPack6NewTest.class);
 
@@ -42,9 +41,9 @@ public class TestPack6NewTest {
 
         final String xml = "<Catalog> <goods> <Cd>    <Title>Black angel</Title>    <Artist>Savage Rose</Artist>    <Country>EU</Country>    <Company>Mega</Company>    <Price>10.90</Price>    <Year>1995</Year>  </Cd>  <Book>    <Title>Germinal</Title>    <Author>Emile Zola</Author>    <Price>10.20</Price>  </Book>  <Book>    <Title>La Faute de l’abbé Mouret</Title>    <Author>Emile Zola</Author>    <Price>10.20</Price>  </Book><Crayola><Color>Red</Color></Crayola>  <Cd>    <Title>One night only</Title>    <Artist>Many</Artist>    <Country>USA</Country>    <Company>Grammy</Company>    <Price>10.20</Price>    <Year>1999</Year>  </Cd>  <Book>    <Title>La Bête humaine</Title>    <Author>Emile Zola</Author>    <Price>10.20</Price>  </Book></goods></Catalog>";
 
-        final XmlFieldNode<?> node = xmlToXmlFieldNode(xml);
+        final XmlFieldNode<?> node = binder.xmlToNode(xml);
 
-        final Catalog catalog = binder.bind(node, Catalog.class);
+        final Catalog catalog = binder.nodeToObject(node, Catalog.class);
         // the catalog get otherCd must return Cd and Book only (not a Crayola)
         assertEquals(5, catalog.getGoods().length);
 

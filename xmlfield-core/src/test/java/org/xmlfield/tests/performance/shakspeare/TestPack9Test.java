@@ -28,8 +28,8 @@ import org.apache.commons.lang.StringUtils;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.xmlfield.core.XmlFieldBinder;
-import org.xmlfield.core.impl.DefaultXmlFieldSelectorTest;
+import org.xmlfield.core.XmlField;
+import org.xmlfield.core.impl.dom.XmlFieldDomSelectorTest;
 
 /**
  * @author Olivier Lafon
@@ -37,7 +37,7 @@ import org.xmlfield.core.impl.DefaultXmlFieldSelectorTest;
 @Ignore
 public class TestPack9Test {
 
-    private final XmlFieldBinder binder = new XmlFieldBinder();
+    private final XmlField binder = new XmlField();
 
 
     String hugeRomeoAndFatPrincess;
@@ -59,7 +59,7 @@ public class TestPack9Test {
     public File createFileFromClasspathResource(String resourceUrl) throws IOException {
         File fichierTest = File.createTempFile("xmlFieldTestFile", "");
         FileOutputStream fos = new FileOutputStream(fichierTest);
-        InputStream is = DefaultXmlFieldSelectorTest.class.getResourceAsStream(resourceUrl);
+        InputStream is = XmlFieldDomSelectorTest.class.getResourceAsStream(resourceUrl);
 
         IOUtils.copy(is, fos);
         is.close();
@@ -70,7 +70,7 @@ public class TestPack9Test {
     @Test
     public void testPerfSelectXPathToString() throws Exception {
         StringBuilder sb = new StringBuilder();
-        Play fatRomeo = binder.bindReadOnly(hugeRomeoAndFatPrincess, Play.class);
+        Play fatRomeo = binder.xmlToObject(hugeRomeoAndFatPrincess, Play.class);
         for (Act act : fatRomeo.getActs()) {
             sb.append(act.getPrologueTitle());
             for (Scene scene : act.getScenes()) {

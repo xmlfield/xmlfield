@@ -16,15 +16,13 @@
 package org.xmlfield.tests.pack3;
 
 import static org.junit.Assert.assertEquals;
-import static org.xmlfield.utils.XmlUtils.xmlFieldNodeToXml;
-import static org.xmlfield.utils.XmlUtils.xmlToXmlFieldNode;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.xmlfield.core.XmlFieldBinder;
-import org.xmlfield.core.XmlFieldNode;
+import org.xmlfield.core.XmlField;
+import org.xmlfield.core.api.XmlFieldNode;
 
 /**
  * Test getter and setter with array of native types.
@@ -33,7 +31,7 @@ import org.xmlfield.core.XmlFieldNode;
  */
 public class TestPack3NewTest {
 
-    private final XmlFieldBinder binder = new XmlFieldBinder();
+    private final XmlField binder = new XmlField();
 
     Logger log = LoggerFactory.getLogger(TestPack3NewTest.class);
 
@@ -56,12 +54,12 @@ public class TestPack3NewTest {
         // Until resolution, the buggy behavior is the documented one.
         final String xml = "<list><string>String1</string><string selected=\"true\">String2</string></list>";
         String result = null;
-        final XmlFieldNode<?> node = xmlToXmlFieldNode(xml);
+        final XmlFieldNode<?> node = binder.xmlToNode(xml);
 
         // Set new Value and assert
-        final StringList list = binder.bind(node, StringList.class);
+        final StringList list = binder.nodeToObject(node, StringList.class);
         list.setStrings((String[]) ArrayUtils.remove(list.getStrings(), 0));
-        result = xmlFieldNodeToXml(node);
+        result = binder.nodeToXml(node);
         log.info(result);
         assertEquals("<list><string>String2</string></list>", result);
 
@@ -82,22 +80,22 @@ public class TestPack3NewTest {
         // Load initial XML
         final String xml = "<list><string>String1</string><string>String2</string><single>Single value</single></list>";
         String result = null;
-        final XmlFieldNode<?> node = xmlToXmlFieldNode(xml);
+        final XmlFieldNode<?> node = binder.xmlToNode(xml);
 
         // Attach and assert object values
-        final StringList list = binder.bind(node, StringList.class);
+        final StringList list = binder.nodeToObject(node, StringList.class);
         assertEquals(2, list.getStrings().length);
         assertEquals("Single value", list.getSingle());
 
         // Remove tag 'single' by setting 'null' value
         list.setSingle(null);
-        result = xmlFieldNodeToXml(node);
+        result = binder.nodeToXml(node);
         log.info(result);
         assertEquals("<list><string>String1</string><string>String2</string></list>", result);
 
         // Remove all tags 'string' by setting 'null' value
         list.setStrings(null);
-        result = xmlFieldNodeToXml(node);
+        result = binder.nodeToXml(node);
         log.info(result);
         assertEquals("<list/>", result);
     }
@@ -113,21 +111,21 @@ public class TestPack3NewTest {
         // Load initial XML
         final String xml = "<list><string>String1</string><string>String2</string></list>";
         String result = null;
-        final XmlFieldNode<?> node = xmlToXmlFieldNode(xml);
+        final XmlFieldNode<?> node = binder.xmlToNode(xml);
 
         // Attach and assert object values
-        final StringList list = binder.bind(node, StringList.class);
+        final StringList list = binder.nodeToObject(node, StringList.class);
         assertEquals(2, list.getStrings().length);
 
         // Set new Value and assert
         list.setStrings((String[]) ArrayUtils.add(list.getStrings(), "String3"));
-        result = xmlFieldNodeToXml(node);
+        result = binder.nodeToXml(node);
         log.info(result);
         assertEquals("<list><string>String1</string><string>String2</string><string>String3</string></list>", result);
 
         // Set new Value and assert
         list.setStrings((String[]) ArrayUtils.remove(list.getStrings(), 1));
-        result = xmlFieldNodeToXml(node);
+        result = binder.nodeToXml(node);
         log.info(result);
         assertEquals("<list><string>String1</string><string>String3</string></list>", result);
 

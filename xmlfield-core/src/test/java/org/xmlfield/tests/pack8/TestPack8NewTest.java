@@ -21,15 +21,14 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
-import org.xmlfield.core.XmlFieldReader;
-import org.xmlfield.utils.XmlUtils;
+import org.xmlfield.core.XmlField;
 
 /**
  * @author Mabrouk Belhout
  */
 public class TestPack8NewTest {
 
-    private XmlFieldReader parser = new XmlFieldReader();
+    private XmlField parser = new XmlField();
 
     private String sampleXml1() {
         return "<Catalog>" //
@@ -50,7 +49,7 @@ public class TestPack8NewTest {
 
     @Test
     public void testChangeInterface() throws Exception {
-        Catalog catalog = parser.attachReadOnly(sampleXml1(), Catalog.class);
+        Catalog catalog = parser.xmlToObject(sampleXml1(), Catalog.class);
 
         // Cd cd = catalog.addToCds(); // compile error
 
@@ -58,10 +57,10 @@ public class TestPack8NewTest {
         assertNotNull(catalog.getCds());
         assertEquals(2, catalog.getCds().length);
 
-        String xml = XmlUtils.nodeToXml(catalog);
+        String xml = parser.objectToXml(catalog);
         assertTrue(xml.contains("<Artist>Bob Dylan</Artist>"));
 
-        ExtendedCatalog extended = parser.reattach(catalog, ExtendedCatalog.class);
+        ExtendedCatalog extended = parser.castObject(catalog, ExtendedCatalog.class);
         assertTrue(extended instanceof Catalog);
         extended.addToCds().setArtist("The Prince");
         assertEquals(3, extended.getCds().length);

@@ -19,18 +19,17 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.xmlfield.utils.XmlUtils.xmlFieldNodeToXml;
 
 import java.util.Map;
 
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.xmlfield.core.XmlFieldBinder;
-import org.xmlfield.core.XmlFieldNode;
+import org.xmlfield.core.XmlField;
+import org.xmlfield.core.api.XmlFieldNode;
 import org.xmlfield.core.exception.XmlFieldParsingException;
+import org.xmlfield.core.internal.XPathUtils;
 import org.xmlfield.core.internal.XmlFieldUtils;
-import org.xmlfield.utils.XPathUtils;
 
 /**
  * @author Nicolas Richeton <nicolas.richeton@capgemini.com>
@@ -42,15 +41,15 @@ public class XmlFieldBinderTest {
 
 	@Test
 	public void testAttachReadOnly() throws Exception {
-		XmlFieldBinder binder = new XmlFieldBinder();
-		Catalog catalog = binder.bindReadOnly(sampleXml1(), Catalog.class);
+		XmlField binder = new XmlField();
+		Catalog catalog = binder.xmlToObject(sampleXml1(), Catalog.class);
 		assertNotNull(catalog);
 	}
 
 	@Test
 	public void testNonPrimitiveNumbers() throws Exception {
-		XmlFieldBinder binder = new XmlFieldBinder();
-		Catalog catalog = binder.bindReadOnly(sampleXml1(), Catalog.class);
+		XmlField binder = new XmlField();
+		Catalog catalog = binder.xmlToObject(sampleXml1(), Catalog.class);
 		assertNotNull(catalog);
 
 		Cd cd1 = catalog.getCd()[0];
@@ -65,7 +64,7 @@ public class XmlFieldBinderTest {
 
 		assertEquals(
 				"<Cd>   <Title>toto</Title><Artist>Bonnie Tyler</Artist><Country>UK</Country>   <Company>CBS Records</Company>   <Price>9.90</Price><Year>1988</Year><id>15646984</id></Cd>",
-				xmlFieldNodeToXml(cd2));
+				binder.objectToXml(cd2));
 	}
 
 	/**
@@ -73,8 +72,8 @@ public class XmlFieldBinderTest {
 	 */
 	@Test(expected = XmlFieldParsingException.class)
 	public void testAttachReadOnlyInvalidXml() throws Exception {
-		XmlFieldBinder binder = new XmlFieldBinder();
-		Catalog catalog = binder.bindReadOnly(sampleXmlBuggy(), Catalog.class);
+		XmlField binder = new XmlField();
+		Catalog catalog = binder.xmlToObject(sampleXmlBuggy(), Catalog.class);
 		assertNotNull(catalog);
 	}
 
@@ -83,21 +82,21 @@ public class XmlFieldBinderTest {
 	 */
 	@Test
 	public void testAttachReadOnlyWrongEntityXml() throws Exception {
-		XmlFieldBinder binder = new XmlFieldBinder();
-		Catalog catalog = binder.bindReadOnly(sampleXmlWrongEntity(),
+		XmlField binder = new XmlField();
+		Catalog catalog = binder.xmlToObject(sampleXmlWrongEntity(),
 				Catalog.class);
 		assertNull(catalog);
 	}
 
 	@Test
 	public void testGetNodeFromInterface() throws Exception {
-		XmlFieldBinder binder = new XmlFieldBinder();
-		Catalog catalog = binder.bindReadOnly(sampleXml1(), Catalog.class);
+		XmlField binder = new XmlField();
+		Catalog catalog = binder.xmlToObject(sampleXml1(), Catalog.class);
 
 		assertNotNull(catalog);
 
 		XmlFieldNode<?> node = XmlFieldUtils.getXmlFieldNode(catalog);
-		String xml = xmlFieldNodeToXml(node);
+		String xml = binder.nodeToXml(node);
 
 		assertEquals(
 				"<Catalog><Cd>  <id>123465</id>  <Title>toto</Title>  <Artist>Bob Dylan</Artist><Country>USA</Country>  <Company>Columbia</Company>  <Price>10.90</Price><Year>1985</Year></Cd><Cd>   <Title>toto</Title><Artist>Bonnie Tyler</Artist><Country>UK</Country>   <Company>CBS Records</Company>   <Price>9.90</Price><Year>1988</Year></Cd></Catalog>",
@@ -106,33 +105,33 @@ public class XmlFieldBinderTest {
 
 	@Test
 	public void testInstantiate() throws Exception {
-		XmlFieldBinder binder = new XmlFieldBinder();
+		XmlField binder = new XmlField();
 
-		Catalog catalog = binder.instantiate(Catalog.class);
+		Catalog catalog = binder.newObject(Catalog.class);
 		assertNotNull(catalog);
 		assertTrue(catalog.getCd().length == 0);
 
-		assertEquals("<Catalog/>", xmlFieldNodeToXml(catalog));
+		assertEquals("<Catalog/>", binder.objectToXml(catalog));
 
 		catalog.addToCd().setTitle("title");
 		catalog.addToCd().setPrice(987);
 
 		assertEquals(
 				"<Catalog><Cd><Title>title</Title></Cd><Cd><Price>987.0</Price></Cd></Catalog>",
-				xmlFieldNodeToXml(catalog));
+				binder.objectToXml(catalog));
 	}
 
 	@Test
 	public void testInstantiateWithNamespaces() throws Exception {
-		XmlFieldBinder binder = new XmlFieldBinder();
+		XmlField binder = new XmlField();
 
-		AtomCatalog catalog = binder.instantiate(AtomCatalog.class);
+		AtomCatalog catalog = binder.newObject(AtomCatalog.class);
 		assertNotNull(catalog);
 		assertTrue(catalog.getCd().length == 0);
 
 		assertEquals(
 				"<a:entry xmlns:a=\"http://www.w3.org/2005/Atom\" xmlns:x=\"http://www.w3.org/1999/xhtml\"/>",
-				xmlFieldNodeToXml(catalog));
+				binder.objectToXml(catalog));
 
 		catalog.addToCd().setTitle("title");
 		catalog.addToCd().setPrice(987);
@@ -140,7 +139,7 @@ public class XmlFieldBinderTest {
 		assertEquals(
 				"<a:entry xmlns:a=\"http://www.w3.org/2005/Atom\" xmlns:x=\"http://www.w3.org/1999/xhtml\">"
 						+ "<content xmlns=\"http://www.w3.org/2005/Atom\"><div xmlns=\"http://www.w3.org/1999/xhtml\"><div class=\"cd\"><span class=\"title\">title</span></div><div class=\"cd\"><span class=\"price\">987.0</span></div></div></content></a:entry>",
-				xmlFieldNodeToXml(catalog));
+						binder.objectToXml(catalog));
 	}
 
 	@Test
