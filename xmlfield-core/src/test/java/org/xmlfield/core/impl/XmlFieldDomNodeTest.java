@@ -11,9 +11,9 @@ import org.w3c.dom.Node;
 import org.xmlfield.core.XmlFieldNode;
 import org.xmlfield.core.XmlFieldNodeParser;
 
-public class DefaultXmlFieldNodeTest {
+public class XmlFieldDomNodeTest {
 
-    private final XmlFieldNodeParser<Node> parser = new DefaultXmlFieldNodeParser();
+    private final XmlFieldNodeParser<Node> parser = new XmlFieldDomNodeParser();
 
     @Test
     public void testGetNode() throws Exception {
@@ -45,7 +45,7 @@ public class DefaultXmlFieldNodeTest {
 
         assertThat(node.getParentNode().getNode(), not(nullValue()));
 
-        XmlFieldNode<Node> subNode = new DefaultXmlFieldNode(newNode);
+        XmlFieldNode<Node> subNode = new XmlFieldDomNode(newNode);
         assertThat(subNode.getNodeName(), is("Cd"));
         assertThat(subNode.getParentNode().getNodeName(), is("Catalog"));
     }

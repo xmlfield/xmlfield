@@ -15,20 +15,19 @@
  */
 package org.xmlfield.core.impl;
 
-import org.xmlfield.core.XmlFieldSelector;
-import org.xmlfield.core.XmlFieldSelectorFactory;
+import org.xmlfield.core.XmlFieldNodeModifier;
+import org.xmlfield.core.XmlFieldNodeModifierFactory;
 
 /**
- * Default xml field selector factory implementation.
+ * Default xml field node modifier factory implementation.
  * 
  * @author Guillaume Mary <guillaume.mary@capgemini.com>
- * 
  */
-public class DefaultXmlFieldSelectorFactory extends XmlFieldSelectorFactory {
+public class XmlFieldDomNodeModifierFactory extends XmlFieldNodeModifierFactory {
 
     @Override
-    public XmlFieldSelector newSelector() {
-        return new DefaultXmlFieldJaxenSelector();
+    public XmlFieldNodeModifier newModifier() {
+        return new XmlFieldDomNodeModifier();
     }
 
 }

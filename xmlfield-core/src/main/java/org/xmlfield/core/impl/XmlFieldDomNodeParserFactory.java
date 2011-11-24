@@ -15,37 +15,20 @@
  */
 package org.xmlfield.core.impl;
 
-import java.util.List;
-
-import org.xmlfield.core.XmlFieldNode;
-import org.xmlfield.core.XmlFieldNodeList;
+import org.xmlfield.core.XmlFieldNodeParser;
+import org.xmlfield.core.XmlFieldNodeParserFactory;
 
 /**
- * Default xml field node list implementation.
+ * Default xml field node parser factory implementation.
  * 
  * @author Guillaume Mary <guillaume.mary@capgemini.com>
  * 
  */
-public class DefaultXmlFieldNodeList implements XmlFieldNodeList {
-
-    private final List<XmlFieldNode<?>> nodeList;
-
-    public DefaultXmlFieldNodeList(List<XmlFieldNode<?>> nodeList) {
-        super();
-        this.nodeList = nodeList;
-    }
+public class XmlFieldDomNodeParserFactory extends XmlFieldNodeParserFactory {
 
     @Override
-    public int getLength() {
-        return nodeList.size();
-    }
-
-    @Override
-    public XmlFieldNode<?> item(int index) {
-        if (index < nodeList.size()) {
-            return nodeList.get(index);
-        }
-        return null;
+    public XmlFieldNodeParser<?> newParser() {
+        return new XmlFieldDomNodeParser();
     }
 
 }

@@ -37,7 +37,7 @@ import org.xmlfield.core.internal.XmlFieldUtils.NamespaceMap;
  * @author Guillaume Mary <guillaume.mary@capgemini.com>
  * 
  */
-public class DefaultXmlFieldNodeModifier implements XmlFieldNodeModifier {
+public class XmlFieldDomNodeModifier implements XmlFieldNodeModifier {
 
     private static Element _createElement(final NamespaceMap namespaces, final Document document,
             final String elementName) {
@@ -106,7 +106,7 @@ public class DefaultXmlFieldNodeModifier implements XmlFieldNodeModifier {
             element.appendChild(document.createTextNode(textContent));
         }
 
-        return new DefaultXmlFieldNode(element);
+        return new XmlFieldDomNode(element);
     }
 
     @Override
@@ -116,7 +116,7 @@ public class DefaultXmlFieldNodeModifier implements XmlFieldNodeModifier {
         checkNotNull(refChild, "refChild");
         Node insertedNode = ((Node) contextNode.getNode()).insertBefore((Node) newChild.getNode(),
                 (Node) refChild.getNode());
-        return new DefaultXmlFieldNode(insertedNode);
+        return new XmlFieldDomNode(insertedNode);
     }
 
     @Override
@@ -127,7 +127,7 @@ public class DefaultXmlFieldNodeModifier implements XmlFieldNodeModifier {
         if (nnMap.getNamedItem(attributeName) == null) {
             return null;
         }
-        return new DefaultXmlFieldNode(nnMap.removeNamedItem(attributeName));
+        return new XmlFieldDomNode(nnMap.removeNamedItem(attributeName));
     }
 
     @Override

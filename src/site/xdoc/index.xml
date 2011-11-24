@@ -104,8 +104,8 @@ public interface IModel {
 String xml ="<modelRootTag></modelRootTag>"; 
 
 // Read doc
-XmlFieldBinder binder = new XmlFieldBinder();
-IModel model =binder.bindReadOnly(xmlRessource, IModel.class)
+XmlField xf = new XmlField();
+IModel model = xf.xmlToObject(xmlRessource, IModel.class)
 
 // Play with XML
 model.setVersion( "1.0" );
@@ -117,7 +117,7 @@ newEntry.setName( "entry4" );
 newEntry.setValue( "value4" );
 
 // Back to XML.
-xml = XmlUtils.xmlFieldNodeToXml( model);
+xml = xf.objectToXml( model);
 ]]></source>
 
 

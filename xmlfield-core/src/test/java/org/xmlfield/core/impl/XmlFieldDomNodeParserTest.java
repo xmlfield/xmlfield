@@ -14,9 +14,9 @@ import org.xmlfield.core.XmlFieldNode;
 import org.xmlfield.core.XmlFieldNodeParser;
 import org.xmlfield.core.test.Catalog;
 
-public class DefaultXmlFieldNodeParserTest {
+public class XmlFieldDomNodeParserTest {
 
-    XmlFieldNodeParser<Node> parser = new DefaultXmlFieldNodeParser();
+    XmlFieldNodeParser<Node> parser = new XmlFieldDomNodeParser();
 
     @Test
     public void testParser() throws Exception {

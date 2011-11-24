@@ -29,7 +29,7 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.xmlfield.core.XmlField;
-import org.xmlfield.core.impl.DefaultXmlFieldSelectorTest;
+import org.xmlfield.core.impl.XmlFieldDomSelectorTest;
 
 /**
  * @author Olivier Lafon
@@ -59,7 +59,7 @@ public class TestPack9Test {
     public File createFileFromClasspathResource(String resourceUrl) throws IOException {
         File fichierTest = File.createTempFile("xmlFieldTestFile", "");
         FileOutputStream fos = new FileOutputStream(fichierTest);
-        InputStream is = DefaultXmlFieldSelectorTest.class.getResourceAsStream(resourceUrl);
+        InputStream is = XmlFieldDomSelectorTest.class.getResourceAsStream(resourceUrl);
 
         IOUtils.copy(is, fos);
         is.close();

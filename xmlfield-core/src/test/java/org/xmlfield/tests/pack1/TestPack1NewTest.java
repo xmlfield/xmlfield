@@ -90,7 +90,7 @@ public class TestPack1NewTest {
 				+ "<Catalog><Others/></Catalog>"
 				+ "<Catalog><Others/></Catalog>" + "</list>";
 
-		Catalog[] catalogues = new XmlField().bindArray(xml,
+		Catalog[] catalogues = new XmlField().xmlToArray(xml,
 				Catalog.class);
 
 		assertNotNull(catalogues);

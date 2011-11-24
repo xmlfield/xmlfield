@@ -151,7 +151,7 @@ public abstract class XmlFieldUtils {
 
         final XmlField binder = new XmlField();
 
-        return binder.bind(null, node, type);
+        return binder.nodeToObject(null, node, type);
     }
 
     /**

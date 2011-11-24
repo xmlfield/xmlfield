@@ -840,16 +840,16 @@ public class XmlFieldInvocationHandler implements InvocationHandler {
 
         } else if (fieldType.isArray() && explicitAssociations.size() != 0) {
             // case of an explicit collection
-            value = xmlField.bindToExplicitArray(fieldXPath, node, explicitAssociations);
+            value = xmlField.nodeToExplicitArray(fieldXPath, node, explicitAssociations);
 
         } else if (fieldType.isArray()) {
             // cas nominal
-            value = xmlField.bindToArray(fieldXPath, node, fieldType.getComponentType());
+            value = xmlField.nodeToArray(fieldXPath, node, fieldType.getComponentType());
 
         } else if (fieldType.isEnum()) {
             value = parseEnum(domValue, (Class<? extends Enum>) fieldType);
         } else if (isXmlFieldInterface(fieldType)) {
-            value = xmlField.bind(fieldXPath, node, fieldType);
+            value = xmlField.nodeToObject(fieldXPath, node, fieldType);
 
         } else {
 
