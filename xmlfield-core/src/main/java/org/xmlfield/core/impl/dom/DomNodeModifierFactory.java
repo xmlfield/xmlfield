@@ -15,8 +15,8 @@
  */
 package org.xmlfield.core.impl.dom;
 
-import org.xmlfield.core.XmlFieldNodeModifier;
-import org.xmlfield.core.XmlFieldNodeModifierFactory;
+import org.xmlfield.core.internal.XmlFieldNodeModifier;
+import org.xmlfield.core.internal.XmlFieldNodeModifierFactory;
 
 /**
  * Default xml field node modifier factory implementation.

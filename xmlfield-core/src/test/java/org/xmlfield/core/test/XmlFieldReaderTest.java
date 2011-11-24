@@ -28,9 +28,9 @@ import org.slf4j.LoggerFactory;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXParseException;
 import org.xmlfield.core.XmlField;
-import org.xmlfield.core.XmlFieldNode;
 import org.xmlfield.core.exception.XmlFieldParsingException;
-import org.xmlfield.core.internal.XPathUtils;
+import org.xmlfield.core.internal.XmlFieldNode;
+import org.xmlfield.core.internal.impl.XPathUtils;
  
 /**
  * @author Nicolas Richeton <nicolas.richeton@capgemini.com>

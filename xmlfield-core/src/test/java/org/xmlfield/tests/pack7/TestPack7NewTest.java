@@ -21,7 +21,7 @@ import static org.junit.Assert.assertNull;
 
 import org.junit.Test;
 import org.xmlfield.core.XmlField;
-import org.xmlfield.core.XmlFieldNode;
+import org.xmlfield.core.internal.XmlFieldNode;
 
 /**
  * @author Jean-Pierre Grillon

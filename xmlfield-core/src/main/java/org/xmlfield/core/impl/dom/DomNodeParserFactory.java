@@ -15,8 +15,8 @@
  */
 package org.xmlfield.core.impl.dom;
 
-import org.xmlfield.core.XmlFieldNodeParser;
-import org.xmlfield.core.XmlFieldNodeParserFactory;
+import org.xmlfield.core.internal.XmlFieldNodeParser;
+import org.xmlfield.core.internal.XmlFieldNodeParserFactory;
 
 /**
  * Default xml field node parser factory implementation.

@@ -13,11 +13,11 @@
  * limitations under the License. 
  * 
  */
-package org.xmlfield.core;
+package org.xmlfield.core.internal;
 
 /**
  * <p>
- * An <code>XmlFieldSelectorFactory</code> instance can be used to create {@link XmlFieldSelector} objects.
+ * An <code>XmlFieldNodeModifierFactory</code> instance can be used to create {@link XmlFieldParser} objects.
  * </p>
  * 
  * <p>
@@ -26,27 +26,27 @@ package org.xmlfield.core;
  * 
  * @author Guillaume Mary <guillaume.mary@capgemini.com>
  */
-public abstract class XmlFieldSelectorFactory extends XmlFieldFactory {
+public abstract class XmlFieldNodeModifierFactory extends XmlFieldFactory {
     /**
      * <p>
-     * Get a new <code>XmlFieldSelectorFactory</code> instance.
+     * Get a new <code>XmlFieldNodeModifierFactory</code> instance.
      * 
-     * @return Instance of an <code>XmlFieldSelectorFactory</code>.
+     * @return Instance of an <code>XmlFieldNodeModifierFactory</code>.
      * 
      * @throws RuntimeException
-     *             When there is a failure in creating an <code>XmlFieldSelectorFactory</code>
+     *             When there is a failure in creating an <code>XmlFieldNodeModifierFactory</code>
      */
-    public static final XmlFieldSelectorFactory newInstance() {
-        return newInstance(XmlFieldSelectorFactory.class);
+    public static final XmlFieldNodeModifierFactory newInstance() {
+        return newInstance(XmlFieldNodeModifierFactory.class);
     }
 
     /**
      * <p>
-     * Return a new <code>XmlFieldSelector</code> using the underlying object model determined when the
-     * <code>XmlFieldSelectorFactory</code> was instantiated.
+     * Return a new <code>XmlFieldNodeModifier</code> using the underlying object model determined when the
+     * <code>XmlFieldNodeModifierFactory</code> was instantiated.
      * </p>
      * 
-     * @return New instance of an <code>XmlFieldSelector</code>.
+     * @return New instance of an <code>XmlFieldNodeModifier</code>.
      */
-    public abstract XmlFieldSelector newSelector();
+    public abstract XmlFieldNodeModifier newModifier();
 }

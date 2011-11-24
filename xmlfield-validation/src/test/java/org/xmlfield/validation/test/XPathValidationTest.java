@@ -21,7 +21,7 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 import org.w3c.dom.Node;
 import org.xmlfield.core.XmlField;
-import org.xmlfield.core.XmlFieldNode;
+import org.xmlfield.core.internal.XmlFieldNode;
 import org.xmlfield.validation.utils.XPathValidationUtils;
 
 public class XPathValidationTest {

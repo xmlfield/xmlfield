@@ -13,7 +13,7 @@
  * limitations under the License. 
  * 
  */
-package org.xmlfield.core;
+package org.xmlfield.core.internal;
 
 import java.io.IOException;
 import java.io.InputStream;

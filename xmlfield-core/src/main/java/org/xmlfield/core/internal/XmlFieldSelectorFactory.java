@@ -13,11 +13,11 @@
  * limitations under the License. 
  * 
  */
-package org.xmlfield.core;
+package org.xmlfield.core.internal;
 
 /**
  * <p>
- * An <code>XmlFieldNodeModifierFactory</code> instance can be used to create {@link XmlFieldParser} objects.
+ * An <code>XmlFieldSelectorFactory</code> instance can be used to create {@link XmlFieldSelector} objects.
  * </p>
  * 
  * <p>
@@ -26,27 +26,27 @@ package org.xmlfield.core;
  * 
  * @author Guillaume Mary <guillaume.mary@capgemini.com>
  */
-public abstract class XmlFieldNodeModifierFactory extends XmlFieldFactory {
+public abstract class XmlFieldSelectorFactory extends XmlFieldFactory {
     /**
      * <p>
-     * Get a new <code>XmlFieldNodeModifierFactory</code> instance.
+     * Get a new <code>XmlFieldSelectorFactory</code> instance.
      * 
-     * @return Instance of an <code>XmlFieldNodeModifierFactory</code>.
+     * @return Instance of an <code>XmlFieldSelectorFactory</code>.
      * 
      * @throws RuntimeException
-     *             When there is a failure in creating an <code>XmlFieldNodeModifierFactory</code>
+     *             When there is a failure in creating an <code>XmlFieldSelectorFactory</code>
      */
-    public static final XmlFieldNodeModifierFactory newInstance() {
-        return newInstance(XmlFieldNodeModifierFactory.class);
+    public static final XmlFieldSelectorFactory newInstance() {
+        return newInstance(XmlFieldSelectorFactory.class);
     }
 
     /**
      * <p>
-     * Return a new <code>XmlFieldNodeModifier</code> using the underlying object model determined when the
-     * <code>XmlFieldNodeModifierFactory</code> was instantiated.
+     * Return a new <code>XmlFieldSelector</code> using the underlying object model determined when the
+     * <code>XmlFieldSelectorFactory</code> was instantiated.
      * </p>
      * 
-     * @return New instance of an <code>XmlFieldNodeModifier</code>.
+     * @return New instance of an <code>XmlFieldSelector</code>.
      */
-    public abstract XmlFieldNodeModifier newModifier();
+    public abstract XmlFieldSelector newSelector();
 }

@@ -13,7 +13,7 @@
  * limitations under the License. 
  * 
  */
-package org.xmlfield.core.internal;
+package org.xmlfield.core.internal.impl;
 
 import static org.apache.commons.lang.StringUtils.isBlank;
 import static org.apache.commons.lang.StringUtils.substringAfter;
@@ -36,13 +36,14 @@ import org.xmlfield.annotations.FieldXPath;
 import org.xmlfield.annotations.Namespaces;
 import org.xmlfield.annotations.ResourceXPath;
 import org.xmlfield.core.XmlField;
-import org.xmlfield.core.XmlFieldNode;
-import org.xmlfield.core.XmlFieldNodeList;
-import org.xmlfield.core.XmlFieldNodeModifier;
-import org.xmlfield.core.XmlFieldNodeModifierFactory;
-import org.xmlfield.core.XmlFieldSelector;
-import org.xmlfield.core.XmlFieldSelectorFactory;
 import org.xmlfield.core.exception.XmlFieldXPathException;
+import org.xmlfield.core.internal.INodeable;
+import org.xmlfield.core.internal.XmlFieldNode;
+import org.xmlfield.core.internal.XmlFieldNodeList;
+import org.xmlfield.core.internal.XmlFieldNodeModifier;
+import org.xmlfield.core.internal.XmlFieldNodeModifierFactory;
+import org.xmlfield.core.internal.XmlFieldSelector;
+import org.xmlfield.core.internal.XmlFieldSelectorFactory;
 
 /**
  * Xml manipulation node utility class.

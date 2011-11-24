@@ -23,7 +23,7 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xmlfield.core.XmlField;
-import org.xmlfield.core.XmlFieldNode;
+import org.xmlfield.core.internal.XmlFieldNode;
 
 /**
  * Test explicit collection annotation : returning different types in a single get.

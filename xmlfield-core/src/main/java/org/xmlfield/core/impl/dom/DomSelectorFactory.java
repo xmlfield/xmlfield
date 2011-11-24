@@ -15,8 +15,8 @@
  */
 package org.xmlfield.core.impl.dom;
 
-import org.xmlfield.core.XmlFieldSelector;
-import org.xmlfield.core.XmlFieldSelectorFactory;
+import org.xmlfield.core.internal.XmlFieldSelector;
+import org.xmlfield.core.internal.XmlFieldSelectorFactory;
 
 /**
  * Default xml field selector factory implementation.

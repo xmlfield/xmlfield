@@ -8,10 +8,10 @@ import static org.junit.Assert.assertThat;
 
 import org.junit.Test;
 import org.w3c.dom.Node;
-import org.xmlfield.core.XmlFieldNode;
-import org.xmlfield.core.XmlFieldNodeParser;
 import org.xmlfield.core.impl.dom.DomNode;
 import org.xmlfield.core.impl.dom.DomNodeParser;
+import org.xmlfield.core.internal.XmlFieldNode;
+import org.xmlfield.core.internal.XmlFieldNodeParser;
 
 public class XmlFieldDomNodeTest {
 

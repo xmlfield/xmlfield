@@ -26,10 +26,10 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xmlfield.core.XmlField;
-import org.xmlfield.core.XmlFieldNode;
 import org.xmlfield.core.exception.XmlFieldParsingException;
-import org.xmlfield.core.internal.XPathUtils;
-import org.xmlfield.core.internal.XmlFieldUtils;
+import org.xmlfield.core.internal.XmlFieldNode;
+import org.xmlfield.core.internal.impl.XPathUtils;
+import org.xmlfield.core.internal.impl.XmlFieldUtils;
 
 /**
  * @author Nicolas Richeton <nicolas.richeton@capgemini.com>

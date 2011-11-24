@@ -8,13 +8,13 @@ import static org.junit.Assert.fail;
 import org.junit.Before;
 import org.junit.Test;
 import org.w3c.dom.Node;
-import org.xmlfield.core.XmlFieldNode;
-import org.xmlfield.core.XmlFieldNodeList;
-import org.xmlfield.core.XmlFieldNodeParser;
-import org.xmlfield.core.XmlFieldSelector;
 import org.xmlfield.core.exception.XmlFieldXPathException;
 import org.xmlfield.core.impl.dom.DomJaxenSelector;
 import org.xmlfield.core.impl.dom.DomNodeParser;
+import org.xmlfield.core.internal.XmlFieldNode;
+import org.xmlfield.core.internal.XmlFieldNodeList;
+import org.xmlfield.core.internal.XmlFieldNodeParser;
+import org.xmlfield.core.internal.XmlFieldSelector;
 
 
 public class XmlFieldDomSelectorTest {

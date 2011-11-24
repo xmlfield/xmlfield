@@ -13,7 +13,7 @@
  * limitations under the License. 
  * 
  */
-package org.xmlfield.core;
+package org.xmlfield.core.internal;
 
 /**
  * Genric xml field factory.

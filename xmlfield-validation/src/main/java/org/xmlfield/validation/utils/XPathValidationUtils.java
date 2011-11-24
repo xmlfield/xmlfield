@@ -18,7 +18,7 @@ package org.xmlfield.validation.utils;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Iterables.toArray;
 import static org.apache.commons.lang.StringUtils.isBlank;
-import static org.xmlfield.core.internal.XmlFieldUtils.getXmlFieldNode;
+import static org.xmlfield.core.internal.impl.XmlFieldUtils.getXmlFieldNode;
 
 import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Field;
@@ -31,12 +31,12 @@ import java.util.List;
 import javax.xml.xpath.XPathExpressionException;
 
 import org.w3c.dom.Node;
-import org.xmlfield.core.XmlFieldNode;
-import org.xmlfield.core.XmlFieldNodeList;
-import org.xmlfield.core.XmlFieldSelector;
-import org.xmlfield.core.XmlFieldSelectorFactory;
 import org.xmlfield.core.exception.XmlFieldXPathException;
-import org.xmlfield.core.internal.XmlFieldUtils.NamespaceMap;
+import org.xmlfield.core.internal.XmlFieldNode;
+import org.xmlfield.core.internal.XmlFieldNodeList;
+import org.xmlfield.core.internal.XmlFieldSelector;
+import org.xmlfield.core.internal.XmlFieldSelectorFactory;
+import org.xmlfield.core.internal.impl.XmlFieldUtils.NamespaceMap;
 import org.xmlfield.validation.annotations.XPathEquals;
 
 /**

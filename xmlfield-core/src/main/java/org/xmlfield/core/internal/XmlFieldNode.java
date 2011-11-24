@@ -13,7 +13,7 @@
  * limitations under the License. 
  * 
  */
-package org.xmlfield.core;
+package org.xmlfield.core.internal;
 
 /**
  * Interface used by the framework to access to an xml node.

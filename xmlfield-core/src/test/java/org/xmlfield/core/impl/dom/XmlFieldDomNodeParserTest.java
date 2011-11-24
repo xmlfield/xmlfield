@@ -10,9 +10,9 @@ import java.io.InputStream;
 import org.junit.Test;
 import org.w3c.dom.Node;
 import org.xmlfield.core.XmlField;
-import org.xmlfield.core.XmlFieldNode;
-import org.xmlfield.core.XmlFieldNodeParser;
 import org.xmlfield.core.impl.dom.DomNodeParser;
+import org.xmlfield.core.internal.XmlFieldNode;
+import org.xmlfield.core.internal.XmlFieldNodeParser;
 import org.xmlfield.core.test.Catalog;
 
 public class XmlFieldDomNodeParserTest {

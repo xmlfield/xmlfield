@@ -15,7 +15,6 @@
  */
 package org.xmlfield.core.internal;
 
-import org.xmlfield.core.XmlFieldNode;
 
 /**
  * interface essentiellement utilisée par le moteur de lecture du XML vers Java, mais rien n'empêche de déclarer une
