@@ -24,6 +24,8 @@
    
     <menu name="XMLField">
       <item name="Introduction" href="index.html"/>
+      <item name="Xml Model" href="model.html"/>
+ 
      </menu>
  <menu ref="modules" />
    <menu ref="reports"/>
