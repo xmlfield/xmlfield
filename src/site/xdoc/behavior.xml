@@ -76,7 +76,7 @@
 </user>
 ]]></source>
 
-        <h2>Why does it matters</h2>
+        <h2>Why does it matter</h2>
         <p>When building an enterprise-grade application, divided into multiple components, applications and servers,
             updating object or document models can be very time consuming because you need to support the new model in
             every application.
