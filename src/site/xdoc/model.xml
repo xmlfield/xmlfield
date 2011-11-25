@@ -228,6 +228,7 @@ String result = xf.objectToXml(db);
         <ul>
             <li>isXXX : for booleans</li>
             <li>sizeOfXXX : for arrays</li>
+            <li>removeFromXXXX : for arrays</li>
         </ul>
     </body>
 </document>
