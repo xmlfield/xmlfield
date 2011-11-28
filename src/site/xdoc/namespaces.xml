@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document xmlns="http://maven.apache.org/XDOC/2.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/XDOC/2.0 http://maven.apache.org/xsd/xdoc-2.0.xsd">
+
+    <properties>
+        <title>XML namespaces</title>
+        <author email="nicolas.richeton@capgemini.com">Nicolas Richeton</author>
+    </properties>
+
+    <body>
+
+
+        <h1>XML Namespaces</h1>
+
+        <p>XmlField supports XML namespaces. You can easily create objects mixing data from different namespaces, or you
+            can use one object per namespace. 
+        </p>
+
+
+       
+<p>Starting from the following XML file : </p>
+
+
+        <source><![CDATA[
+<a:entry xmlns:a="http://www.w3.org/2005/Atom" xmlns="http://www.w3.org/1999/xhtml" >
+    <a:title type="xhtml">
+        <div>
+            <span class="name">CD Catalog</span>
+            <span class="format">Atom</span>
+        </div>
+    </a:title>
+    <a:id>12345</a:id>
+    <a:updated>2003-12-14T18:30:02Z</a:updated>
+    <a:author>
+        <a:name>Author</a:name>
+    </a:author>
+    <a:content type="xhtml">
+        <div>
+            <div class="cd">
+                <span class="title">01</span>
+                <span class="price">999999</span>
+                <span class="artist">QL0001</span>
+            </div>
+        </div>
+    </a:content>
+</a:entry>    
+        ]]></source>
+        <p>We just have to add the namespaces definitions and start using namespace prefixes in FieldXPath values :</p>
+        <source><![CDATA[        
+AtomCatalog.java :
+        
+@Namespaces({ "xmlns:a=http://www.w3.org/2005/Atom", "xmlns:x=http://www.w3.org/1999/xhtml" })
+@ResourceXPath("/a:entry")
+public interface AtomCatalog {
+
+	@FieldXPath("a:title/x:div/x:span[@class='name']")
+	String getName();
+
+	@FieldXPath("a:content/x:div/x:div[@class='cd']")
+	AtomCd[] getCd();
+
+	AtomCd addToCd();
+
+}
+
+
+AtomCd.java :
+
+@Namespaces({ "xmlns:a=http://www.w3.org/2005/Atom", "xmlns:x=http://www.w3.org/1999/xhtml" })
+@ResourceXPath("x:div[@class='cd']")
+public interface AtomCd {
+    @FieldXPath("x:span[@class='title']")
+    String getTitle();
+
+    void setTitle(String t);
+
+    @FieldXPath("x:span[@class='price']")
+    float getPrice();
+
+    void setPrice(float price);
+}
+
+    ]]></source>
+        <p>Then simply use XmlField as you would normally do :</p>
+
+    
+
+        <source><![CDATA[
+String xmlContent="<a:entry xmlns:a="http://www.w3.org/2005/Atom" xmlns="http://www.w3.org/1999/xhtml" >(...)</a:entity>";
+XmlField xf = new XmlField();
+AtomCatalog catalog = xf.xmlToObject( xmlContent, AtomCatalog.class );
+
+System.out.println (catalog.getName());
+
+AtomCd cd = db.addToCd();
+cd.setTitle("My new cd");
+
+
+String result = xf.objectToXml(catalog);
+
+    ]]></source>
+
+      
+    </body>
+</document>
+  
+  
