@@ -45,6 +45,7 @@ import org.xmlfield.validation.annotations.XPathEquals;
  * @author David Andrianavalontsalama
  * @author Guillaume Mary <guillaume.mary@capgemini.com>
  */
+@Deprecated
 public class XPathValidation {
 
     private static class ExplosiveValidatorInvocationHandler implements InvocationHandler {

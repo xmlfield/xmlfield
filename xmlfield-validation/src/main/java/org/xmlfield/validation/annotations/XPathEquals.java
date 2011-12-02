@@ -26,6 +26,7 @@ import java.lang.annotation.Target;
  * @author David Andrianavalontsalama
  * 
  */
+@Deprecated
 @Retention(RetentionPolicy.RUNTIME)
 @Target( { ElementType.METHOD, ElementType.FIELD })
 public @interface XPathEquals {
