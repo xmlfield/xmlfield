@@ -27,7 +27,7 @@ public class XmlFieldValidator {
 
     public void ensureValidation(Object xmlFieldObject) throws XmlFieldValidationException, IllegalArgumentException,
             IllegalAccessException, InvocationTargetException {
-        Set<ConstraintViolation<Object>> result = validate(xmlFieldObject);
+        Set<ConstraintViolation<Object>> result = validate(xmlFieldObject, true);
 
         Iterator<ConstraintViolation<Object>> i = result.iterator();
         while (i.hasNext()) {
@@ -39,50 +39,74 @@ public class XmlFieldValidator {
 
     public Set<ConstraintViolation<Object>> validate(Object xmlFieldObject) throws IllegalArgumentException,
             IllegalAccessException, InvocationTargetException {
+        return validate(xmlFieldObject, false);
+    }
 
+    private Set<ConstraintViolation<Object>> validate(Object xmlFieldObject, boolean returnOnFirstViolation)
+            throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
+
+        // Prepare result
         Set<ConstraintViolation<Object>> result = new HashSet<ConstraintViolation<Object>>();
 
+        // Get object interfaces.
         Type[] types = xmlFieldObject.getClass().getGenericInterfaces();
 
-        for (Type t : types) {
-            Class<?> ic = (Class<?>) t;
-            Method[] methods = ic.getMethods();
+        for (Type type : types) {
+            Class<?> interfaceClass = (Class<?>) type;
+            Method[] methods = interfaceClass.getMethods();
 
             if (methods != null) {
                 for (Method m : methods) {
 
-                    Annotation[] anos = m.getAnnotations();
+                    String methodName = m.getName();
 
+                    // We only process annotations on 'get' or 'is' method. All
+                    // other methods are ignored.
+                    if (!methodName.startsWith("get") && !methodName.startsWith("is"))
+                        continue;
+
+                    Annotation[] anos = m.getAnnotations();
                     for (Annotation a : anos) {
 
+                        // Do validation
+                        for (IHandler h : handlers) {
+                            if (h.handles(a)) {
+                                Set<ConstraintViolation<Object>> resultHandler = h.validate(a, m, xmlFieldObject);
+                                if (resultHandler != null && resultHandler.size() > 0) {
+                                    result.addAll(resultHandler);
+
+                                    if (returnOnFirstViolation)
+                                        return result;
+                                }
+                            }
+                        }
+
+                        // If the method returns another XmlField object, do
+                        // recursive validation.
                         if (a instanceof FieldXPath) {
+                            // Single object
                             if (m.getReturnType() != null && m.getReturnType().isInterface()) {
-                                validate(m.invoke(xmlFieldObject));
+                                result.addAll(validate(m.invoke(xmlFieldObject)));
+                                if (returnOnFirstViolation)
+                                    return result;
                             }
 
+                            // Array
                             if (m.getReturnType() != null && m.getReturnType().isArray()
                                     && m.getReturnType().getComponentType().isInterface()) {
-                                Object[] resultMethod = (Object[]) m.invoke(xmlFieldObject);
-                                if (resultMethod != null) {
+                                Object[] arrayResult = (Object[]) m.invoke(xmlFieldObject);
+                                // Validate every object
+                                if (arrayResult != null) {
                                     for (Object o : result) {
-                                        validate(o);
-
+                                        result.addAll(validate(o));
+                                        if (returnOnFirstViolation)
+                                            return result;
                                     }
                                 }
                             }
-                        } else
-                            for (IHandler h : handlers) {
-                                if (h.handles(a)) {
-                                    Set<ConstraintViolation<Object>> resultHandler = h.validate(a, m, xmlFieldObject);
-                                    if (resultHandler != null && resultHandler.size() > 0) {
-                                        result.addAll(resultHandler);
-                                    }
-                                }
-                            }
-
+                        }
                     }
                 }
-
             }
         }
         return result;
