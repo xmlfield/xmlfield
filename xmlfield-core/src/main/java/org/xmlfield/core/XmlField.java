@@ -319,6 +319,11 @@ public class XmlField {
 		return parser.xmlToNode(xml);
 	}
 
+	public <T> T xmlToObject(InputStream xmlContent, Class<T> type)
+			throws XmlFieldParsingException {
+		return nodeToObject(xmlToNode(xmlContent), type);
+	}
+
 	/**
 	 * Create an interface for the given xml and matching the given interface.
 	 * 
@@ -338,7 +343,6 @@ public class XmlField {
 	 */
 	public <T> T xmlToObject(String xml, Class<T> type)
 			throws XmlFieldParsingException {
-		XmlFieldNode<?> node = parser.xmlToNode(xml);
-		return nodeToObject(node, type);
+		return nodeToObject(xmlToNode(xml), type);
 	}
 }
