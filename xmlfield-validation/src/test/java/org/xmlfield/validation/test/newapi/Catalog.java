@@ -31,6 +31,7 @@ public interface Catalog {
     String CD_CONST2 = "value2";
 
     @FieldXPath("items/item")
+    @Size( min=1)
     Item[] getItems();
 
     Item addToItems();

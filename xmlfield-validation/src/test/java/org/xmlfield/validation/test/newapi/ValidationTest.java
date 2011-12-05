@@ -121,6 +121,7 @@ public class ValidationTest {
         Catalog c = xf.newObject(Catalog.class);
         c.setType(Catalog.CD_CONST2);
         c.setName("Test");
+        c.addToItems();
 
         XmlFieldValidator xfv = new XmlFieldValidator();
         xfv.validate(c);
