@@ -40,7 +40,7 @@ public class ValidationTest {
         c.addToItems();
 
         XmlFieldValidator xfv = new XmlFieldValidator();
-        xfv.validate(c);
+        xfv.ensureValidation(c);
 
     }
 
@@ -52,7 +52,7 @@ public class ValidationTest {
         c.addToItems();
 
         XmlFieldValidator xfv = new XmlFieldValidator();
-        xfv.validate(c);
+        xfv.ensureValidation(c);
 
     }
 
@@ -65,7 +65,7 @@ public class ValidationTest {
         c.addToItems();
 
         XmlFieldValidator xfv = new XmlFieldValidator();
-        xfv.validate(c);
+        xfv.ensureValidation(c);
 
     }
     
@@ -78,7 +78,7 @@ public class ValidationTest {
         c.setName("a");
 
         XmlFieldValidator xfv = new XmlFieldValidator();
-        xfv.validate(c);
+        xfv.ensureValidation(c);
 
     }
 
@@ -91,7 +91,7 @@ public class ValidationTest {
         c.addToItems();
 
         XmlFieldValidator xfv = new XmlFieldValidator();
-        xfv.validate(c);
+        xfv.ensureValidation(c);
 
     }
 
@@ -105,7 +105,7 @@ public class ValidationTest {
         c.addToItems();
         
         XmlFieldValidator xfv = new XmlFieldValidator();
-        xfv.validate(c);
+        xfv.ensureValidation(c);
 
     }
 
@@ -118,7 +118,7 @@ public class ValidationTest {
         c.addToItems();
 
         XmlFieldValidator xfv = new XmlFieldValidator();
-        xfv.validate(c);
+        xfv.ensureValidation(c);
 
     }
 
@@ -131,7 +131,7 @@ public class ValidationTest {
         c.addToItems();
 
         XmlFieldValidator xfv = new XmlFieldValidator();
-        xfv.validate(c);
+        xfv.ensureValidation(c);
 
     }
 
