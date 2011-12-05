@@ -97,7 +97,7 @@ public class XmlFieldValidator {
                                 Object[] arrayResult = (Object[]) m.invoke(xmlFieldObject);
                                 // Validate every object
                                 if (arrayResult != null) {
-                                    for (Object o : result) {
+                                    for (Object o : arrayResult) {
                                         result.addAll(validate(o));
                                         if (returnOnFirstViolation)
                                             return result;
