@@ -37,6 +37,7 @@ public class ValidationTest {
         XmlField xf = new XmlField();
         Catalog c = xf.newObject(Catalog.class);
         assertNotNull(c);
+        c.addToItems();
 
         XmlFieldValidator xfv = new XmlFieldValidator();
         xfv.validate(c);
@@ -48,6 +49,7 @@ public class ValidationTest {
         XmlField xf = new XmlField();
         Catalog c = xf.newObject(Catalog.class);
         c.setType(Catalog.CD_CONST1);
+        c.addToItems();
 
         XmlFieldValidator xfv = new XmlFieldValidator();
         xfv.validate(c);
@@ -60,6 +62,7 @@ public class ValidationTest {
         Catalog c = xf.newObject(Catalog.class);
         c.setType(Catalog.CD_CONST1);
         c.setName("");
+        c.addToItems();
 
         XmlFieldValidator xfv = new XmlFieldValidator();
         xfv.validate(c);
@@ -71,6 +74,7 @@ public class ValidationTest {
         XmlField xf = new XmlField();
         Catalog c = xf.newObject(Catalog.class);
         c.setType(Catalog.CD_CONST1);
+        c.addToItems();
         c.setName("a");
 
         XmlFieldValidator xfv = new XmlFieldValidator();
@@ -84,6 +88,7 @@ public class ValidationTest {
         Catalog c = xf.newObject(Catalog.class);
         c.setType("invalid value");
         c.setName("Test");
+        c.addToItems();
 
         XmlFieldValidator xfv = new XmlFieldValidator();
         xfv.validate(c);
@@ -97,7 +102,8 @@ public class ValidationTest {
         c.setType("invalid value");
         c.setName("Test");
         c.setNumber(3);
-
+        c.addToItems();
+        
         XmlFieldValidator xfv = new XmlFieldValidator();
         xfv.validate(c);
 
@@ -109,6 +115,7 @@ public class ValidationTest {
         Catalog c = xf.newObject(Catalog.class);
 
         c.setName("Test");
+        c.addToItems();
 
         XmlFieldValidator xfv = new XmlFieldValidator();
         xfv.validate(c);
