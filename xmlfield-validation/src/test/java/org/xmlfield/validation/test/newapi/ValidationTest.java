@@ -65,6 +65,18 @@ public class ValidationTest {
         xfv.validate(c);
 
     }
+    
+    @Test(expected = XmlFieldValidationException.class)
+    public void testValidationErrorOnSizeName() throws Exception {
+        XmlField xf = new XmlField();
+        Catalog c = xf.newObject(Catalog.class);
+        c.setType(Catalog.CD_CONST1);
+        c.setName("a");
+
+        XmlFieldValidator xfv = new XmlFieldValidator();
+        xfv.validate(c);
+
+    }
 
     @Test(expected = XmlFieldValidationException.class)
     public void testValidationErrorOnInvalidValue() throws Exception {

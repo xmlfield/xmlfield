@@ -4,21 +4,26 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
+import java.util.Iterator;
+import java.util.Set;
 
-import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.lang.StringUtils;
-import org.xmlfield.validation.annotations.NotEmpty;
-import org.xmlfield.validation.annotations.Values;
-import org.xmlfield.validation.test.newapi.Catalog;
+import org.xmlfield.validation.handlers.ConstraintViolation;
+import org.xmlfield.validation.handlers.IHandler;
+import org.xmlfield.validation.handlers.NotEmptyHandler;
+import org.xmlfield.validation.handlers.SizeHandler;
+import org.xmlfield.validation.handlers.ValuesHandler;
 
 public class XmlFieldValidator {
+
+    static IHandler[] handlers = new IHandler[] { new NotEmptyHandler(), new SizeHandler(), new ValuesHandler() };
+
     public XmlFieldValidator() {
 
     }
 
-    public boolean validate(Catalog c) throws IllegalArgumentException, IllegalAccessException,
+    public boolean validate(Object xmlFieldObject) throws IllegalArgumentException, IllegalAccessException,
             InvocationTargetException, XmlFieldValidationException {
-        Type[] types = c.getClass().getGenericInterfaces();
+        Type[] types = xmlFieldObject.getClass().getGenericInterfaces();
 
         for (Type t : types) {
             Class<?> ic = (Class<?>) t;
@@ -31,54 +36,21 @@ public class XmlFieldValidator {
 
                     for (Annotation a : anos) {
 
-                        if (NotEmpty.class.isInstance(a)) {
-                            Object o = m.invoke(c, new Object[] {});
-                            if (o == null)
-                                throw new XmlFieldValidationException(m.getName(), "<not-empty>", "<null>");
-
-                            if (o instanceof String) {
-                                if (StringUtils.isEmpty((String) o))
-                                    throw new XmlFieldValidationException(m.getName(), "<not-empty>", "<empty>");
-                            }
-                        }
-
-                        if (Values.class.isInstance(a)) {
-                            Values av = (Values) a;
-                            Object o = m.invoke(c, new Object[] {});
-
-                            if( o == null )
+                        for (IHandler h : handlers) {
+                            if (h.handles(a)) {
+                                Set<ConstraintViolation<Object>> result = h.validate(a, m, xmlFieldObject);
+                                if (result != null && result.size() > 0) {
+                                    Iterator<ConstraintViolation<Object>> i = result.iterator();
+                                    while (i.hasNext()) {
+                                        ConstraintViolation<Object> c = i.next();
+                                        throw new XmlFieldValidationException(c.getMethodName(), c.getExpected(),
+                                                c.getActual());
+                                    }
+                                }
                                 break;
-                            
-                            boolean ok = false;
-                            if (av.string().length > 0) {
-                                Object[] acceptedValues = av.string();
-                                for (Object ao : acceptedValues) {
-                                    if (ao.equals(o)) {
-                                        ok = true;
-                                        break;
-                                    }
-                                }
-                                if (!ok)
-                                    throw new XmlFieldValidationException(m.getName(), StringUtils.join(acceptedValues,","), o==null?"null":o.toString());
-              
                             }
-
-                            else if (av.integer().length > 0) {
-                                int[] acceptedValues = av.integer();
-
-                                for (int ao : acceptedValues) {
-                                    if (o != null && o.equals(ao)) {
-                                        ok = true;
-                                        break;
-                                    }
-                                }
-                                
-                                if (!ok)
-                                    throw new XmlFieldValidationException(m.getName(), ArrayUtils.toString(acceptedValues), o==null?"null":o.toString());
-              
-                            }
-
                         }
+
                     }
                 }
 

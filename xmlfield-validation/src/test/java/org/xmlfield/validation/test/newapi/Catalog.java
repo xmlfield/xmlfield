@@ -18,6 +18,7 @@ package org.xmlfield.validation.test.newapi;
 import org.xmlfield.annotations.FieldXPath;
 import org.xmlfield.annotations.ResourceXPath;
 import org.xmlfield.validation.annotations.NotEmpty;
+import org.xmlfield.validation.annotations.Size;
 import org.xmlfield.validation.annotations.Values;
 
 /**
@@ -42,6 +43,7 @@ public interface Catalog {
 
     @NotEmpty
     @FieldXPath("name")
+    @Size( min =2 )
     String getName();
 
     void setName(String type);
