@@ -86,9 +86,12 @@ public class XmlFieldValidator {
                         if (a instanceof FieldXPath) {
                             // Single object
                             if (m.getReturnType() != null && m.getReturnType().isInterface()) {
-                                result.addAll(validate(m.invoke(xmlFieldObject)));
-                                if (returnOnFirstViolation)
-                                    return result;
+                                Object o = m.invoke(xmlFieldObject);
+                                if(o != null) {
+                                    result.addAll(validate(m.invoke(xmlFieldObject)));
+                                    if (result.size() > 0 && returnOnFirstViolation)
+                                        return result;
+                                }
                             }
 
                             // Array
@@ -98,9 +101,11 @@ public class XmlFieldValidator {
                                 // Validate every object
                                 if (arrayResult != null) {
                                     for (Object o : arrayResult) {
-                                        result.addAll(validate(o));
-                                        if (returnOnFirstViolation)
-                                            return result;
+                                        if(o != null) {
+                                            result.addAll(validate(o));
+                                            if (result.size() > 0 && returnOnFirstViolation)
+                                                return result;
+                                        }
                                     }
                                 }
                             }
