@@ -10,6 +10,6 @@ public interface IHandler {
 
     boolean  handles( Annotation a );
     
-    Set<ConstraintViolation<Object>> validate( Annotation a, Method m, Object o) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException;
+    Set<ConstraintViolation<Object>> validate( Annotation a, Method m, Object o, Class<?> group) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException;
     
 }

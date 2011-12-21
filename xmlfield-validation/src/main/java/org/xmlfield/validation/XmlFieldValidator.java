@@ -25,9 +25,9 @@ public class XmlFieldValidator {
 
     }
 
-    public void ensureValidation(Object xmlFieldObject) throws XmlFieldValidationException, IllegalArgumentException,
-            IllegalAccessException, InvocationTargetException {
-        Set<ConstraintViolation<Object>> result = validate(xmlFieldObject, true);
+    public void ensureValidation(Object xmlFieldObject, Class<?> group) throws XmlFieldValidationException,
+            IllegalArgumentException, IllegalAccessException, InvocationTargetException {
+        Set<ConstraintViolation<Object>> result = validate(xmlFieldObject, true, group);
 
         Iterator<ConstraintViolation<Object>> i = result.iterator();
         while (i.hasNext()) {
@@ -37,13 +37,23 @@ public class XmlFieldValidator {
 
     }
 
-    public Set<ConstraintViolation<Object>> validate(Object xmlFieldObject) throws IllegalArgumentException,
+    public void ensureValidation(Object xmlFieldObject) throws XmlFieldValidationException, IllegalArgumentException,
             IllegalAccessException, InvocationTargetException {
-        return validate(xmlFieldObject, false);
+        ensureValidation(xmlFieldObject, null);
     }
 
-    private Set<ConstraintViolation<Object>> validate(Object xmlFieldObject, boolean returnOnFirstViolation)
+    public Set<ConstraintViolation<Object>> validate(Object xmlFieldObject) throws IllegalArgumentException,
+            IllegalAccessException, InvocationTargetException {
+        return validate(xmlFieldObject, null);
+    }
+
+    public Set<ConstraintViolation<Object>> validate(Object xmlFieldObject, Class<?> group)
             throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
+        return validate(xmlFieldObject, false, group);
+    }
+
+    private Set<ConstraintViolation<Object>> validate(Object xmlFieldObject, boolean returnOnFirstViolation,
+            Class<?> group) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
 
         // Prepare result
         Set<ConstraintViolation<Object>> result = new HashSet<ConstraintViolation<Object>>();
@@ -71,7 +81,7 @@ public class XmlFieldValidator {
                         // Do validation
                         for (IHandler h : handlers) {
                             if (h.handles(a)) {
-                                Set<ConstraintViolation<Object>> resultHandler = h.validate(a, m, xmlFieldObject);
+                                Set<ConstraintViolation<Object>> resultHandler = h.validate(a, m, xmlFieldObject, group);
                                 if (resultHandler != null && resultHandler.size() > 0) {
                                     result.addAll(resultHandler);
 
@@ -87,7 +97,7 @@ public class XmlFieldValidator {
                             // Single object
                             if (m.getReturnType() != null && m.getReturnType().isInterface()) {
                                 Object o = m.invoke(xmlFieldObject);
-                                if(o != null) {
+                                if (o != null) {
                                     result.addAll(validate(m.invoke(xmlFieldObject)));
                                     if (result.size() > 0 && returnOnFirstViolation)
                                         return result;
@@ -101,7 +111,7 @@ public class XmlFieldValidator {
                                 // Validate every object
                                 if (arrayResult != null) {
                                     for (Object o : arrayResult) {
-                                        if(o != null) {
+                                        if (o != null) {
                                             result.addAll(validate(o));
                                             if (result.size() > 0 && returnOnFirstViolation)
                                                 return result;

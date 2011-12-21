@@ -26,10 +26,12 @@ import java.lang.annotation.Target;
  * 
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target( { ElementType.METHOD})
+@Target({ ElementType.METHOD })
 public @interface Values {
 
-
     String[] string() default {};
+
     int[] integer() default {};
+
+    Class<?>[] groups() default {};
 }

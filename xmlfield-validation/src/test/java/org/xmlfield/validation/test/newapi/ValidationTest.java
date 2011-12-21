@@ -135,5 +135,19 @@ public class ValidationTest {
         xfv.ensureValidation(c);
 
     }
+    
+    @Test(expected = XmlFieldValidationException.class)
+    public void testValidationErrorOnFailGroup() throws Exception {
+        XmlField xf = new XmlField();
+        Catalog c = xf.newObject(Catalog.class);
+        c.setType(Catalog.CD_CONST2);
+        c.setName("Test");
+        Item i = c.addToItems();
+        i.setName("testName");
+
+        XmlFieldValidator xfv = new XmlFieldValidator();
+        xfv.ensureValidation(c, FailGroup.class);
+
+    }
 
 }

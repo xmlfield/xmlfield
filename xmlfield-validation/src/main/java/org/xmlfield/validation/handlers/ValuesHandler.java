@@ -8,8 +8,6 @@ import java.util.Set;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
-import org.xmlfield.validation.XmlFieldValidationException;
-import org.xmlfield.validation.annotations.NotEmpty;
 import org.xmlfield.validation.annotations.Values;
 
 public class ValuesHandler implements IHandler {
@@ -20,10 +18,12 @@ public class ValuesHandler implements IHandler {
     }
 
     @Override
-    public Set<ConstraintViolation<Object>> validate(Annotation a, Method m, Object xmlFieldObject)
+    public Set<ConstraintViolation<Object>> validate(Annotation a, Method m, Object xmlFieldObject, Class<?> group)
             throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
 
         Values av = (Values) a;
+        if ((group == null && av.groups().length == 0) || ArrayUtils.contains(av.groups(), group)) {
+
         Object o = m.invoke(xmlFieldObject, new Object[] {});
 
         if (o == null)
@@ -58,6 +58,7 @@ public class ValuesHandler implements IHandler {
                 return createResultFromViolation(new ConstraintViolation<Object>(m.getName(),
                         ArrayUtils.toString(acceptedValues), o == null ? "null" : o.toString()));
 
+        }
         }
 
         return null;

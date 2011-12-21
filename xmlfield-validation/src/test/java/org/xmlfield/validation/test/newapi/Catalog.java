@@ -31,7 +31,7 @@ public interface Catalog {
     String CD_CONST2 = "value2";
 
     @FieldXPath("items/item")
-    @Size( min=1)
+    @Size(min = 1)
     Item[] getItems();
 
     Item addToItems();
@@ -44,7 +44,7 @@ public interface Catalog {
 
     @NotEmpty
     @FieldXPath("name")
-    @Size( min =2 )
+    @Size(min = 2)
     String getName();
 
     void setName(String type);
@@ -54,13 +54,15 @@ public interface Catalog {
     @FieldXPath("type")
     String getType();
 
-    
-    @Values(integer = { 1,2 })
+    @Values(integer = { 1, 2 })
     @FieldXPath("number")
     Integer getNumber();
 
-    void setNumber( Integer i );
-    
+    @NotEmpty(groups = { FailGroup.class })
+    String getNull();
+
+    void setNumber(Integer i);
+
     void setType(String type);
 
 }

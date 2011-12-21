@@ -1,15 +1,13 @@
 package org.xmlfield.validation.handlers;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.ArrayUtils;
 import org.xmlfield.validation.annotations.Size;
-import org.xmlfield.validation.annotations.Values;
 
 public class SizeHandler implements IHandler {
 
@@ -19,10 +17,11 @@ public class SizeHandler implements IHandler {
     }
 
     @Override
-    public Set<ConstraintViolation<Object>> validate(Annotation a, Method m, Object o) throws IllegalArgumentException,
+    public Set<ConstraintViolation<Object>> validate(Annotation a, Method m, Object o, Class<?> group) throws IllegalArgumentException,
             IllegalAccessException, InvocationTargetException {
 
         Size as = (Size) a;
+        if ((group == null && as.groups().length == 0) || ArrayUtils.contains(as.groups(), group)) {
 
         int currentValue = 0;
 
@@ -40,6 +39,7 @@ public class SizeHandler implements IHandler {
             return createResultFromViolation(new ConstraintViolation<Object>(m.getName(), "min/max",
                     String.valueOf(currentValue)));
 
+        }
         return null;
     }
 

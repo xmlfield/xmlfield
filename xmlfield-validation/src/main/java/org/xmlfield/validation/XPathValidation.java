@@ -28,9 +28,6 @@ import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.xml.xpath.XPathExpressionException;
-
-import org.w3c.dom.Node;
 import org.xmlfield.core.api.XmlFieldNode;
 import org.xmlfield.core.api.XmlFieldNodeList;
 import org.xmlfield.core.api.XmlFieldSelector;
