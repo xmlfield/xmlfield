@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.util.Map;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -42,82 +43,105 @@ import org.xmlfield.core.exception.XmlFieldParsingException;
 import org.xmlfield.core.internal.XmlFieldUtils;
 
 /**
- * Default xml field node parser. This implementation deal with a {@link Node} object
+ * Default xml field node parser. This implementation deal with a {@link Node}
+ * object
  * 
  * @author Guillaume Mary <guillaume.mary@capgemini.com>
- * 
+ * @author Nicolas Richeton
  */
 public class DomNodeParser implements XmlFieldNodeParser<Node> {
+	public static String CONFIG_INDENT_XML = "indent";
 
-    @Override
-    public String nodeToXml(Object object) throws XmlFieldParsingException {
-        @SuppressWarnings("unchecked")
-        XmlFieldNode<Node> node = (XmlFieldNode<Node>) XmlFieldUtils.getXmlFieldNode(object);
-        return nodeToXml(node);
-    }
+	final Transformer t;
 
-    @Override
-    public String nodeToXml(XmlFieldNode<Node> node) throws XmlFieldParsingException {
-        StringWriter sw;
-        try {
-            final Transformer t = TransformerFactory.newInstance().newTransformer();
+	public DomNodeParser() throws TransformerConfigurationException,
+			TransformerFactoryConfigurationError {
+		this(null);
+	}
 
-            sw = new StringWriter();
+	public DomNodeParser(Map<String, String> configuration)
+			throws TransformerConfigurationException,
+			TransformerFactoryConfigurationError {
+		t = TransformerFactory.newInstance().newTransformer();
 
-            t.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+		t.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
 
-            // t.setOutputProperty(OutputKeys.INDENT, "yes");
+		if (configuration != null
+				&& Boolean.parseBoolean(configuration.get(CONFIG_INDENT_XML))) {
+			t.setOutputProperty(OutputKeys.INDENT, "yes");
+		}
+	}
 
-            t.transform(new DOMSource(node.getNode()), new StreamResult(sw));
-        } catch (TransformerConfigurationException e) {
-            throw new XmlFieldParsingException(e);
-        } catch (IllegalArgumentException e) {
-            throw new XmlFieldParsingException(e);
-        } catch (TransformerFactoryConfigurationError e) {
-            throw new XmlFieldParsingException(e);
-        } catch (TransformerException e) {
-            throw new XmlFieldParsingException(e);
-        }
+	@Override
+	public String nodeToXml(Object object) throws XmlFieldParsingException {
+		@SuppressWarnings("unchecked")
+		XmlFieldNode<Node> node = (XmlFieldNode<Node>) XmlFieldUtils
+				.getXmlFieldNode(object);
+		return nodeToXml(node);
+	}
 
-        return sw.toString();
-    }
+	@Override
+	public String nodeToXml(XmlFieldNode<Node> node)
+			throws XmlFieldParsingException {
+		StringWriter sw;
+		try {
 
-    @Override
-    public XmlFieldNode<Node> xmlToNode(InputStream xmlContent) throws XmlFieldParsingException {
-        return new DomNode(xmlToNode(new InputSource(xmlContent)));
-    }
+			sw = new StringWriter();
 
-    @Override
-    public XmlFieldNode<Node> xmlToNode(String xml) throws XmlFieldParsingException {
-        return new DomNode(xmlToNode(new InputSource(new StringReader(xml))));
-    }
+			t.transform(new DOMSource(node.getNode()), new StreamResult(sw));
+		} catch (TransformerConfigurationException e) {
+			throw new XmlFieldParsingException(e);
+		} catch (IllegalArgumentException e) {
+			throw new XmlFieldParsingException(e);
+		} catch (TransformerFactoryConfigurationError e) {
+			throw new XmlFieldParsingException(e);
+		} catch (TransformerException e) {
+			throw new XmlFieldParsingException(e);
+		}
 
-    /**
-     * Loads xml content from the input source and create XML DOM object.
-     * 
-     * @param xmlInputSource
-     * @return
-     * @throws XmlFieldParsingException
-     */
-    private Node xmlToNode(final InputSource xmlInputSource) throws XmlFieldParsingException {
+		return sw.toString();
+	}
 
-        DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
+	/**
+	 * Loads xml content from the input source and create XML DOM object.
+	 * 
+	 * @param xmlInputSource
+	 * @return
+	 * @throws XmlFieldParsingException
+	 */
+	private Node xmlToNode(final InputSource xmlInputSource)
+			throws XmlFieldParsingException {
 
-        documentBuilderFactory.setNamespaceAware(true);
-        DocumentBuilder documentBuilder;
-        Document document = null;
-        try {
-            documentBuilder = documentBuilderFactory.newDocumentBuilder();
-            document = documentBuilder.parse(xmlInputSource);
-        } catch (ParserConfigurationException e) {
-            throw new XmlFieldParsingException(e);
-        } catch (SAXException e) {
-            throw new XmlFieldParsingException(e);
-        } catch (IOException e) {
-            throw new XmlFieldParsingException(e);
-        }
+		DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory
+				.newInstance();
 
-        return document.getDocumentElement();
-    }
+		documentBuilderFactory.setNamespaceAware(true);
+		DocumentBuilder documentBuilder;
+		Document document = null;
+		try {
+			documentBuilder = documentBuilderFactory.newDocumentBuilder();
+			document = documentBuilder.parse(xmlInputSource);
+		} catch (ParserConfigurationException e) {
+			throw new XmlFieldParsingException(e);
+		} catch (SAXException e) {
+			throw new XmlFieldParsingException(e);
+		} catch (IOException e) {
+			throw new XmlFieldParsingException(e);
+		}
+
+		return document.getDocumentElement();
+	}
+
+	@Override
+	public XmlFieldNode<Node> xmlToNode(InputStream xmlContent)
+			throws XmlFieldParsingException {
+		return new DomNode(xmlToNode(new InputSource(xmlContent)));
+	}
+
+	@Override
+	public XmlFieldNode<Node> xmlToNode(String xml)
+			throws XmlFieldParsingException {
+		return new DomNode(xmlToNode(new InputSource(new StringReader(xml))));
+	}
 
 }

@@ -62,7 +62,12 @@ import org.xmlfield.core.internal.XmlFieldUtils.NamespaceMap;
  * xml = xf.objectToXml( model);
  * </pre>
  * 
+ * <p>
+ * This class and return objects are not thread safe. Be sure to synchronize, if
+ * the same objects are used concurrently in multiple threads.
+ * 
  * @author Guillaume Mary <guillaume.mary@capgemini.com>
+ * @author Nicolas Richeton
  */
 public class XmlField {
 	/**
@@ -74,14 +79,26 @@ public class XmlField {
 	/**
 	 * Parser used to parse the xml to node
 	 */
-	private final XmlFieldNodeParser<?> parser = XmlFieldNodeParserFactory
-			.newInstance().newParser();
+	private final XmlFieldNodeParser<?> parser;
 
 	/**
 	 * Selector used to execute xpath expression
 	 */
-	private final XmlFieldSelector selector = XmlFieldSelectorFactory
-			.newInstance().newSelector();
+	private final XmlFieldSelector selector;
+
+	public XmlField() {
+		this(null);
+	}
+
+	/**
+	 * @param parserConfiguration
+	 *            paser configuration or null
+	 */
+	public XmlField(Map<String, String> parserConfiguration) {
+		selector = XmlFieldSelectorFactory.newInstance().newSelector();
+		parser = XmlFieldNodeParserFactory.newInstance().newParser(
+				parserConfiguration);
+	}
 
 	/**
 	 * Changes interface of an already attached node.
@@ -133,10 +150,15 @@ public class XmlField {
 	 * @throws XmlFieldParsingException
 	 */
 	public <T> T newObject(Class<T> type) throws XmlFieldParsingException {
+
+		// Create a new xml document with an empty tag (based on the
+		// annotation).
 		String resourceXPath = getResourceXPath(type);
 		String tag = getElementNameWithSelector(resourceXPath);
 		NamespaceMap namespaces = getResourceNamespaces(type);
 		String xml = XmlFieldUtils.emptyTag(tag, namespaces);
+
+		// Create object from this document
 		return xmlToObject(xml, type);
 	}
 
@@ -182,12 +204,13 @@ public class XmlField {
 			final Map<String, Class<?>> explicitCollection)
 			throws XmlFieldXPathException {
 
-		// we should replace the last occurance of the last xpath name with a *
+		// we should replace the last occurrence of the last xpath name with a *
 		String toReplace = XPathUtils.getElementName(resourceXPath);
 		StringBuilder b = new StringBuilder(resourceXPath);
 		b.replace(resourceXPath.lastIndexOf(toReplace),
 				resourceXPath.lastIndexOf(toReplace) + 1, "*");
 		final String resourceXPathGlobal = b.toString();
+
 		// TODO
 		final NamespaceMap namespaces = getResourceNamespaces(null);
 
@@ -264,10 +287,8 @@ public class XmlField {
 	 * @return instance binded to the xml
 	 */
 	public <T> T nodeToObject(final XmlFieldNode<?> node, final Class<T> type) {
-
-		final String resourceXPath = getResourceXPath(type);
-
-		return nodeToObject(resourceXPath, node, type);
+		// Get the root tag and create an object from it.
+		return nodeToObject(getResourceXPath(type), node, type);
 	}
 
 	public String nodeToXml(final XmlFieldNode<?> node)
@@ -309,16 +330,59 @@ public class XmlField {
 
 	}
 
-	public XmlFieldNode<?> xmlToNode(final InputStream xmlContent)
+	/**
+	 * Load the XML document from an input stream, load it internally in a tree
+	 * and return the root node.
+	 * <p>
+	 * As XmlField supports multiple XML parsing engines, the return object is a
+	 * generic type which wraps the actual implementation of the tree.
+	 * 
+	 * <p>
+	 * The document root is intended to be used with XmlField#nodeToObject(
+	 * XmlFieldNode<?> node, Class<T> type) to get an object instance to
+	 * read/write the document.
+	 * 
+	 * @param xmlInputStream
+	 *            Input stream on an XML document.
+	 * @return Root node of the XML document tree.
+	 * @throws XmlFieldParsingException
+	 *             When document is invalid, and cannot be parsed or when an
+	 *             exception occurs.
+	 */
+	public XmlFieldNode<?> xmlToNode(final InputStream xmlInputStream)
 			throws XmlFieldParsingException {
-		return parser.xmlToNode(xmlContent);
+		return parser.xmlToNode(xmlInputStream);
 	}
 
+	/**
+	 * Load the XML document from a string, load it internally in a tree and
+	 * return the root node.
+	 * <p>
+	 * As XmlField supports multiple XML parsing engines, the return object is a
+	 * generic type which wraps the actual implementation of the tree.
+	 * 
+	 * <p>
+	 * The document root is intended to be used with XmlField#nodeToObject(
+	 * XmlFieldNode<?> node, Class<T> type) to get an object instance to
+	 * read/write the document.
+	 * 
+	 * @param xml
+	 *            An XML document in a single string
+	 * @return Root node of the XML document tree.
+	 * @throws XmlFieldParsingException
+	 *             When document is invalid and cannot be parsed.
+	 */
 	public XmlFieldNode<?> xmlToNode(final String xml)
 			throws XmlFieldParsingException {
 		return parser.xmlToNode(xml);
 	}
 
+	/**
+	 * @param xmlContent
+	 * @param type
+	 * @return
+	 * @throws XmlFieldParsingException
+	 */
 	public <T> T xmlToObject(InputStream xmlContent, Class<T> type)
 			throws XmlFieldParsingException {
 		return nodeToObject(xmlToNode(xmlContent), type);

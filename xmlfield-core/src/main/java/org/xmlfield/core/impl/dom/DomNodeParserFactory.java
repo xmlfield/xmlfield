@@ -15,6 +15,11 @@
  */
 package org.xmlfield.core.impl.dom;
 
+import java.util.Map;
+
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerFactoryConfigurationError;
+
 import org.xmlfield.core.api.XmlFieldNodeParser;
 import org.xmlfield.core.api.XmlFieldNodeParserFactory;
 
@@ -22,13 +27,23 @@ import org.xmlfield.core.api.XmlFieldNodeParserFactory;
  * Default xml field node parser factory implementation.
  * 
  * @author Guillaume Mary <guillaume.mary@capgemini.com>
+ * @author Nicolas Richeton
  * 
  */
 public class DomNodeParserFactory extends XmlFieldNodeParserFactory {
 
-    @Override
-    public XmlFieldNodeParser<?> newParser() {
-        return new DomNodeParser();
-    }
+	@Override
+	public XmlFieldNodeParser<?> newParser(Map<String, String> configuration) {
+		try {
+			return new DomNodeParser(configuration);
+		} catch (TransformerConfigurationException e) {
+			throw new IllegalStateException(
+					"Unable to create XmlField xml document parser", e);
+		} catch (TransformerFactoryConfigurationError e) {
+			throw new IllegalStateException(
+					"Unable to create XmlField xml document parser", e);
+		}
+
+	}
 
 }

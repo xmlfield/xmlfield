@@ -15,11 +15,14 @@
  */
 package org.xmlfield.core.api;
 
+import java.util.Map;
+
 import org.xmlfield.core.internal.XmlFieldFactory;
 
 /**
  * <p>
- * An <code>XmlFieldNodeParserFactory</code> instance can be used to create {@link XmlFieldNodeParser} objects.
+ * An <code>XmlFieldNodeParserFactory</code> instance can be used to create
+ * {@link XmlFieldNodeParser} objects.
  * </p>
  * 
  * <p>
@@ -29,26 +32,29 @@ import org.xmlfield.core.internal.XmlFieldFactory;
  * @author Guillaume Mary <guillaume.mary@capgemini.com>
  */
 public abstract class XmlFieldNodeParserFactory extends XmlFieldFactory {
-    /**
-     * <p>
-     * Get a new <code>XmlFieldNodeParserFactory</code> instance.
-     * 
-     * @return Instance of an <code>XmlFieldNodeParserFactory</code>.
-     * 
-     * @throws RuntimeException
-     *             When there is a failure in creating an <code>XmlFieldNodeParserFactory</code>
-     */
-    public static final XmlFieldNodeParserFactory newInstance() {
-        return newInstance(XmlFieldNodeParserFactory.class);
-    }
+	/**
+	 * <p>
+	 * Get a new <code>XmlFieldNodeParserFactory</code> instance.
+	 * 
+	 * @return Instance of an <code>XmlFieldNodeParserFactory</code>.
+	 * 
+	 * @throws RuntimeException
+	 *             When there is a failure in creating an
+	 *             <code>XmlFieldNodeParserFactory</code>
+	 */
+	public static final XmlFieldNodeParserFactory newInstance() {
+		return newInstance(XmlFieldNodeParserFactory.class);
+	}
 
-    /**
-     * <p>
-     * Return a new <code>XmlFieldNodeParser</code> using the underlying object model determined when the
-     * <code>XmlFieldParserFactory</code> was instantiated.
-     * </p>
-     * 
-     * @return New instance of an <code>XmlFieldParser</code>.
-     */
-    public abstract XmlFieldNodeParser<?> newParser();
+	/**
+	 * <p>
+	 * Return a new <code>XmlFieldNodeParser</code> using the underlying object
+	 * model determined when the <code>XmlFieldParserFactory</code> was
+	 * instantiated.
+	 * </p>
+	 * 
+	 * @return New instance of an <code>XmlFieldParser</code>.
+	 */
+	public abstract XmlFieldNodeParser<?> newParser(
+			Map<String, String> configuration);
 }
