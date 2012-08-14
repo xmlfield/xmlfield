@@ -92,7 +92,7 @@ public class XmlField {
 
 	/**
 	 * @param parserConfiguration
-	 *            paser configuration or null
+	 *            parser configuration or null
 	 */
 	public XmlField(Map<String, String> parserConfiguration) {
 		selector = XmlFieldSelectorFactory.newInstance().newSelector();
@@ -115,8 +115,8 @@ public class XmlField {
 
 	private <T> T loadProxy(final XmlFieldNode<?> node, final Class<T> type) {
 
+		// Handle case when requested type is String.
 		if (String.class.equals(type)) {
-
 			return type.cast(node.getTextContent());
 		}
 
