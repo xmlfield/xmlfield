@@ -6,6 +6,8 @@ package org.xmlfield.core;
  * This factory is thread safe and can be configured to use ThreadLocal to reuse
  * XmlField instances for performance reasons.
  * 
+ * @see CleanThreadLocalFilter
+ * 
  * @author Nicolas Richeton
  * 
  */
@@ -62,6 +64,8 @@ public class XmlFieldFactory {
 	 * When used in a web application, it is recommended to use a servlet filter
 	 * which clears the context after each call to prevent leaks in application
 	 * servers.
+	 * 
+	 * @see CleanThreadLocalFilter
 	 * 
 	 * @param useThreadLocal
 	 */
