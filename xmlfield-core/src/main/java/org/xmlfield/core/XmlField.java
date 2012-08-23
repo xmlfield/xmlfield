@@ -64,8 +64,9 @@ import org.xmlfield.core.internal.XmlFieldUtils.NamespaceMap;
  * </pre>
  * 
  * <p>
- * This class and return objects are not thread safe. Be sure to synchronize, if
- * the same objects are used concurrently in multiple threads.
+ * This class and return objects are not thread safe. If the same objects are
+ * used concurrently in multiple threads, be sure to synchronize or use
+ * XmlFieldFactory with ThreadLocal enabled.
  * 
  * @author Guillaume Mary <guillaume.mary@capgemini.com>
  * @author Nicolas Richeton
