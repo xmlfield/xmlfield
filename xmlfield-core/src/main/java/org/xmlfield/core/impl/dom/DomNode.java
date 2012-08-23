@@ -24,90 +24,91 @@ import org.xmlfield.core.api.XmlFieldNode;
  * @author Guillaume Mary <guillaume.mary@capgemini.com>
  * 
  */
-public class DomNode implements XmlFieldNode<Node> {
+public class DomNode implements XmlFieldNode {
 
-    private Node node;
+	private Node node;
 
-    public DomNode(Node node) {
-        super();
-        this.node = node;
-    }
+	public DomNode(Node node) {
+		super();
+		this.node = node;
+	}
 
-    @Override
-    public XmlFieldNode<Node> getDocumentNode() {
-        if (this.node != null) {
-            return new DomNode(this.node.getOwnerDocument().getDocumentElement());
-        }
-        return null;
-    }
+	@Override
+	public XmlFieldNode getDocumentNode() {
+		if (this.node != null) {
+			return new DomNode(this.node.getOwnerDocument()
+					.getDocumentElement());
+		}
+		return null;
+	}
 
-    @Override
-    public Node getNode() {
-        return this.node;
-    }
+	@Override
+	public Node getNode() {
+		return this.node;
+	}
 
-    @Override
-    public String getNodeName() {
-        if (this.node == null) {
-            return null;
-        }
-        return this.node.getNodeName();
-    }
+	@Override
+	public String getNodeName() {
+		if (this.node == null) {
+			return null;
+		}
+		return this.node.getNodeName();
+	}
 
-    @Override
-    public short getNodeType() {
-        if (this.node == null) {
-            return XmlFieldNode.UNKNOW_NODE;
-        }
-        short nodeW3CType = this.node.getNodeType();
-        switch (nodeW3CType) {
-        case Node.ATTRIBUTE_NODE:
-            return XmlFieldNode.ATTRIBUTE_NODE;
+	@Override
+	public short getNodeType() {
+		if (this.node == null) {
+			return XmlFieldNode.UNKNOW_NODE;
+		}
+		short nodeW3CType = this.node.getNodeType();
+		switch (nodeW3CType) {
+		case Node.ATTRIBUTE_NODE:
+			return XmlFieldNode.ATTRIBUTE_NODE;
 
-        case Node.ELEMENT_NODE:
-            return XmlFieldNode.ELEMENT_NODE;
+		case Node.ELEMENT_NODE:
+			return XmlFieldNode.ELEMENT_NODE;
 
-        case Node.TEXT_NODE:
-            return XmlFieldNode.TEXT_NODE;
+		case Node.TEXT_NODE:
+			return XmlFieldNode.TEXT_NODE;
 
-        default:
-            return XmlFieldNode.UNKNOW_NODE;
-        }
-    }
+		default:
+			return XmlFieldNode.UNKNOW_NODE;
+		}
+	}
 
-    @Override
-    public XmlFieldNode<Node> getParentNode() {
-        if (this.node == null) {
-            return null;
-        }
-        return new DomNode(this.node.getParentNode());
-    }
+	@Override
+	public XmlFieldNode getParentNode() {
+		if (this.node == null) {
+			return null;
+		}
+		return new DomNode(this.node.getParentNode());
+	}
 
-    @Override
-    public String getTextContent() {
-        if (this.node == null) {
-            return null;
-        }
-        return this.node.getTextContent();
-    }
+	@Override
+	public String getTextContent() {
+		if (this.node == null) {
+			return null;
+		}
+		return this.node.getTextContent();
+	}
 
-    @Override
-    public boolean hasAttributes() {
-        if (this.node == null) {
-            return false;
-        }
-        return this.node.hasAttributes();
-    }
+	@Override
+	public boolean hasAttributes() {
+		if (this.node == null) {
+			return false;
+		}
+		return this.node.hasAttributes();
+	}
 
-    public void setNode(Node node) {
-        this.node = node;
-    }
+	public void setNode(Node node) {
+		this.node = node;
+	}
 
-    @Override
-    public void setTextContent(String textContent) {
-        if (this.node != null) {
-            this.node.setTextContent(textContent);
-        }
-    }
+	@Override
+	public void setTextContent(String textContent) {
+		if (this.node != null) {
+			this.node.setTextContent(textContent);
+		}
+	}
 
 }

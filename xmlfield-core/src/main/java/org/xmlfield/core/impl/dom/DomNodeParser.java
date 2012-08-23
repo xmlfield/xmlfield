@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.io.Writer;
 import java.util.Map;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -40,7 +41,6 @@ import org.xml.sax.SAXException;
 import org.xmlfield.core.api.XmlFieldNode;
 import org.xmlfield.core.api.XmlFieldNodeParser;
 import org.xmlfield.core.exception.XmlFieldParsingException;
-import org.xmlfield.core.internal.XmlFieldUtils;
 
 /**
  * Default xml field node parser. This implementation deal with a {@link Node}
@@ -49,10 +49,12 @@ import org.xmlfield.core.internal.XmlFieldUtils;
  * @author Guillaume Mary <guillaume.mary@capgemini.com>
  * @author Nicolas Richeton
  */
-public class DomNodeParser implements XmlFieldNodeParser<Node> {
+public class DomNodeParser implements XmlFieldNodeParser {
 	public static String CONFIG_INDENT_XML = "indent";
 
-	final Transformer t;
+	DocumentBuilder documentBuilder = null;
+	boolean indent = false;
+	Transformer t = null;
 
 	public DomNodeParser() throws TransformerConfigurationException,
 			TransformerFactoryConfigurationError {
@@ -62,33 +64,49 @@ public class DomNodeParser implements XmlFieldNodeParser<Node> {
 	public DomNodeParser(Map<String, String> configuration)
 			throws TransformerConfigurationException,
 			TransformerFactoryConfigurationError {
-		t = TransformerFactory.newInstance().newTransformer();
-
-		t.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
 
 		if (configuration != null
 				&& Boolean.parseBoolean(configuration.get(CONFIG_INDENT_XML))) {
-			t.setOutputProperty(OutputKeys.INDENT, "yes");
+
+			indent = true;
+
+		}
+	}
+
+	private void ensureBuilder() throws ParserConfigurationException {
+
+		if (documentBuilder == null) {
+			DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory
+					.newInstance();
+
+			documentBuilderFactory.setNamespaceAware(true);
+			documentBuilder = documentBuilderFactory.newDocumentBuilder();
+
+		}
+	}
+
+	private void ensureTransformer() throws TransformerConfigurationException,
+			TransformerFactoryConfigurationError {
+		if (t == null) {
+			t = TransformerFactory.newInstance().newTransformer();
+
+			t.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+			if (indent) {
+				t.setOutputProperty(OutputKeys.INDENT, "yes");
+			}
+
 		}
 	}
 
 	@Override
-	public String nodeToXml(Object object) throws XmlFieldParsingException {
-		@SuppressWarnings("unchecked")
-		XmlFieldNode<Node> node = (XmlFieldNode<Node>) XmlFieldUtils
-				.getXmlFieldNode(object);
-		return nodeToXml(node);
-	}
-
-	@Override
-	public String nodeToXml(XmlFieldNode<Node> node)
-			throws XmlFieldParsingException {
+	public String nodeToXml(XmlFieldNode node) throws XmlFieldParsingException {
 		StringWriter sw;
 		try {
 
 			sw = new StringWriter();
-
-			t.transform(new DOMSource(node.getNode()), new StreamResult(sw));
+			ensureTransformer();
+			t.transform(new DOMSource((Node) node.getNode()), new StreamResult(
+					sw));
 		} catch (TransformerConfigurationException e) {
 			throw new XmlFieldParsingException(e);
 		} catch (IllegalArgumentException e) {
@@ -102,6 +120,26 @@ public class DomNodeParser implements XmlFieldNodeParser<Node> {
 		return sw.toString();
 	}
 
+	@Override
+	public void nodeToXml(XmlFieldNode node, Writer writer)
+			throws XmlFieldParsingException {
+		try {
+			ensureTransformer();
+
+			t.transform(new DOMSource((Node) node.getNode()), new StreamResult(
+					writer));
+		} catch (TransformerConfigurationException e) {
+			throw new XmlFieldParsingException(e);
+		} catch (IllegalArgumentException e) {
+			throw new XmlFieldParsingException(e);
+		} catch (TransformerFactoryConfigurationError e) {
+			throw new XmlFieldParsingException(e);
+		} catch (TransformerException e) {
+			throw new XmlFieldParsingException(e);
+		}
+
+	}
+
 	/**
 	 * Loads xml content from the input source and create XML DOM object.
 	 * 
@@ -112,14 +150,9 @@ public class DomNodeParser implements XmlFieldNodeParser<Node> {
 	private Node xmlToNode(final InputSource xmlInputSource)
 			throws XmlFieldParsingException {
 
-		DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory
-				.newInstance();
-
-		documentBuilderFactory.setNamespaceAware(true);
-		DocumentBuilder documentBuilder;
 		Document document = null;
 		try {
-			documentBuilder = documentBuilderFactory.newDocumentBuilder();
+			ensureBuilder();
 			document = documentBuilder.parse(xmlInputSource);
 		} catch (ParserConfigurationException e) {
 			throw new XmlFieldParsingException(e);
@@ -133,14 +166,13 @@ public class DomNodeParser implements XmlFieldNodeParser<Node> {
 	}
 
 	@Override
-	public XmlFieldNode<Node> xmlToNode(InputStream xmlContent)
+	public XmlFieldNode xmlToNode(InputStream xmlContent)
 			throws XmlFieldParsingException {
 		return new DomNode(xmlToNode(new InputSource(xmlContent)));
 	}
 
 	@Override
-	public XmlFieldNode<Node> xmlToNode(String xml)
-			throws XmlFieldParsingException {
+	public XmlFieldNode xmlToNode(String xml) throws XmlFieldParsingException {
 		return new DomNode(xmlToNode(new InputSource(new StringReader(xml))));
 	}
 

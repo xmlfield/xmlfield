@@ -42,7 +42,7 @@ public interface XmlFieldSelector {
 	 *             exception thrown when the xpath evaluation failed
 	 */
 	Boolean selectXPathToBoolean(NamespaceMap namespaces, String xpath,
-			XmlFieldNode<?> node) throws XmlFieldXPathException;
+			XmlFieldNode node) throws XmlFieldXPathException;
 
 	/**
 	 * Select xpath expression to an xml field node and return the result as an
@@ -58,8 +58,8 @@ public interface XmlFieldSelector {
 	 * @throws XmlFieldXPathException
 	 *             exception thrown when the xpath evaluation failed
 	 */
-	XmlFieldNode<?> selectXPathToNode(NamespaceMap namespaces, String xpath,
-			XmlFieldNode<?> node) throws XmlFieldXPathException;
+	XmlFieldNode selectXPathToNode(NamespaceMap namespaces, String xpath,
+			XmlFieldNode node) throws XmlFieldXPathException;
 
 	/**
 	 * Select xpath expression to an xml field node and return the result as an
@@ -76,7 +76,7 @@ public interface XmlFieldSelector {
 	 *             exception thrown when the xpath evaluation failed
 	 */
 	XmlFieldNodeList selectXPathToNodeList(NamespaceMap namespaces,
-			String xpath, XmlFieldNode<?> node) throws XmlFieldXPathException;
+			String xpath, XmlFieldNode node) throws XmlFieldXPathException;
 
 	/**
 	 * Select xpath expression to an xml field node and return the result as a
@@ -93,7 +93,7 @@ public interface XmlFieldSelector {
 	 *             exception thrown when the xpath evaluation failed
 	 */
 	Double selectXPathToNumber(NamespaceMap namespaces, String xpath,
-			XmlFieldNode<?> node) throws XmlFieldXPathException;
+			XmlFieldNode node) throws XmlFieldXPathException;
 
 	/**
 	 * Select xpath expression to an xml field node and return the result as a
@@ -110,5 +110,5 @@ public interface XmlFieldSelector {
 	 *             exception thrown when the xpath evaluation failed
 	 */
 	String selectXPathToString(NamespaceMap namespaces, String xpath,
-			XmlFieldNode<?> node) throws XmlFieldXPathException;
+			XmlFieldNode node) throws XmlFieldXPathException;
 }

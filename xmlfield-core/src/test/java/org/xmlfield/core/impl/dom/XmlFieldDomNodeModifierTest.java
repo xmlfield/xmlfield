@@ -14,7 +14,6 @@ import javax.xml.transform.TransformerFactoryConfigurationError;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.w3c.dom.Node;
 import org.xmlfield.core.api.XmlFieldNode;
 import org.xmlfield.core.api.XmlFieldNodeList;
 import org.xmlfield.core.api.XmlFieldNodeModifier;
@@ -26,11 +25,11 @@ public class XmlFieldDomNodeModifierTest {
 
 	private final XmlFieldNodeModifier modifier = new DomNodeModifier();
 
-	private XmlFieldNode<Node> node;
+	private XmlFieldNode node;
 
-	private XmlFieldNode<Node> nodeNs;
+	private XmlFieldNode nodeNs;
 
-	private final XmlFieldNodeParser<Node> parser;
+	private final XmlFieldNodeParser parser;
 
 	private final XmlFieldSelector selector = new DomJaxenSelector();
 
@@ -110,15 +109,11 @@ public class XmlFieldDomNodeModifierTest {
 		}
 
 		// test create element with an empty or null element name
-		assertThat(
-				(XmlFieldNode<Node>) modifier.createElement(null, node, null),
-				sameInstance(node));
-		assertThat((XmlFieldNode<Node>) modifier.createElement(null, node, ""),
-				sameInstance(node));
+		assertThat(modifier.createElement(null, node, null), sameInstance(node));
+		assertThat(modifier.createElement(null, node, ""), sameInstance(node));
 
 		// test create element without namespaces
-		XmlFieldNode<Node> newNode = (XmlFieldNode<Node>) modifier
-				.createElement(null, node, "Cd");
+		XmlFieldNode newNode = modifier.createElement(null, node, "Cd");
 		assertThat(parser.nodeToXml(newNode), is("<Cd/>"));
 		assertThat(
 				parser.nodeToXml(node),
@@ -127,12 +122,11 @@ public class XmlFieldDomNodeModifierTest {
 		// test create element with namespaces
 		NamespaceMap namespaces = new NamespaceMap(
 				"xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"");
-		assertThat((XmlFieldNode<Node>) modifier.createElement(namespaces,
-				nodeNs, null), sameInstance(nodeNs));
-		assertThat((XmlFieldNode<Node>) modifier.createElement(namespaces,
-				nodeNs, ""), sameInstance(nodeNs));
-		newNode = (XmlFieldNode<Node>) modifier.createElement(namespaces,
-				nodeNs, "xsi:Cd");
+		assertThat(modifier.createElement(namespaces, nodeNs, null),
+				sameInstance(nodeNs));
+		assertThat(modifier.createElement(namespaces, nodeNs, ""),
+				sameInstance(nodeNs));
+		newNode = modifier.createElement(namespaces, nodeNs, "xsi:Cd");
 		assertThat(parser.nodeToXml(newNode),
 				is("<Cd xmlns=\"http://www.w3.org/2001/XMLSchema-instance\"/>"));
 		assertThat(
@@ -160,21 +154,20 @@ public class XmlFieldDomNodeModifierTest {
 		}
 
 		// test create element with an empty or null element name
-		assertThat((XmlFieldNode<Node>) modifier.createElement(null, node,
-				null, "Some text"), sameInstance(node));
-		assertThat((XmlFieldNode<Node>) modifier.createElement(null, node, "",
-				"Some text"), sameInstance(node));
+		assertThat(modifier.createElement(null, node, null, "Some text"),
+				sameInstance(node));
+		assertThat(modifier.createElement(null, node, "", "Some text"),
+				sameInstance(node));
 
 		// test create element without namespaces
-		XmlFieldNode<Node> newNode = (XmlFieldNode<Node>) modifier
-				.createElement(null, node, "Cd", "Some text");
+		XmlFieldNode newNode = modifier.createElement(null, node, "Cd",
+				"Some text");
 		assertThat(parser.nodeToXml(newNode), is("<Cd>Some text</Cd>"));
 		assertThat(
 				parser.nodeToXml(node),
 				is("<Catalog><Cd><Title>Empire Burlesque</Title><Artist>Bob Dylan</Artist><Country>USA</Country><Company>Columbia</Company><Price>10.90</Price><Year>1985</Year></Cd><Cd><Title>Hide your heart</Title><Artist>Bonnie Tyler</Artist><Country>UK</Country><Company>CBS Records</Company><Price>9.90</Price><Year>1988</Year></Cd><Cd><Title>Greatest Hits</Title><Artist>Dolly Parton</Artist><Country>USA</Country><Company>RCA</Company><Price>9.90</Price><Year>1982</Year></Cd><Cd>Some text</Cd></Catalog>"));
 
-		newNode = (XmlFieldNode<Node>) modifier.createElement(null, node, "Cd",
-				null);
+		newNode = modifier.createElement(null, node, "Cd", null);
 		assertThat(parser.nodeToXml(newNode), is("<Cd/>"));
 		assertThat(
 				parser.nodeToXml(node),
@@ -183,12 +176,13 @@ public class XmlFieldDomNodeModifierTest {
 		// test create element with namespaces
 		NamespaceMap namespaces = new NamespaceMap(
 				"xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"");
-		assertThat((XmlFieldNode<Node>) modifier.createElement(namespaces,
-				nodeNs, null, "Some text"), sameInstance(nodeNs));
-		assertThat((XmlFieldNode<Node>) modifier.createElement(namespaces,
-				nodeNs, "", "Some text"), sameInstance(nodeNs));
-		newNode = (XmlFieldNode<Node>) modifier.createElement(namespaces,
-				nodeNs, "xsi:Cd", "Some text");
+		assertThat(
+				modifier.createElement(namespaces, nodeNs, null, "Some text"),
+				sameInstance(nodeNs));
+		assertThat(modifier.createElement(namespaces, nodeNs, "", "Some text"),
+				sameInstance(nodeNs));
+		newNode = modifier.createElement(namespaces, nodeNs, "xsi:Cd",
+				"Some text");
 		assertThat(
 				parser.nodeToXml(newNode),
 				is("<Cd xmlns=\"http://www.w3.org/2001/XMLSchema-instance\">Some text</Cd>"));
@@ -216,8 +210,8 @@ public class XmlFieldDomNodeModifierTest {
 			assertTrue(true);
 		}
 
-		XmlFieldNode<Node> newChild = (XmlFieldNode<Node>) modifier
-				.createElement(null, node, "Cd", "Some text");
+		XmlFieldNode newChild = modifier.createElement(null, node, "Cd",
+				"Some text");
 		// test insert before with a null for the reference node parameter
 		try {
 			modifier.insertBefore(node, newChild, null);
@@ -227,8 +221,8 @@ public class XmlFieldDomNodeModifierTest {
 		}
 
 		// test insert before with all the parameters
-		XmlFieldNode<Node> refChild = (XmlFieldNode<Node>) selector
-				.selectXPathToNode(null, "/Catalog/Cd[2]", node);
+		XmlFieldNode refChild = selector.selectXPathToNode(null,
+				"/Catalog/Cd[2]", node);
 		modifier.insertBefore(node, newChild, refChild);
 		assertThat(
 				parser.nodeToXml(node),
@@ -237,9 +231,9 @@ public class XmlFieldDomNodeModifierTest {
 		// test insert before with all the parameters and namespace
 		// NamespaceMap namespaces = new
 		// NamespaceMap("xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"");
-		// refChild = (XmlFieldNode<Node>)
+		// refChild = (XmlFieldNode)
 		// selector.selectXPathToNode(namespaces, "/Catalog/xsi:Cd[2]", nodeNs);
-		// newChild = (XmlFieldNode<Node>) modifier.createElement(namespaces,
+		// newChild = (XmlFieldNode) modifier.createElement(namespaces,
 		// nodeNs, "xsi:Cd", "Some text");
 		// modifier.insertBefore(nodeNs, newChild, refChild);
 		// assertThat(
@@ -277,13 +271,11 @@ public class XmlFieldDomNodeModifierTest {
 		// test to remove an attibute who doesn't exist
 		node = parser
 				.xmlToNode("<Catalog name=\"MyCatalog\"><Cd><Title>Empire Burlesque</Title><Artist>Bob Dylan</Artist><Country>USA</Country><Company>Columbia</Company><Price>10.90</Price><Year>1985</Year></Cd><Cd><Title>Hide your heart</Title><Artist>Bonnie Tyler</Artist><Country>UK</Country><Company>CBS Records</Company><Price>9.90</Price><Year>1988</Year></Cd><Cd><Title>Greatest Hits</Title><Artist>Dolly Parton</Artist><Country>USA</Country><Company>RCA</Company><Price>9.90</Price><Year>1982</Year></Cd></Catalog>");
-		XmlFieldNode<Node> removedNode = (XmlFieldNode<Node>) modifier
-				.removeAttribute(node, "lastname");
+		XmlFieldNode removedNode = modifier.removeAttribute(node, "lastname");
 		assertThat(removedNode, nullValue());
 
 		// test to remove an attibute
-		removedNode = (XmlFieldNode<Node>) modifier.removeAttribute(node,
-				"name");
+		removedNode = modifier.removeAttribute(node, "name");
 		assertThat(parser.nodeToXml(node), is(xml));
 	}
 
@@ -307,8 +299,8 @@ public class XmlFieldDomNodeModifierTest {
 		}
 
 		// test to remove a child node with a null context node
-		XmlFieldNode<Node> oldChild = (XmlFieldNode<Node>) selector
-				.selectXPathToNode(null, "/Catalog/Cd[2]", node);
+		XmlFieldNode oldChild = selector.selectXPathToNode(null,
+				"/Catalog/Cd[2]", node);
 		try {
 			modifier.removeChild(null, oldChild);
 			fail("No exception thrown");
@@ -317,8 +309,7 @@ public class XmlFieldDomNodeModifierTest {
 		}
 
 		// test to remove a child node which doesn't exist in the context node
-		XmlFieldNode<Node> removedNode = (XmlFieldNode<Node>) modifier
-				.removeChild(node, oldChild);
+		XmlFieldNode removedNode = modifier.removeChild(node, oldChild);
 		assertThat(removedNode, sameInstance(oldChild));
 		assertThat(
 				parser.nodeToXml(node),
@@ -326,9 +317,8 @@ public class XmlFieldDomNodeModifierTest {
 
 		// test to remove a chid node with a real oldchild
 		node = parser.xmlToNode(xml);
-		oldChild = (XmlFieldNode<Node>) modifier.createElement(null, node,
-				"Cd", "Some text");
-		removedNode = (XmlFieldNode<Node>) modifier.removeChild(node, oldChild);
+		oldChild = modifier.createElement(null, node, "Cd", "Some text");
+		removedNode = modifier.removeChild(node, oldChild);
 		assertThat(removedNode, sameInstance(oldChild));
 		assertThat(parser.nodeToXml(node), is(xml));
 	}
@@ -344,8 +334,7 @@ public class XmlFieldDomNodeModifierTest {
 		}
 
 		// test to remove nodes with an empty list
-		modifier.removeChildren(new DomNodeList(
-				new ArrayList<XmlFieldNode<?>>()));
+		modifier.removeChildren(new DomNodeList(new ArrayList<XmlFieldNode>()));
 		assertThat(parser.nodeToXml(node), is(xml));
 
 		// test to remove nodes with a list

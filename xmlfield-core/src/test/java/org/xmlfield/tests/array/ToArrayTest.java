@@ -44,11 +44,14 @@ public class ToArrayTest {
 
 		// Load initial XML
 		final String xml = "<list><string>S</string><integer>1</integer><boolean>true</boolean></list>";
-		final XmlFieldNode<?> node = xf.xmlToNode(xml);
+		final XmlFieldNode node = xf.xmlToNode(xml);
 
 		// Attach and assert object values
 		final MultipleLists list = xf.nodeToObject(node, MultipleLists.class);
 		assertEquals(1, list.getString().length);
+
+		// Fails : see
+		// http://sourceforge.net/apps/mantisbt/xmlfield/view.php?id=33
 		assertEquals(1, list.getInteger().length);
 		assertEquals(1, list.getBoolean().length);
 

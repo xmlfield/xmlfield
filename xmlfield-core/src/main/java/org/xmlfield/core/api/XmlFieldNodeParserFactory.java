@@ -55,6 +55,6 @@ public abstract class XmlFieldNodeParserFactory extends XmlFieldFactory {
 	 * 
 	 * @return New instance of an <code>XmlFieldParser</code>.
 	 */
-	public abstract XmlFieldNodeParser<?> newParser(
+	public abstract XmlFieldNodeParser newParser(
 			Map<String, String> configuration);
 }

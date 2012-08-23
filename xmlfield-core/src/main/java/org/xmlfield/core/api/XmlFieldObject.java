@@ -15,21 +15,21 @@
  */
 package org.xmlfield.core.api;
 
-
 /**
- * interface essentiellement utilisée par le moteur de lecture du XML vers Java, mais rien n'empêche de déclarer une
- * interface Java de manipulation du XML héritant de <tt>INodeable</tt> afin de récupérer le nœud XML correspondant.
+ * interface essentiellement utilisée par le moteur de lecture du XML vers Java,
+ * mais rien n'empêche de déclarer une interface Java de manipulation du XML
+ * héritant de <tt>INodeable</tt> afin de récupérer le nœud XML correspondant.
  * 
  * @author David Andrianavalontsalama
  * @author Guillaume Mary <guillaume.mary@capgemini.com>
  * 
  */
-public interface XmlFieldObject<T> {
+public interface XmlFieldObject {
 
-    /**
-     * renvoie le nœud XML correspondant à cet objet.
-     * 
-     * @return le nœud XML.
-     */
-    XmlFieldNode<T> toNode();
+	/**
+	 * renvoie le nœud XML correspondant à cet objet.
+	 * 
+	 * @return le nœud XML.
+	 */
+	XmlFieldNode toNode();
 }

@@ -10,7 +10,6 @@ import javax.xml.transform.TransformerFactoryConfigurationError;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.w3c.dom.Node;
 import org.xmlfield.core.api.XmlFieldNode;
 import org.xmlfield.core.api.XmlFieldNodeList;
 import org.xmlfield.core.api.XmlFieldNodeParser;
@@ -19,9 +18,9 @@ import org.xmlfield.core.exception.XmlFieldXPathException;
 
 public class XmlFieldDomSelectorTest {
 
-	private XmlFieldNode<Node> node;
+	private XmlFieldNode node;
 
-	private final XmlFieldNodeParser<Node> parser;
+	private final XmlFieldNodeParser parser;
 
 	private final XmlFieldSelector selector = new DomJaxenSelector();
 

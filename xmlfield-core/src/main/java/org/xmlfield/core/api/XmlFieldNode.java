@@ -23,79 +23,79 @@ package org.xmlfield.core.api;
  * @param <T>
  *            underlying xml node representation type
  */
-public interface XmlFieldNode<T> {
+public interface XmlFieldNode {
 
-    /**
-     * The node is an <code>Attr</code>.
-     */
-    static final short ATTRIBUTE_NODE = 2;
+	/**
+	 * The node is an <code>Attr</code>.
+	 */
+	static final short ATTRIBUTE_NODE = 2;
 
-    /**
-     * The node is an <code>Element</code>.
-     */
-    static final short ELEMENT_NODE = 1;
-    /**
-     * The node is a <code>Text</code> node.
-     */
-    static final short TEXT_NODE = 3;
-    /**
-     * The node is an unknow node.
-     */
-    static final short UNKNOW_NODE = -1;
+	/**
+	 * The node is an <code>Element</code>.
+	 */
+	static final short ELEMENT_NODE = 1;
+	/**
+	 * The node is a <code>Text</code> node.
+	 */
+	static final short TEXT_NODE = 3;
+	/**
+	 * The node is an unknow node.
+	 */
+	static final short UNKNOW_NODE = -1;
 
-    /**
-     * Get the document node
-     * 
-     * @return document node
-     */
-    XmlFieldNode<T> getDocumentNode();
+	/**
+	 * Get the document node
+	 * 
+	 * @return document node
+	 */
+	XmlFieldNode getDocumentNode();
 
-    /**
-     * Get the underlying node
-     * 
-     * @return the underlying node
-     */
-    T getNode();
+	/**
+	 * Get the underlying node
+	 * 
+	 * @return the underlying node
+	 */
+	Object getNode();
 
-    /**
-     * Get the xml node name of the underlying node
-     * 
-     * @return node name
-     */
-    String getNodeName();
+	/**
+	 * Get the xml node name of the underlying node
+	 * 
+	 * @return node name
+	 */
+	String getNodeName();
 
-    /**
-     * Get the node type.
-     * 
-     * @return node type
-     */
-    short getNodeType();
+	/**
+	 * Get the node type.
+	 * 
+	 * @return node type
+	 */
+	short getNodeType();
 
-    /**
-     * Retrieve the parent node
-     * 
-     * @return parent node of this node
-     */
-    XmlFieldNode<T> getParentNode();
+	/**
+	 * Retrieve the parent node
+	 * 
+	 * @return parent node of this node
+	 */
+	XmlFieldNode getParentNode();
 
-    /**
-     * Get the node content as string.
-     * 
-     * @return node content
-     */
-    String getTextContent();
+	/**
+	 * Get the node content as string.
+	 * 
+	 * @return node content
+	 */
+	String getTextContent();
 
-    /**
-     * Check if the current node has attributes
-     * 
-     * @return true if the node has attributes
-     */
-    boolean hasAttributes();
+	/**
+	 * Check if the current node has attributes
+	 * 
+	 * @return true if the node has attributes
+	 */
+	boolean hasAttributes();
 
-    /**
-     * Set the node text content
-     * 
-     * @param textContent
-     */
-    void setTextContent(String textContent);
+	/**
+	 * Set the node text content
+	 * 
+	 * @param textContent
+	 */
+	void setTextContent(String textContent);
 }

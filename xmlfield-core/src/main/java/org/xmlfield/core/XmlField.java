@@ -22,6 +22,7 @@ import static org.xmlfield.core.internal.XmlFieldUtils.getResourceXPath;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Writer;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Proxy;
 import java.util.ArrayList;
@@ -79,7 +80,7 @@ public class XmlField {
 	/**
 	 * Parser used to parse the xml to node
 	 */
-	private final XmlFieldNodeParser<?> parser;
+	private final XmlFieldNodeParser parser;
 
 	/**
 	 * Selector used to execute xpath expression
@@ -113,7 +114,7 @@ public class XmlField {
 		return loadProxy(XmlFieldUtils.getXmlFieldNode(o), type);
 	}
 
-	private <T> T loadProxy(final XmlFieldNode<?> node, final Class<T> type) {
+	private <T> T loadProxy(final XmlFieldNode node, final Class<T> type) {
 
 		// Handle case when requested type is String.
 		if (String.class.equals(type)) {
@@ -163,7 +164,7 @@ public class XmlField {
 	}
 
 	public <T> T[] nodeToArray(final String resourceXPath,
-			final XmlFieldNode<?> node, final Class<T> type)
+			final XmlFieldNode node, final Class<T> type)
 			throws XmlFieldXPathException {
 
 		final NamespaceMap namespaces = getResourceNamespaces(type);
@@ -180,7 +181,7 @@ public class XmlField {
 		return toArray(list, type);
 	}
 
-	public <T> T[] nodeToArray(final XmlFieldNode<?> node, final Class<T> type)
+	public <T> T[] nodeToArray(final XmlFieldNode node, final Class<T> type)
 			throws XmlFieldXPathException {
 
 		final String resourceXPath = getResourceXPath(type);
@@ -200,7 +201,7 @@ public class XmlField {
 	 * @throws XmlFieldXPathException
 	 */
 	public Object[] nodeToExplicitArray(final String resourceXPath,
-			final XmlFieldNode<?> node,
+			final XmlFieldNode node,
 			final Map<String, Class<?>> explicitCollection)
 			throws XmlFieldXPathException {
 
@@ -220,7 +221,7 @@ public class XmlField {
 		final List<Object> list = new ArrayList<Object>();
 
 		for (int i = 0; i < xmlFieldNodes.getLength(); i++) {
-			XmlFieldNode<?> xmlFieldNode = xmlFieldNodes.item(i);
+			XmlFieldNode xmlFieldNode = xmlFieldNodes.item(i);
 			if (explicitCollection.containsKey(xmlFieldNode.getNodeName())) {
 				final Object proxy = loadProxy(xmlFieldNode,
 						explicitCollection.get(xmlFieldNode.getNodeName()));
@@ -244,11 +245,11 @@ public class XmlField {
 	 * @return null for non matching xml/type.
 	 */
 	public <T> T nodeToObject(final String resourceXPath,
-			final XmlFieldNode<?> node, final Class<T> resourceType) {
+			final XmlFieldNode node, final Class<T> resourceType) {
 
 		final NamespaceMap namespaces = getResourceNamespaces(resourceType);
 
-		final XmlFieldNode<?> subNode;
+		final XmlFieldNode subNode;
 
 		if (resourceXPath == null) {
 
@@ -286,22 +287,32 @@ public class XmlField {
 	 *            interface to bind to
 	 * @return instance binded to the xml
 	 */
-	public <T> T nodeToObject(final XmlFieldNode<?> node, final Class<T> type) {
+	public <T> T nodeToObject(final XmlFieldNode node, final Class<T> type) {
 		// Get the root tag and create an object from it.
 		return nodeToObject(getResourceXPath(type), node, type);
 	}
 
-	public String nodeToXml(final XmlFieldNode<?> node)
+	public String nodeToXml(final XmlFieldNode node)
 			throws XmlFieldParsingException {
 		return parser.nodeToXml(node);
 	}
 
-	public XmlFieldNode<?> objectToNode(Object o) {
+	public void nodeToXml(final XmlFieldNode node, Writer writer)
+			throws XmlFieldParsingException {
+		parser.nodeToXml(node, writer);
+	}
+
+	public XmlFieldNode objectToNode(Object o) {
 		return XmlFieldUtils.getXmlFieldNode(o);
 	}
 
 	public String objectToXml(Object o) throws XmlFieldParsingException {
-		return parser.nodeToXml(o);
+		return parser.nodeToXml(objectToNode(o));
+	}
+
+	public void objectToXml(Object o, Writer writer)
+			throws XmlFieldParsingException {
+		parser.nodeToXml(objectToNode(o), writer);
 	}
 
 	/**
@@ -323,7 +334,7 @@ public class XmlField {
 	public <T> T[] xmlToArray(String xml, Class<T> type)
 			throws XmlFieldException {
 
-		XmlFieldNode<?> node = xmlToNode(xml);
+		XmlFieldNode node = xmlToNode(xml);
 		T[] resultArray = nodeToArray(
 				getElementNameWithSelector(getResourceXPath(type)), node, type);
 		return resultArray;
@@ -339,8 +350,8 @@ public class XmlField {
 	 * 
 	 * <p>
 	 * The document root is intended to be used with XmlField#nodeToObject(
-	 * XmlFieldNode<?> node, Class<T> type) to get an object instance to
-	 * read/write the document.
+	 * XmlFieldNode node, Class<T> type) to get an object instance to read/write
+	 * the document.
 	 * 
 	 * @param xmlInputStream
 	 *            Input stream on an XML document.
@@ -349,7 +360,7 @@ public class XmlField {
 	 *             When document is invalid, and cannot be parsed or when an
 	 *             exception occurs.
 	 */
-	public XmlFieldNode<?> xmlToNode(final InputStream xmlInputStream)
+	public XmlFieldNode xmlToNode(final InputStream xmlInputStream)
 			throws XmlFieldParsingException {
 		return parser.xmlToNode(xmlInputStream);
 	}
@@ -363,8 +374,8 @@ public class XmlField {
 	 * 
 	 * <p>
 	 * The document root is intended to be used with XmlField#nodeToObject(
-	 * XmlFieldNode<?> node, Class<T> type) to get an object instance to
-	 * read/write the document.
+	 * XmlFieldNode node, Class<T> type) to get an object instance to read/write
+	 * the document.
 	 * 
 	 * @param xml
 	 *            An XML document in a single string
@@ -372,7 +383,7 @@ public class XmlField {
 	 * @throws XmlFieldParsingException
 	 *             When document is invalid and cannot be parsed.
 	 */
-	public XmlFieldNode<?> xmlToNode(final String xml)
+	public XmlFieldNode xmlToNode(final String xml)
 			throws XmlFieldParsingException {
 		return parser.xmlToNode(xml);
 	}

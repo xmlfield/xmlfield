@@ -16,6 +16,7 @@
 package org.xmlfield.core.api;
 
 import java.io.InputStream;
+import java.io.Writer;
 
 import org.xmlfield.core.exception.XmlFieldParsingException;
 
@@ -23,53 +24,58 @@ import org.xmlfield.core.exception.XmlFieldParsingException;
  * Interface of a xml field node parser.
  * 
  * @author Guillaume Mary <guillaume.mary@capgemini.com>
+ * @author Nicolas Richeton
  * 
  * @param <T>
  *            underlying xml node representation type
  */
-public interface XmlFieldNodeParser<T> {
+public interface XmlFieldNodeParser {
 
-    /**
-     * Transform an xml field object to an xml string.
-     * 
-     * @param object
-     *            xml field object
-     * @return xml string
-     * @throws XmlFieldParsingException
-     *             parsing exception
-     */
-    String nodeToXml(final Object object) throws XmlFieldParsingException;
+	/**
+	 * Transform an xml field object to an xml string.
+	 * 
+	 * @param object
+	 *            xml field object
+	 * @return xml string
+	 * @throws XmlFieldParsingException
+	 *             parsing exception
+	 */
+	// String nodeToXml(Object object) throws XmlFieldParsingException;
 
-    /**
-     * Transform an xml field node to an xml string.
-     * 
-     * @param node
-     *            xml field node
-     * @return xml string
-     * @throws XmlFieldParsingException
-     *             parsing exception
-     */
-    String nodeToXml(final XmlFieldNode<T> node) throws XmlFieldParsingException;
+	/**
+	 * Transform an xml field node to an xml string.
+	 * 
+	 * @param node
+	 *            xml field node
+	 * @return xml string
+	 * @throws XmlFieldParsingException
+	 *             parsing exception
+	 */
+	String nodeToXml(XmlFieldNode node) throws XmlFieldParsingException;
 
-    /**
-     * Transform an xml inputstream to an xml field node.
-     * 
-     * @param xmlContent
-     *            xml input stream
-     * @return xml field node
-     * @throws XmlFieldParsingException
-     *             parsing exception
-     */
-    XmlFieldNode<T> xmlToNode(final InputStream xmlContent) throws XmlFieldParsingException;
+	void nodeToXml(XmlFieldNode node, Writer writer)
+			throws XmlFieldParsingException;
 
-    /**
-     * Transform an xml string to an xml field node.
-     * 
-     * @param xml
-     *            xml string
-     * @return xml field node
-     * @throws XmlFieldParsingException
-     *             parsing exception
-     */
-    XmlFieldNode<T> xmlToNode(final String xml) throws XmlFieldParsingException;
+	/**
+	 * Transform an xml inputstream to an xml field node.
+	 * 
+	 * @param xmlContent
+	 *            xml input stream
+	 * @return xml field node
+	 * @throws XmlFieldParsingException
+	 *             parsing exception
+	 */
+	XmlFieldNode xmlToNode(InputStream xmlContent)
+			throws XmlFieldParsingException;
+
+	/**
+	 * Transform an xml string to an xml field node.
+	 * 
+	 * @param xml
+	 *            xml string
+	 * @return xml field node
+	 * @throws XmlFieldParsingException
+	 *             parsing exception
+	 */
+	XmlFieldNode xmlToNode(String xml) throws XmlFieldParsingException;
 }

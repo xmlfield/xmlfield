@@ -28,24 +28,24 @@ import org.xmlfield.core.api.XmlFieldNodeList;
  */
 public class DomNodeList implements XmlFieldNodeList {
 
-    private final List<XmlFieldNode<?>> nodeList;
+	private final List<XmlFieldNode> nodeList;
 
-    public DomNodeList(List<XmlFieldNode<?>> nodeList) {
-        super();
-        this.nodeList = nodeList;
-    }
+	public DomNodeList(List<XmlFieldNode> nodeList) {
+		super();
+		this.nodeList = nodeList;
+	}
 
-    @Override
-    public int getLength() {
-        return nodeList.size();
-    }
+	@Override
+	public int getLength() {
+		return nodeList.size();
+	}
 
-    @Override
-    public XmlFieldNode<?> item(int index) {
-        if (index < nodeList.size()) {
-            return nodeList.get(index);
-        }
-        return null;
-    }
+	@Override
+	public XmlFieldNode item(int index) {
+		if (index < nodeList.size()) {
+			return nodeList.get(index);
+		}
+		return null;
+	}
 
 }

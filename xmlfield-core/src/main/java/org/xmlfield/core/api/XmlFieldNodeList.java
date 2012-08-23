@@ -23,19 +23,19 @@ package org.xmlfield.core.api;
  */
 public interface XmlFieldNodeList {
 
-    /**
-     * Get the node list length.
-     * 
-     * @return node list length
-     */
-    public int getLength();
+	/**
+	 * Get the node list length.
+	 * 
+	 * @return node list length
+	 */
+	public int getLength();
 
-    /**
-     * Retrieve the item positioned at the specified index.
-     * 
-     * @param index
-     *            index
-     * @return node
-     */
-    public XmlFieldNode<?> item(int index);
+	/**
+	 * Retrieve the item positioned at the specified index.
+	 * 
+	 * @param index
+	 *            index
+	 * @return node
+	 */
+	public XmlFieldNode item(int index);
 }

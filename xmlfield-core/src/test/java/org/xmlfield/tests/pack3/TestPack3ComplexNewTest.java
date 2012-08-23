@@ -25,70 +25,74 @@ import org.xmlfield.core.XmlField;
 import org.xmlfield.core.api.XmlFieldNode;
 
 /**
- * Test getter and setter with array of native types but with complex xpath values (several nodes, attributes).
+ * Test getter and setter with array of native types but with complex xpath
+ * values (several nodes, attributes).
  * 
  * @author Nicolas Richeton <nicolas.richeton@capgemini.com>
  */
 public class TestPack3ComplexNewTest {
 
-    private final XmlField binder = new XmlField();
+	private final XmlField binder = new XmlField();
 
-    Logger log = LoggerFactory.getLogger(TestPack3ComplexNewTest.class);
+	Logger log = LoggerFactory.getLogger(TestPack3ComplexNewTest.class);
 
-    @Test
-    public void testSetNull() throws Exception {
+	@Test
+	public void testSetNull() throws Exception {
 
-        // Load initial XML
-        final String xml = "<list><string>String1</string><string>String2</string><single>Single value</single></list>";
-        String result = null;
-        final XmlFieldNode<?> node = binder.xmlToNode(xml);
+		// Load initial XML
+		final String xml = "<list><string>String1</string><string>String2</string><single>Single value</single></list>";
+		String result = null;
+		final XmlFieldNode node = binder.xmlToNode(xml);
 
-        // Attach and assert object values
-        final StringList list = binder.nodeToObject(node, StringList.class);
-        assertEquals(2, list.getStrings().length);
-        assertEquals("Single value", list.getSingle());
+		// Attach and assert object values
+		final StringList list = binder.nodeToObject(node, StringList.class);
+		assertEquals(2, list.getStrings().length);
+		assertEquals("Single value", list.getSingle());
 
-        // Remove tag 'single' by setting 'null' value
-        list.setSingle(null);
-        result = binder.nodeToXml(node);
-        log.info(result);
-        assertEquals("<list><string>String1</string><string>String2</string></list>", result);
+		// Remove tag 'single' by setting 'null' value
+		list.setSingle(null);
+		result = binder.nodeToXml(node);
+		log.info(result);
+		assertEquals(
+				"<list><string>String1</string><string>String2</string></list>",
+				result);
 
-        // Remove all tags 'string' by setting 'null' value
-        list.setStrings(null);
-        result = binder.nodeToXml(node);
-        log.info(result);
-        assertEquals("<list/>", result);
-    }
+		// Remove all tags 'string' by setting 'null' value
+		list.setStrings(null);
+		result = binder.nodeToXml(node);
+		log.info(result);
+		assertEquals("<list/>", result);
+	}
 
-    @Test
-    public void testSetValueComplex() throws Exception {
+	@Test
+	public void testSetValueComplex() throws Exception {
 
-        // Load initial XML
-        final String xml = "<list></list>";
-        String result = null;
-        final XmlFieldNode<?> node = binder.xmlToNode(xml);
+		// Load initial XML
+		final String xml = "<list></list>";
+		String result = null;
+		final XmlFieldNode node = binder.xmlToNode(xml);
 
-        // Attach and assert object values
-        final ComplexStringList list = binder.nodeToObject(node, ComplexStringList.class);
-        assertEquals(0, list.getStrings().length);
+		// Attach and assert object values
+		final ComplexStringList list = binder.nodeToObject(node,
+				ComplexStringList.class);
+		assertEquals(0, list.getStrings().length);
 
-        // Set new Value and assert
-        list.setStrings(new String[] { "String1", "String2", "String3" });
-        result = binder.nodeToXml(node);
-        log.info(result);
-        assertEquals(
-                "<list><parent1><parent2><stringlist type=\"complex\"><string>String1</string><string>String2</string><string>String3</string></stringlist></parent2></parent1></list>",
-                result);
+		// Set new Value and assert
+		list.setStrings(new String[] { "String1", "String2", "String3" });
+		result = binder.nodeToXml(node);
+		log.info(result);
+		assertEquals(
+				"<list><parent1><parent2><stringlist type=\"complex\"><string>String1</string><string>String2</string><string>String3</string></stringlist></parent2></parent1></list>",
+				result);
 
-        // Set new Value and assert
-        list.setStrings((String[]) ArrayUtils.remove(list.getStrings(), 1));
-        result = binder.nodeToXml(node);
-        log.info(result);
-        assertEquals(
-                "<list><parent1><parent2><stringlist type=\"complex\"><string>String1</string><string>String3</string></stringlist></parent2></parent1></list>",
-                result);
+		// Set new Value and assert
+		list.setStrings((String[]) ArrayUtils.remove(list.getStrings(), 1));
+		result = binder.nodeToXml(node);
+		log.info(result);
+		assertEquals(
+				"<list><parent1><parent2><stringlist type=\"complex\"><string>String1</string><string>String3</string></stringlist></parent2></parent1></list>",
+				result);
 
-    }
+	}
 
 }

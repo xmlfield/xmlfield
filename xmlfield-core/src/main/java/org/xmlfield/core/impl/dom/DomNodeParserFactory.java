@@ -33,7 +33,7 @@ import org.xmlfield.core.api.XmlFieldNodeParserFactory;
 public class DomNodeParserFactory extends XmlFieldNodeParserFactory {
 
 	@Override
-	public XmlFieldNodeParser<?> newParser(Map<String, String> configuration) {
+	public XmlFieldNodeParser newParser(Map<String, String> configuration) {
 		try {
 			return new DomNodeParser(configuration);
 		} catch (TransformerConfigurationException e) {

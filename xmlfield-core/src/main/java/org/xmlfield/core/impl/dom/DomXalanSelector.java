@@ -15,7 +15,6 @@
  */
 package org.xmlfield.core.impl.dom;
 
-
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -42,165 +41,173 @@ import org.xmlfield.core.internal.XmlFieldUtils.NamespaceMap;
  * 
  */
 public class DomXalanSelector implements XmlFieldSelector {
-    private static final ThreadLocal<XPathFactory> xPathFactory = new ThreadLocal<XPathFactory>() {
+	private static final ThreadLocal<XPathFactory> xPathFactory = new ThreadLocal<XPathFactory>() {
 
-        @Override
-        protected XPathFactory initialValue() {
-            return XPathFactory.newInstance();
-        }
+		@Override
+		protected XPathFactory initialValue() {
+			return XPathFactory.newInstance();
+		}
 
-    };
-    @Override
-    public Boolean selectXPathToBoolean(NamespaceMap namespaces, String xpath, XmlFieldNode<?> node)
-            throws XmlFieldXPathException {
-        checkXPathNotNull(xpath);
-        final XPath xp = getXPath(namespaces);
-        final Boolean value;
-        try {
-            value = (Boolean) xp.evaluate(xpath, node.getNode(), XPathConstants.BOOLEAN);
-        } catch (XPathExpressionException e) {
-            throw new XmlFieldXPathException(e);
-        }
-        return value;
-    }
+	};
 
-    @Override
-    public XmlFieldNode<?> selectXPathToNode(NamespaceMap namespaces, String xpath, XmlFieldNode<?> node)
-            throws XmlFieldXPathException {
-        checkXPathNotNull(xpath);
-        final XPath xp = getXPath(namespaces);
-        final Node selectedNode;
-        try {
-            selectedNode = (Node) xp.evaluate(xpath, node.getNode(), XPathConstants.NODE);
-        } catch (XPathExpressionException e) {
-            throw new XmlFieldXPathException(e);
-        }
-        if (selectedNode == null) {
-            return null;
-        }
-        return new DomNode(selectedNode);
-    }
+	public static XPath getXPath(final NamespaceMap namespaces) {
 
-    @Override
-    public XmlFieldNodeList selectXPathToNodeList(NamespaceMap namespaces, String xpath, XmlFieldNode<?> node)
-            throws XmlFieldXPathException {
-        checkXPathNotNull(xpath);
-        final XPath xp = getXPath(namespaces);
+		final XPath xpath = getXPathFactory().newXPath();
 
-        final NodeList nodeList;
-        try {
-            nodeList = (NodeList) xp.evaluate(xpath, node.getNode(), XPathConstants.NODESET);
-        } catch (XPathExpressionException e) {
-            throw new XmlFieldXPathException(e);
-        }
+		if (namespaces != null) {
 
-        final int nodeCount = nodeList.getLength();
+			final Map<String, String> prefixesURIs = namespaces
+					.getPrefixesURIs();
 
-        final List<XmlFieldNode<?>> list = new ArrayList<XmlFieldNode<?>>();
+			final NamespaceContext ns = new NamespaceContext() {
 
-        for (int i = 0; i < nodeCount; ++i) {
+				@Override
+				public String getNamespaceURI(final String prefix) {
 
-            final XmlFieldNode<Node> subNode = new DomNode(nodeList.item(i));
+					if (prefix == null) {
 
-            list.add(subNode);
-        }
-        return new DomNodeList(list);
-    }
+						return null;
+					}
 
-    @Override
-    public Double selectXPathToNumber(NamespaceMap namespaces, String xpath, XmlFieldNode<?> node)
-            throws XmlFieldXPathException {
-        checkXPathNotNull(xpath);
-        final XPath xp = getXPath(namespaces);
-        final Double value;
-        try {
-            value = (Double) xp.evaluate(xpath, node.getNode(), XPathConstants.NUMBER);
-        } catch (XPathExpressionException e) {
-            throw new XmlFieldXPathException(e);
-        }
-        return value;
-    }
+					final String nsURI = prefixesURIs.get(prefix);
 
-    @Override
-    public String selectXPathToString(NamespaceMap namespaces, String xpath, XmlFieldNode<?> node)
-            throws XmlFieldXPathException {
-        checkXPathNotNull(xpath);
-        final XPath xp = getXPath(namespaces);
-        final String value;
-        try {
-            value = (String) xp.evaluate(xpath, node.getNode(), XPathConstants.STRING);
-        } catch (XPathExpressionException e) {
-            throw new XmlFieldXPathException(e);
-        }
-        return value;
-    }
+					return nsURI;
+				}
 
-    private void checkXPathNotNull(String xpath) throws XmlFieldXPathException {
-        if (xpath == null) {
-            throw new XmlFieldXPathException("The requested xpath is null");
-        }
-    }
-    
-    private static XPathFactory getXPathFactory() {
-        return xPathFactory.get();
-    }
-    
-    public static XPath getXPath(final NamespaceMap namespaces) {
+				@Override
+				public String getPrefix(final String namespaceURI) {
 
-        final XPath xpath = getXPathFactory().newXPath();
+					if (namespaceURI == null) {
 
-        if (namespaces != null) {
+						return null;
+					}
 
-            final Map<String, String> prefixesURIs = namespaces.getPrefixesURIs();
+					if (prefixesURIs.containsValue(namespaceURI)) {
 
-            final NamespaceContext ns = new NamespaceContext() {
+						for (final Map.Entry<String, String> e : prefixesURIs
+								.entrySet()) {
 
-                @Override
-                public String getNamespaceURI(final String prefix) {
+							if (namespaceURI.equals(e.getValue())) {
 
-                    if (prefix == null) {
+								return e.getKey();
+							}
+						}
+					}
 
-                        return null;
-                    }
+					return null;
+				}
 
-                    final String nsURI = prefixesURIs.get(prefix);
+				@Override
+				public Iterator<?> getPrefixes(final String namespaceURI) {
 
-                    return nsURI;
-                }
+					return prefixesURIs.keySet().iterator();
+				}
+			};
 
-                @Override
-                public String getPrefix(final String namespaceURI) {
+			xpath.setNamespaceContext(ns);
+		}
 
-                    if (namespaceURI == null) {
+		return xpath;
+	}
 
-                        return null;
-                    }
+	private static XPathFactory getXPathFactory() {
+		return xPathFactory.get();
+	}
 
-                    if (prefixesURIs.containsValue(namespaceURI)) {
+	private void checkXPathNotNull(String xpath) throws XmlFieldXPathException {
+		if (xpath == null) {
+			throw new XmlFieldXPathException("The requested xpath is null");
+		}
+	}
 
-                        for (final Map.Entry<String, String> e : prefixesURIs.entrySet()) {
+	@Override
+	public Boolean selectXPathToBoolean(NamespaceMap namespaces, String xpath,
+			XmlFieldNode node) throws XmlFieldXPathException {
+		checkXPathNotNull(xpath);
+		final XPath xp = getXPath(namespaces);
+		final Boolean value;
+		try {
+			value = (Boolean) xp.evaluate(xpath, node.getNode(),
+					XPathConstants.BOOLEAN);
+		} catch (XPathExpressionException e) {
+			throw new XmlFieldXPathException(e);
+		}
+		return value;
+	}
 
-                            if (namespaceURI.equals(e.getValue())) {
+	@Override
+	public XmlFieldNode selectXPathToNode(NamespaceMap namespaces,
+			String xpath, XmlFieldNode node) throws XmlFieldXPathException {
+		checkXPathNotNull(xpath);
+		final XPath xp = getXPath(namespaces);
+		final Node selectedNode;
+		try {
+			selectedNode = (Node) xp.evaluate(xpath, node.getNode(),
+					XPathConstants.NODE);
+		} catch (XPathExpressionException e) {
+			throw new XmlFieldXPathException(e);
+		}
+		if (selectedNode == null) {
+			return null;
+		}
+		return new DomNode(selectedNode);
+	}
 
-                                return e.getKey();
-                            }
-                        }
-                    }
+	@Override
+	public XmlFieldNodeList selectXPathToNodeList(NamespaceMap namespaces,
+			String xpath, XmlFieldNode node) throws XmlFieldXPathException {
+		checkXPathNotNull(xpath);
+		final XPath xp = getXPath(namespaces);
 
-                    return null;
-                }
+		final NodeList nodeList;
+		try {
+			nodeList = (NodeList) xp.evaluate(xpath, node.getNode(),
+					XPathConstants.NODESET);
+		} catch (XPathExpressionException e) {
+			throw new XmlFieldXPathException(e);
+		}
 
-                @Override
-                public Iterator<?> getPrefixes(final String namespaceURI) {
+		final int nodeCount = nodeList.getLength();
 
-                    return prefixesURIs.keySet().iterator();
-                }
-            };
+		final List<XmlFieldNode> list = new ArrayList<XmlFieldNode>();
 
-            xpath.setNamespaceContext(ns);
-        }
+		for (int i = 0; i < nodeCount; ++i) {
 
-        return xpath;
-    }
+			final XmlFieldNode subNode = new DomNode(nodeList.item(i));
+
+			list.add(subNode);
+		}
+		return new DomNodeList(list);
+	}
+
+	@Override
+	public Double selectXPathToNumber(NamespaceMap namespaces, String xpath,
+			XmlFieldNode node) throws XmlFieldXPathException {
+		checkXPathNotNull(xpath);
+		final XPath xp = getXPath(namespaces);
+		final Double value;
+		try {
+			value = (Double) xp.evaluate(xpath, node.getNode(),
+					XPathConstants.NUMBER);
+		} catch (XPathExpressionException e) {
+			throw new XmlFieldXPathException(e);
+		}
+		return value;
+	}
+
+	@Override
+	public String selectXPathToString(NamespaceMap namespaces, String xpath,
+			XmlFieldNode node) throws XmlFieldXPathException {
+		checkXPathNotNull(xpath);
+		final XPath xp = getXPath(namespaces);
+		final String value;
+		try {
+			value = (String) xp.evaluate(xpath, node.getNode(),
+					XPathConstants.STRING);
+		} catch (XPathExpressionException e) {
+			throw new XmlFieldXPathException(e);
+		}
+		return value;
+	}
 
 }

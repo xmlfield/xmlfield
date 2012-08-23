@@ -39,129 +39,136 @@ import org.xmlfield.core.internal.XmlFieldUtils.NamespaceMap;
  */
 public class DomNodeModifier implements XmlFieldNodeModifier {
 
-    private static Element _createElement(final NamespaceMap namespaces, final Document document,
-            final String elementName) {
+	private static Element _createElement(final NamespaceMap namespaces,
+			final Document document, final String elementName) {
 
-        String prefix = XPathUtils.getElementPrefix(elementName);
+		String prefix = XPathUtils.getElementPrefix(elementName);
 
-        if (prefix == null) {
-            return document.createElement(elementName);
-        }
+		if (prefix == null) {
+			return document.createElement(elementName);
+		}
 
-        if (namespaces == null) {
-            throw new IllegalArgumentException("No namespaceURI defined for <" + elementName + ">");
-        }
+		if (namespaces == null) {
+			throw new IllegalArgumentException("No namespaceURI defined for <"
+					+ elementName + ">");
+		}
 
-        String uri = namespaces.get(prefix);
+		String uri = namespaces.get(prefix);
 
-        if (uri == null) {
-            throw new IllegalArgumentException("No namespaceURI defined for <" + elementName + ">");
-        }
+		if (uri == null) {
+			throw new IllegalArgumentException("No namespaceURI defined for <"
+					+ elementName + ">");
+		}
 
-        String localName = substringAfter(elementName, ":");
+		String localName = substringAfter(elementName, ":");
 
-        return document.createElementNS(uri, localName);
+		return document.createElementNS(uri, localName);
 
-    }
+	}
 
-    @Override
-    public void createAttribute(XmlFieldNode<?> node, String attributeName, String textContent) {
-        checkNotNull(node, "node");
-        checkNotNull(attributeName, "attributeName");
-        final Document document = getNodeDocument((Node) node.getNode());
+	@Override
+	public void createAttribute(XmlFieldNode node, String attributeName,
+			String textContent) {
+		checkNotNull(node, "node");
+		checkNotNull(attributeName, "attributeName");
+		final Document document = getNodeDocument((Node) node.getNode());
 
-        final Attr attribute = document.createAttribute(attributeName);
+		final Attr attribute = document.createAttribute(attributeName);
 
-        ((Element) node.getNode()).setAttributeNode(attribute);
+		((Element) node.getNode()).setAttributeNode(attribute);
 
-        if (textContent != null) {
+		if (textContent != null) {
 
-            attribute.setTextContent(textContent);
-        }
+			attribute.setTextContent(textContent);
+		}
 
-    }
+	}
 
-    @Override
-    public XmlFieldNode<?> createElement(NamespaceMap namespaces, XmlFieldNode<?> node, String elementName) {
-        return createElement(namespaces, node, elementName, null);
-    }
+	@Override
+	public XmlFieldNode createElement(NamespaceMap namespaces,
+			XmlFieldNode node, String elementName) {
+		return createElement(namespaces, node, elementName, null);
+	}
 
-    @Override
-    public XmlFieldNode<?> createElement(NamespaceMap namespaces, XmlFieldNode<?> node, String elementName,
-            String textContent) {
-        checkNotNull(node, "node");
-        checkArgument(node.getNode() instanceof Node);
-        if (StringUtils.isEmpty(elementName)) {
-            return node;
-        }
+	@Override
+	public XmlFieldNode createElement(NamespaceMap namespaces,
+			XmlFieldNode node, String elementName, String textContent) {
+		checkNotNull(node, "node");
+		checkArgument(node.getNode() instanceof Node);
+		if (StringUtils.isEmpty(elementName)) {
+			return node;
+		}
 
-        final Document document = getNodeDocument((Node) node.getNode());
+		final Document document = getNodeDocument((Node) node.getNode());
 
-        final Element element = _createElement(namespaces, document, elementName);
+		final Element element = _createElement(namespaces, document,
+				elementName);
 
-        ((Node) node.getNode()).appendChild(element);
+		((Node) node.getNode()).appendChild(element);
 
-        if (textContent != null) {
+		if (textContent != null) {
 
-            element.appendChild(document.createTextNode(textContent));
-        }
+			element.appendChild(document.createTextNode(textContent));
+		}
 
-        return new DomNode(element);
-    }
+		return new DomNode(element);
+	}
 
-    @Override
-    public XmlFieldNode<?> insertBefore(XmlFieldNode<?> contextNode, XmlFieldNode<?> newChild, XmlFieldNode<?> refChild) {
-        checkNotNull(contextNode, "contextNode");
-        checkNotNull(newChild, "newChild");
-        checkNotNull(refChild, "refChild");
-        Node insertedNode = ((Node) contextNode.getNode()).insertBefore((Node) newChild.getNode(),
-                (Node) refChild.getNode());
-        return new DomNode(insertedNode);
-    }
+	private Document getNodeDocument(final Node node) {
 
-    @Override
-    public XmlFieldNode<?> removeAttribute(XmlFieldNode<?> node, String attributeName) {
-        checkNotNull(node, "node");
-        checkNotNull(attributeName, "attributeName");
-        NamedNodeMap nnMap = ((Node) node.getNode()).getAttributes();
-        if (nnMap.getNamedItem(attributeName) == null) {
-            return null;
-        }
-        return new DomNode(nnMap.removeNamedItem(attributeName));
-    }
+		checkNotNull(node, "node");
 
-    @Override
-    public XmlFieldNode<?> removeChild(XmlFieldNode<?> node, XmlFieldNode<?> oldChild) {
-        checkNotNull(node, "node");
-        checkNotNull(oldChild, "oldChild");
-        Node removedNode = ((Node) node.getNode()).removeChild((Node) oldChild.getNode());
-        if (removedNode != null) {
-            return oldChild;
-        }
-        return null;
-    }
+		for (Node n = node; n != null; n = n.getParentNode()) {
 
-    @Override
-    public void removeChildren(final XmlFieldNodeList nodesToRemove) {
-        checkNotNull(nodesToRemove, "nodesToRemove");
-        for (int i = nodesToRemove.getLength() - 1; i >= 0; i--) {
-            final Node currentNode = (Node) nodesToRemove.item(i).getNode();
-            currentNode.getParentNode().removeChild(currentNode);
-        }
-    }
+			if (Document.class.isInstance(n)) {
 
-    private Document getNodeDocument(final Node node) {
+				return (Document) n;
+			}
+		}
 
-        checkNotNull(node, "node");
+		throw new IllegalArgumentException("Node has no Document ancestor.");
+	}
 
-        for (Node n = node; n != null; n = n.getParentNode()) {
+	@Override
+	public XmlFieldNode insertBefore(XmlFieldNode contextNode,
+			XmlFieldNode newChild, XmlFieldNode refChild) {
+		checkNotNull(contextNode, "contextNode");
+		checkNotNull(newChild, "newChild");
+		checkNotNull(refChild, "refChild");
+		Node insertedNode = ((Node) contextNode.getNode()).insertBefore(
+				(Node) newChild.getNode(), (Node) refChild.getNode());
+		return new DomNode(insertedNode);
+	}
 
-            if (Document.class.isInstance(n)) {
+	@Override
+	public XmlFieldNode removeAttribute(XmlFieldNode node, String attributeName) {
+		checkNotNull(node, "node");
+		checkNotNull(attributeName, "attributeName");
+		NamedNodeMap nnMap = ((Node) node.getNode()).getAttributes();
+		if (nnMap.getNamedItem(attributeName) == null) {
+			return null;
+		}
+		return new DomNode(nnMap.removeNamedItem(attributeName));
+	}
 
-                return (Document) n;
-            }
-        }
+	@Override
+	public XmlFieldNode removeChild(XmlFieldNode node, XmlFieldNode oldChild) {
+		checkNotNull(node, "node");
+		checkNotNull(oldChild, "oldChild");
+		Node removedNode = ((Node) node.getNode()).removeChild((Node) oldChild
+				.getNode());
+		if (removedNode != null) {
+			return oldChild;
+		}
+		return null;
+	}
 
-        throw new IllegalArgumentException("Node has no Document ancestor.");
-    }
+	@Override
+	public void removeChildren(final XmlFieldNodeList nodesToRemove) {
+		checkNotNull(nodesToRemove, "nodesToRemove");
+		for (int i = nodesToRemove.getLength() - 1; i >= 0; i--) {
+			final Node currentNode = (Node) nodesToRemove.item(i).getNode();
+			currentNode.getParentNode().removeChild(currentNode);
+		}
+	}
 }

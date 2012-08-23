@@ -36,7 +36,7 @@ public interface XmlFieldNodeModifier {
 	 * @param textContent
 	 *            text content of the attribute
 	 */
-	void createAttribute(final XmlFieldNode<?> contextNode,
+	void createAttribute(final XmlFieldNode contextNode,
 			final String attributeName, final String textContent);
 
 	/**
@@ -50,8 +50,8 @@ public interface XmlFieldNodeModifier {
 	 *            element name
 	 * @return the created element
 	 */
-	XmlFieldNode<?> createElement(final NamespaceMap namespaces,
-			final XmlFieldNode<?> node, final String elementName);
+	XmlFieldNode createElement(final NamespaceMap namespaces,
+			final XmlFieldNode node, final String elementName);
 
 	/**
 	 * Create a new element node at the end of the root node.
@@ -66,8 +66,8 @@ public interface XmlFieldNodeModifier {
 	 *            text content of the new element
 	 * @return the new element
 	 */
-	XmlFieldNode<?> createElement(final NamespaceMap namespaces,
-			final XmlFieldNode<?> node, final String elementName,
+	XmlFieldNode createElement(final NamespaceMap namespaces,
+			final XmlFieldNode node, final String elementName,
 			final String textContent);
 
 	/**
@@ -81,8 +81,8 @@ public interface XmlFieldNodeModifier {
 	 *            reference node where the node should be inserted before
 	 * @return the inserted node
 	 */
-	XmlFieldNode<?> insertBefore(final XmlFieldNode<?> parentNode,
-			final XmlFieldNode<?> newChild, XmlFieldNode<?> refChild);
+	XmlFieldNode insertBefore(final XmlFieldNode parentNode,
+			final XmlFieldNode newChild, XmlFieldNode refChild);
 
 	/**
 	 * Remove an attribute from a specified node
@@ -93,7 +93,7 @@ public interface XmlFieldNodeModifier {
 	 *            attribute name
 	 * @return the attribute node removed
 	 */
-	XmlFieldNode<?> removeAttribute(final XmlFieldNode<?> node,
+	XmlFieldNode removeAttribute(final XmlFieldNode node,
 			final String attributeName);
 
 	/**
@@ -105,8 +105,8 @@ public interface XmlFieldNodeModifier {
 	 *            child to be removed
 	 * @return the removed node
 	 */
-	XmlFieldNode<?> removeChild(final XmlFieldNode<?> contextNode,
-			final XmlFieldNode<?> oldChild);
+	XmlFieldNode removeChild(final XmlFieldNode contextNode,
+			final XmlFieldNode oldChild);
 
 	/**
 	 * Remove a node list

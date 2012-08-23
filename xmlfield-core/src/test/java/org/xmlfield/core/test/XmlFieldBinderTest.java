@@ -39,125 +39,6 @@ public class XmlFieldBinderTest {
 
 	Logger log = LoggerFactory.getLogger(XmlFieldBinderTest.class);
 
-	@Test
-	public void testAttachReadOnly() throws Exception {
-		XmlField binder = new XmlField();
-		Catalog catalog = binder.xmlToObject(sampleXml1(), Catalog.class);
-		assertNotNull(catalog);
-	}
-
-	@Test
-	public void testNonPrimitiveNumbers() throws Exception {
-		XmlField binder = new XmlField();
-		Catalog catalog = binder.xmlToObject(sampleXml1(), Catalog.class);
-		assertNotNull(catalog);
-
-		Cd cd1 = catalog.getCd()[0];
-		assertNotNull(cd1);
-		assertEquals(123465, cd1.getId().intValue());
-
-		Cd cd2 = catalog.getCd()[1];
-		assertNotNull(cd2);
-		assertNull(cd2.getId());
-
-		cd2.setId(Integer.valueOf(15646984));
-
-		assertEquals(
-				"<Cd>   <Title>toto</Title><Artist>Bonnie Tyler</Artist><Country>UK</Country>   <Company>CBS Records</Company>   <Price>9.90</Price><Year>1988</Year><id>15646984</id></Cd>",
-				binder.objectToXml(cd2));
-	}
-
-	/**
-	 * Check launched exceptions for buggy xml.
-	 */
-	@Test(expected = XmlFieldParsingException.class)
-	public void testAttachReadOnlyInvalidXml() throws Exception {
-		XmlField binder = new XmlField();
-		Catalog catalog = binder.xmlToObject(sampleXmlBuggy(), Catalog.class);
-		assertNotNull(catalog);
-	}
-
-	/**
-	 * Test null returned for non matching xml and type.
-	 */
-	@Test
-	public void testAttachReadOnlyWrongEntityXml() throws Exception {
-		XmlField binder = new XmlField();
-		Catalog catalog = binder.xmlToObject(sampleXmlWrongEntity(),
-				Catalog.class);
-		assertNull(catalog);
-	}
-
-	@Test
-	public void testGetNodeFromInterface() throws Exception {
-		XmlField binder = new XmlField();
-		Catalog catalog = binder.xmlToObject(sampleXml1(), Catalog.class);
-
-		assertNotNull(catalog);
-
-		XmlFieldNode<?> node = XmlFieldUtils.getXmlFieldNode(catalog);
-		String xml = binder.nodeToXml(node);
-
-		assertEquals(
-				"<Catalog><Cd>  <id>123465</id>  <Title>toto</Title>  <Artist>Bob Dylan</Artist><Country>USA</Country>  <Company>Columbia</Company>  <Price>10.90</Price><Year>1985</Year></Cd><Cd>   <Title>toto</Title><Artist>Bonnie Tyler</Artist><Country>UK</Country>   <Company>CBS Records</Company>   <Price>9.90</Price><Year>1988</Year></Cd></Catalog>",
-				xml);
-	}
-
-	@Test
-	public void testInstantiate() throws Exception {
-		XmlField binder = new XmlField();
-
-		Catalog catalog = binder.newObject(Catalog.class);
-		assertNotNull(catalog);
-		assertTrue(catalog.getCd().length == 0);
-
-		assertEquals("<Catalog/>", binder.objectToXml(catalog));
-
-		catalog.addToCd().setTitle("title");
-		catalog.addToCd().setPrice(987);
-
-		assertEquals(
-				"<Catalog><Cd><Title>title</Title></Cd><Cd><Price>987.0</Price></Cd></Catalog>",
-				binder.objectToXml(catalog));
-	}
-
-	@Test
-	public void testInstantiateWithNamespaces() throws Exception {
-		XmlField binder = new XmlField();
-
-		AtomCatalog catalog = binder.newObject(AtomCatalog.class);
-		assertNotNull(catalog);
-		assertTrue(catalog.getCd().length == 0);
-
-		assertEquals(
-				"<a:entry xmlns:a=\"http://www.w3.org/2005/Atom\" xmlns:x=\"http://www.w3.org/1999/xhtml\"/>",
-				binder.objectToXml(catalog));
-
-		catalog.addToCd().setTitle("title");
-		catalog.addToCd().setPrice(987);
-
-		assertEquals(
-				"<a:entry xmlns:a=\"http://www.w3.org/2005/Atom\" xmlns:x=\"http://www.w3.org/1999/xhtml\">"
-						+ "<content xmlns=\"http://www.w3.org/2005/Atom\"><div xmlns=\"http://www.w3.org/1999/xhtml\"><div class=\"cd\"><span class=\"title\">title</span></div><div class=\"cd\"><span class=\"price\">987.0</span></div></div></content></a:entry>",
-						binder.objectToXml(catalog));
-	}
-
-	@Test
-	public void testSimple() throws Exception {
-		Map<String, String> map = XPathUtils
-				.getElementSelectorAttributes("/cd/div[@class=\"title\"]");
-
-		assertEquals("title", map.get("class"));
-		assertEquals(1, map.size());
-
-		map = XPathUtils
-				.getElementSelectorAttributes("/cd/div[@class=\"title\"][@id=\'1\']");
-		assertEquals("title", map.get("class"));
-		assertEquals("1", map.get("id"));
-		assertEquals(2, map.size());
-
-	}
-
 	private String sampleXml1() {
 		return "<Catalog>" //
 				+ "<Cd>"
@@ -206,5 +87,124 @@ public class XmlFieldBinderTest {
 				+ "   <Price>9.90</Price><Year>1988</Year>" //
 				+ "</Cd>" + //
 				"</Invalid>";
+	}
+
+	@Test
+	public void testAttachReadOnly() throws Exception {
+		XmlField binder = new XmlField();
+		Catalog catalog = binder.xmlToObject(sampleXml1(), Catalog.class);
+		assertNotNull(catalog);
+	}
+
+	/**
+	 * Check launched exceptions for buggy xml.
+	 */
+	@Test(expected = XmlFieldParsingException.class)
+	public void testAttachReadOnlyInvalidXml() throws Exception {
+		XmlField binder = new XmlField();
+		Catalog catalog = binder.xmlToObject(sampleXmlBuggy(), Catalog.class);
+		assertNotNull(catalog);
+	}
+
+	/**
+	 * Test null returned for non matching xml and type.
+	 */
+	@Test
+	public void testAttachReadOnlyWrongEntityXml() throws Exception {
+		XmlField binder = new XmlField();
+		Catalog catalog = binder.xmlToObject(sampleXmlWrongEntity(),
+				Catalog.class);
+		assertNull(catalog);
+	}
+
+	@Test
+	public void testGetNodeFromInterface() throws Exception {
+		XmlField binder = new XmlField();
+		Catalog catalog = binder.xmlToObject(sampleXml1(), Catalog.class);
+
+		assertNotNull(catalog);
+
+		XmlFieldNode node = XmlFieldUtils.getXmlFieldNode(catalog);
+		String xml = binder.nodeToXml(node);
+
+		assertEquals(
+				"<Catalog><Cd>  <id>123465</id>  <Title>toto</Title>  <Artist>Bob Dylan</Artist><Country>USA</Country>  <Company>Columbia</Company>  <Price>10.90</Price><Year>1985</Year></Cd><Cd>   <Title>toto</Title><Artist>Bonnie Tyler</Artist><Country>UK</Country>   <Company>CBS Records</Company>   <Price>9.90</Price><Year>1988</Year></Cd></Catalog>",
+				xml);
+	}
+
+	@Test
+	public void testInstantiate() throws Exception {
+		XmlField binder = new XmlField();
+
+		Catalog catalog = binder.newObject(Catalog.class);
+		assertNotNull(catalog);
+		assertTrue(catalog.getCd().length == 0);
+
+		assertEquals("<Catalog/>", binder.objectToXml(catalog));
+
+		catalog.addToCd().setTitle("title");
+		catalog.addToCd().setPrice(987);
+
+		assertEquals(
+				"<Catalog><Cd><Title>title</Title></Cd><Cd><Price>987.0</Price></Cd></Catalog>",
+				binder.objectToXml(catalog));
+	}
+
+	@Test
+	public void testInstantiateWithNamespaces() throws Exception {
+		XmlField binder = new XmlField();
+
+		AtomCatalog catalog = binder.newObject(AtomCatalog.class);
+		assertNotNull(catalog);
+		assertTrue(catalog.getCd().length == 0);
+
+		assertEquals(
+				"<a:entry xmlns:a=\"http://www.w3.org/2005/Atom\" xmlns:x=\"http://www.w3.org/1999/xhtml\"/>",
+				binder.objectToXml(catalog));
+
+		catalog.addToCd().setTitle("title");
+		catalog.addToCd().setPrice(987);
+
+		assertEquals(
+				"<a:entry xmlns:a=\"http://www.w3.org/2005/Atom\" xmlns:x=\"http://www.w3.org/1999/xhtml\">"
+						+ "<content xmlns=\"http://www.w3.org/2005/Atom\"><div xmlns=\"http://www.w3.org/1999/xhtml\"><div class=\"cd\"><span class=\"title\">title</span></div><div class=\"cd\"><span class=\"price\">987.0</span></div></div></content></a:entry>",
+				binder.objectToXml(catalog));
+	}
+
+	@Test
+	public void testNonPrimitiveNumbers() throws Exception {
+		XmlField binder = new XmlField();
+		Catalog catalog = binder.xmlToObject(sampleXml1(), Catalog.class);
+		assertNotNull(catalog);
+
+		Cd cd1 = catalog.getCd()[0];
+		assertNotNull(cd1);
+		assertEquals(123465, cd1.getId().intValue());
+
+		Cd cd2 = catalog.getCd()[1];
+		assertNotNull(cd2);
+		assertNull(cd2.getId());
+
+		cd2.setId(Integer.valueOf(15646984));
+
+		assertEquals(
+				"<Cd>   <Title>toto</Title><Artist>Bonnie Tyler</Artist><Country>UK</Country>   <Company>CBS Records</Company>   <Price>9.90</Price><Year>1988</Year><id>15646984</id></Cd>",
+				binder.objectToXml(cd2));
+	}
+
+	@Test
+	public void testSimple() throws Exception {
+		Map<String, String> map = XPathUtils
+				.getElementSelectorAttributes("/cd/div[@class=\"title\"]");
+
+		assertEquals("title", map.get("class"));
+		assertEquals(1, map.size());
+
+		map = XPathUtils
+				.getElementSelectorAttributes("/cd/div[@class=\"title\"][@id=\'1\']");
+		assertEquals("title", map.get("class"));
+		assertEquals("1", map.get("id"));
+		assertEquals(2, map.size());
+
 	}
 }
