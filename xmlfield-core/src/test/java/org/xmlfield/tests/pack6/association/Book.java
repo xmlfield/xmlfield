@@ -13,7 +13,7 @@
  * limitations under the License. 
  * 
  */
-package org.xmlfield.tests.pack6;
+package org.xmlfield.tests.pack6.association;
 
 import org.xmlfield.annotations.FieldXPath;
 import org.xmlfield.annotations.ResourceXPath;

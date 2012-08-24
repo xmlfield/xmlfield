@@ -13,23 +13,32 @@
  * limitations under the License. 
  * 
  */
-package org.xmlfield.tests.pack6;
+package org.xmlfield.tests.pack6.association;
 
+import org.xmlfield.annotations.ExplicitCollection;
+import org.xmlfield.annotations.Association;
 import org.xmlfield.annotations.FieldXPath;
 import org.xmlfield.annotations.ResourceXPath;
 
 /**
  * @author Nicolas Richeton <nicolas.richeton@capgemini.com>
  */
-@ResourceXPath("/Cd")
-public interface Cd extends CatalogElement{
-	@FieldXPath("Title")
-	String getTitle();
+@ResourceXPath("/Catalog")
+public interface Catalog {
 
-	void setTitle(String t);
+  
 
-	@FieldXPath("Price")
-	float getPrice();
+    @FieldXPath("goods/*")
+    @ExplicitCollection({
+            @Association(xpath = "Book", targetClass = Book.class),
+            @Association(xpath = "Cd", targetClass = Cd.class) })
+    Object[] getGoods();
 
-	void setPrice(float price);
+    
+    <T extends CatalogElement>  T addToGoods(Class<T> type);
+    
+    void removeFromGoods( Object object );
+    
+    void setGoods( Object[] objects);
+
 }

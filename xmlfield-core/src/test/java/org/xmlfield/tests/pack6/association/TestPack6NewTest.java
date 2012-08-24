@@ -13,7 +13,7 @@
  * limitations under the License. 
  * 
  */
-package org.xmlfield.tests.pack6;
+package org.xmlfield.tests.pack6.association;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
