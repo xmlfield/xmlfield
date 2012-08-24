@@ -19,8 +19,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
 
-import javax.xml.xpath.XPathFactory;
-
 import org.jaxen.JaxenException;
 import org.jaxen.XPath;
 import org.jaxen.dom.DOMXPath;
@@ -38,14 +36,6 @@ import org.xmlfield.core.internal.XmlFieldUtils.NamespaceMap;
  * 
  */
 public class DomJaxenSelector implements XmlFieldSelector {
-	private static final ThreadLocal<XPathFactory> xPathFactory = new ThreadLocal<XPathFactory>() {
-
-		@Override
-		protected XPathFactory initialValue() {
-			return XPathFactory.newInstance();
-		}
-
-	};
 
 	public static XPath addNamespace(final NamespaceMap namespaces, XPath xp)
 			throws JaxenException {
@@ -55,10 +45,6 @@ public class DomJaxenSelector implements XmlFieldSelector {
 			}
 		}
 		return xp;
-	}
-
-	private static XPathFactory getXPathFactory() {
-		return xPathFactory.get();
 	}
 
 	private void checkXPathNotNull(String xpath) throws XmlFieldXPathException {
