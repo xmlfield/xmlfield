@@ -7,7 +7,6 @@
   </parent>
   <groupId>org.xmlfield</groupId>
   <artifactId>xmlfield-validation</artifactId>
-  <version>0.9-SNAPSHOT</version>
   <name>XMLField Validation</name>
   <dependencies>
   	<dependency>

@@ -7,6 +7,5 @@
   </parent>
   <groupId>org.xmlfield</groupId>
   <artifactId>xmlfield-repository</artifactId>
-  <version>0.9-SNAPSHOT</version>
   <name>XMLField Document repository</name>
 </project>
