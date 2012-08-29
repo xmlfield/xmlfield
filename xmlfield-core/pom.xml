@@ -11,7 +11,6 @@
     <artifactId>xmlfield-core</artifactId>
     <packaging>jar</packaging>
     <name>XMLField Core</name>
-    <version>0.9-SNAPSHOT</version>
 
     <dependencies>
 		

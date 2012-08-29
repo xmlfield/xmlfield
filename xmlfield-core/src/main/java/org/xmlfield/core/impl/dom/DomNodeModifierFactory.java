@@ -25,9 +25,11 @@ import org.xmlfield.core.api.XmlFieldNodeModifierFactory;
  */
 public class DomNodeModifierFactory extends XmlFieldNodeModifierFactory {
 
-    @Override
-    public XmlFieldNodeModifier newModifier() {
-        return new DomNodeModifier();
-    }
+	static private DomNodeModifier modifier = new DomNodeModifier();
+
+	@Override
+	public XmlFieldNodeModifier newModifier() {
+		return modifier;
+	}
 
 }

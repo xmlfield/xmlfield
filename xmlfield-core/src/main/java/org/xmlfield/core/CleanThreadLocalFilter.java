@@ -16,7 +16,7 @@ import javax.servlet.ServletResponse;
  * Use it when :
  * <ul>
  * <li>You are using XmlFieldFactory with useThreadLocal enabled</li>
- * <li>The application is running in a servlet container which reuses Thread
+ * <li>The application is running in a servlet container which reuses threads
  * (thread pool)</li>
  * </ul>
  * 
@@ -47,6 +47,7 @@ public class CleanThreadLocalFilter implements Filter {
 	@Override
 	public void init(FilterConfig filterConfig) throws ServletException {
 		factory = new XmlFieldFactory();
+		factory.setUseThreadLocal(true);
 	}
 
 }

@@ -34,6 +34,8 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.xml.sax.SAXException;
 import org.xmlfield.core.api.XmlFieldNode;
 import org.xmlfield.core.api.XmlFieldNodeList;
+import org.xmlfield.core.api.XmlFieldNodeModifier;
+import org.xmlfield.core.api.XmlFieldNodeModifierFactory;
 import org.xmlfield.core.api.XmlFieldNodeParser;
 import org.xmlfield.core.api.XmlFieldNodeParserFactory;
 import org.xmlfield.core.api.XmlFieldObject;
@@ -78,11 +80,18 @@ public class XmlField {
 	private static final ClassLoader classLoader = Thread.currentThread()
 			.getContextClassLoader();
 
+	private static XmlFieldNodeModifierFactory modifierFactory = XmlFieldNodeModifierFactory
+			.newInstance();
+	private static XmlFieldNodeParserFactory parserFactory = XmlFieldNodeParserFactory
+			.newInstance();
+	private static XmlFieldSelectorFactory selectorFactory = XmlFieldSelectorFactory
+			.newInstance();
+
+	private final XmlFieldNodeModifier modifier;
 	/**
 	 * Parser used to parse the xml to node
 	 */
 	private final XmlFieldNodeParser parser;
-
 	/**
 	 * Selector used to execute xpath expression
 	 */
@@ -97,9 +106,9 @@ public class XmlField {
 	 *            parser configuration or null
 	 */
 	public XmlField(Map<String, String> parserConfiguration) {
-		selector = XmlFieldSelectorFactory.newInstance().newSelector();
-		parser = XmlFieldNodeParserFactory.newInstance().newParser(
-				parserConfiguration);
+		selector = selectorFactory.newSelector();
+		parser = parserFactory.newParser(parserConfiguration);
+		modifier = modifierFactory.newModifier();
 	}
 
 	/**
@@ -125,7 +134,7 @@ public class XmlField {
 		final Class<?>[] types = new Class<?>[] { type, XmlFieldObject.class };
 
 		final InvocationHandler invocationHandler = new XmlFieldInvocationHandler(
-				this, node, type);
+				this, node, type, selector, modifier);
 
 		final T proxy = type.cast(Proxy.newProxyInstance(classLoader, types,
 				invocationHandler));

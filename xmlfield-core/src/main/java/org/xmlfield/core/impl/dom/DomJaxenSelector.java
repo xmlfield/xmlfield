@@ -17,8 +17,10 @@ package org.xmlfield.core.impl.dom;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 
+import org.apache.commons.lang.StringUtils;
 import org.jaxen.JaxenException;
 import org.jaxen.XPath;
 import org.jaxen.dom.DOMXPath;
@@ -28,6 +30,8 @@ import org.xmlfield.core.api.XmlFieldNodeList;
 import org.xmlfield.core.api.XmlFieldSelector;
 import org.xmlfield.core.exception.XmlFieldXPathException;
 import org.xmlfield.core.internal.XmlFieldUtils.NamespaceMap;
+
+import com.google.common.collect.MapMaker;
 
 /**
  * Default xml field selector implementation. Use the jaxp implementation.
@@ -47,10 +51,49 @@ public class DomJaxenSelector implements XmlFieldSelector {
 		return xp;
 	}
 
+	/**
+	 * Cache for XPath selectors. Uses soft values to let the garbage collector
+	 * free unused selectors.
+	 */
+	private Map<String, XPath> xpathCache = new MapMaker().softValues()
+			.makeMap();
+
 	private void checkXPathNotNull(String xpath) throws XmlFieldXPathException {
 		if (xpath == null) {
 			throw new XmlFieldXPathException("The requested xpath is null");
 		}
+	}
+
+	/**
+	 * Get XPath selector, trying to reuse an item from the cache or create a
+	 * new one.
+	 * 
+	 * @param namespaces
+	 * @param xpath
+	 * @return
+	 * @throws JaxenException
+	 */
+	private XPath getXPath(NamespaceMap namespaces, String xpath)
+			throws JaxenException {
+
+		// Build cache key
+		String key = StringUtils.EMPTY;
+		if (namespaces != null) {
+			key = key + namespaces.toString();
+		}
+		key = key + "|" + xpath;
+
+		// Get from cache
+		XPath result = xpathCache.get(key);
+
+		// If not in cache, create new selector and add it to the cache.
+		if (result == null) {
+			result = new DOMXPath(xpath);
+			addNamespace(namespaces, result);
+			xpathCache.put(key, result);
+		}
+
+		return result;
 	}
 
 	@Override
@@ -59,8 +102,7 @@ public class DomJaxenSelector implements XmlFieldSelector {
 		checkXPathNotNull(xpath);
 		final Boolean value;
 		try {
-			final XPath xp = new DOMXPath(xpath);
-			addNamespace(namespaces, xp);
+			final XPath xp = getXPath(namespaces, xpath);
 			value = xp.booleanValueOf(node.getNode());
 		} catch (JaxenException e) {
 			throw new XmlFieldXPathException(e);
@@ -74,8 +116,7 @@ public class DomJaxenSelector implements XmlFieldSelector {
 		checkXPathNotNull(xpath);
 		final Node value;
 		try {
-			final XPath xp = new DOMXPath(xpath);
-			addNamespace(namespaces, xp);
+			final XPath xp = getXPath(namespaces, xpath);
 			value = (Node) xp.selectSingleNode(node.getNode());
 		} catch (JaxenException e) {
 			throw new XmlFieldXPathException(e);
@@ -93,8 +134,7 @@ public class DomJaxenSelector implements XmlFieldSelector {
 		checkXPathNotNull(xpath);
 		final List<Node> values;
 		try {
-			final XPath xp = new DOMXPath(xpath);
-			addNamespace(namespaces, xp);
+			final XPath xp = getXPath(namespaces, xpath);
 			values = xp.selectNodes(node.getNode());
 		} catch (JaxenException e) {
 			throw new XmlFieldXPathException(e);
@@ -118,8 +158,7 @@ public class DomJaxenSelector implements XmlFieldSelector {
 		checkXPathNotNull(xpath);
 		final Double value;
 		try {
-			final XPath xp = new DOMXPath(xpath);
-			addNamespace(namespaces, xp);
+			final XPath xp = getXPath(namespaces, xpath);
 			value = xp.numberValueOf(node.getNode()).doubleValue();
 		} catch (JaxenException e) {
 			throw new XmlFieldXPathException(e);
@@ -133,8 +172,7 @@ public class DomJaxenSelector implements XmlFieldSelector {
 		checkXPathNotNull(xpath);
 		final String value;
 		try {
-			final XPath xp = new DOMXPath(xpath);
-			addNamespace(namespaces, xp);
+			final XPath xp = getXPath(namespaces, xpath);
 			value = xp.stringValueOf(node.getNode());
 		} catch (JaxenException e) {
 			throw new XmlFieldXPathException(e);

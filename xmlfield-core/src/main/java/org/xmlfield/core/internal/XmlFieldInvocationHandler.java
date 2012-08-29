@@ -47,10 +47,8 @@ import org.xmlfield.core.XmlField;
 import org.xmlfield.core.api.XmlFieldNode;
 import org.xmlfield.core.api.XmlFieldNodeList;
 import org.xmlfield.core.api.XmlFieldNodeModifier;
-import org.xmlfield.core.api.XmlFieldNodeModifierFactory;
 import org.xmlfield.core.api.XmlFieldObject;
 import org.xmlfield.core.api.XmlFieldSelector;
-import org.xmlfield.core.api.XmlFieldSelectorFactory;
 import org.xmlfield.core.exception.XmlFieldTechnicalException;
 import org.xmlfield.core.exception.XmlFieldXPathException;
 import org.xmlfield.core.internal.XmlFieldUtils.NamespaceMap;
@@ -135,32 +133,40 @@ public class XmlFieldInvocationHandler implements InvocationHandler {
 
 	private final Set<String> methodNames = new TreeSet<String>();
 
+	private XmlFieldNodeModifier modifier;
+
 	private final NamespaceMap namespaces;
 
 	private final XmlFieldNode node;
+	private XmlFieldSelector selector;
 
 	private final Class<?> type;
-
 	private final XmlField xmlField;
 
 	/**
-	 * constructeur, qui dit ce que doit renvoyer chaque méthode <em>getter</em>
-	 * .
+	 * T .
 	 * 
 	 * @param xmlField
 	 *            l'objet reader, qui permet notamment de récupérer des
 	 *            sous-champs.
-	 * @param type
-	 *            le type de l'objet Java.
 	 * @param node
 	 *            le nœud de l'objet Java.
+	 * @param type
+	 *            le type de l'objet Java.
+	 * @param selector
+	 *            selector object to use for that proxy.
+	 * @param modifier
+	 *            TODO
 	 */
 	public XmlFieldInvocationHandler(final XmlField xmlField,
-			final XmlFieldNode node, final Class<?> type) {
+			final XmlFieldNode node, final Class<?> type,
+			XmlFieldSelector selector, XmlFieldNodeModifier modifier) {
 
 		this.xmlField = checkNotNull(xmlField, "xmlField");
 		this.node = checkNotNull(node, "node");
 		this.type = checkNotNull(type, "type");
+		this.selector = checkNotNull(selector, "selector");
+		this.modifier = checkNotNull(modifier, "modifier");
 		this.namespaces = getResourceNamespaces(type);
 
 		for (final Method method : type.getMethods()) {
@@ -425,12 +431,6 @@ public class XmlFieldInvocationHandler implements InvocationHandler {
 		final XmlFieldNode contextNode;
 
 		XmlFieldNode n;
-
-		XmlFieldNodeModifier modifier = XmlFieldNodeModifierFactory
-				.newInstance().newModifier();
-
-		XmlFieldSelector selector = XmlFieldSelectorFactory.newInstance()
-				.newSelector();
 
 		if (value == null) {
 			// Value is null. We have to delete the current value.
@@ -711,9 +711,6 @@ public class XmlFieldInvocationHandler implements InvocationHandler {
 		if (fieldXPath == null) {
 			return null;
 		}
-
-		XmlFieldSelector selector = XmlFieldSelectorFactory.newInstance()
-				.newSelector();
 
 		final Object value;
 

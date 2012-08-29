@@ -58,12 +58,14 @@ public abstract class XmlFieldUtils {
 	 * Namespaces container class.
 	 * 
 	 * @author PGMY03781
+	 * @author Nicolas Richeton
 	 * 
 	 */
 	public static class NamespaceMap implements
 			Iterable<Map.Entry<String, String>> {
 
 		private final Map<String, String> prefixesURIs = new HashMap<String, String>();
+		private String stringValue = "";
 
 		private NamespaceMap(final Namespaces namespaces) {
 			this(namespaces == null ? new String[0] : namespaces.value());
@@ -84,12 +86,14 @@ public abstract class XmlFieldUtils {
 					final String uri = substringAfter(n, "=").replace("\"", "");
 					prefixesURIs.put(prefix, uri);
 				}
+				updateToString();
 			}
 		}
 
 		private void addNamespaces(final NamespaceMap nMap) {
 			if (nMap != null) {
 				prefixesURIs.putAll(nMap.prefixesURIs);
+				updateToString();
 			}
 		}
 
@@ -108,6 +112,35 @@ public abstract class XmlFieldUtils {
 		@Override
 		public Iterator<Entry<String, String>> iterator() {
 			return prefixesURIs.entrySet().iterator();
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see java.lang.Object#toString()
+		 */
+		@Override
+		public String toString() {
+			return stringValue;
+
+		}
+
+		/**
+		 * Updates toString representation. The representation is stored
+		 * internally to speed up toString, as the value will not change in most
+		 * cases after creation.
+		 */
+		private void updateToString() {
+			if (!prefixesURIs.isEmpty()) {
+				StringBuilder builder = new StringBuilder();
+				for (Entry<String, String> entry : this) {
+					builder.append(entry.getKey());
+					builder.append(":");
+					builder.append(entry.getValue());
+					builder.append(",");
+				}
+				stringValue = builder.toString();
+			}
 		}
 
 	}

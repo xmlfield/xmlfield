@@ -19,16 +19,20 @@ import org.xmlfield.core.api.XmlFieldSelector;
 import org.xmlfield.core.api.XmlFieldSelectorFactory;
 
 /**
- * Default xml field selector factory implementation.
+ * Default xml field selector factory using Jaxen as Xpath implementation.
  * 
  * @author Guillaume Mary <guillaume.mary@capgemini.com>
+ * @author Nicolas Richeton
  * 
  */
 public class DomSelectorFactory extends XmlFieldSelectorFactory {
 
-    @Override
-    public XmlFieldSelector newSelector() {
-        return new DomJaxenSelector();
-    }
+	static private DomJaxenSelector selector = new DomJaxenSelector();
+
+	@Override
+	public XmlFieldSelector newSelector() {
+		// Selector is thread safe, we can always return the same object.
+		return selector;
+	}
 
 }
