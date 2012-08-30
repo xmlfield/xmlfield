@@ -111,6 +111,14 @@ public class XmlField {
 		this.parserConfiguration = parserConfiguration;
 	}
 
+	/**
+	 * Returns the modifier associated with this XmlField object.
+	 * <p>
+	 * {@link XmlFieldNodeModifier} instance is created on demand at the first
+	 * call.
+	 * 
+	 * @return
+	 */
 	public XmlFieldNodeModifier _getModifier() {
 		if (modifier == null) {
 			modifier = modifierFactory.newModifier();
@@ -119,6 +127,14 @@ public class XmlField {
 		return modifier;
 	}
 
+	/**
+	 * Returns the parser associated with this XmlField object.
+	 * <p>
+	 * {@link XmlFieldNodeParser} instance is created on demand at the first
+	 * call.
+	 * 
+	 * @return
+	 */
 	public XmlFieldNodeParser _getParser() {
 		if (parser == null) {
 			parser = parserFactory.newParser(parserConfiguration);
@@ -127,6 +143,13 @@ public class XmlField {
 		return parser;
 	}
 
+	/**
+	 * Returns the selector associated with this XmlField object.
+	 * <p>
+	 * {@link XmlFieldSelector} instance is created on demand at the first call.
+	 * 
+	 * @return
+	 */
 	public XmlFieldSelector _getSelector() {
 		if (selector == null) {
 			selector = selectorFactory.newSelector();

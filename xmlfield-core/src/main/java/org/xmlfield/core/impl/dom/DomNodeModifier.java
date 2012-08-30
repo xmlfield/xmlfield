@@ -33,6 +33,8 @@ import org.xmlfield.core.internal.XPathUtils;
 
 /**
  * Default xml field node modifier implementation
+ * <p>
+ * DomNodeModifier is thread safe.
  * 
  * @author Guillaume Mary <guillaume.mary@capgemini.com>
  * 

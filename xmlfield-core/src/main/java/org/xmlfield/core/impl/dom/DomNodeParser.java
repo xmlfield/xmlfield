@@ -45,6 +45,8 @@ import org.xmlfield.core.exception.XmlFieldParsingException;
 /**
  * Default xml field node parser. This implementation deal with a {@link Node}
  * object
+ * <p>
+ * DomNodeParser is not thread safe.
  * 
  * @author Guillaume Mary <guillaume.mary@capgemini.com>
  * @author Nicolas Richeton

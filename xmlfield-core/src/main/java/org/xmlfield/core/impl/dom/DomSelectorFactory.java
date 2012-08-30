@@ -31,7 +31,8 @@ public class DomSelectorFactory extends XmlFieldSelectorFactory {
 
 	@Override
 	public XmlFieldSelector newSelector() {
-		// Selector is thread safe, we can always return the same object.
+		// DomJaxenSelector is thread safe, we can always return the same
+		// object.
 		return selector;
 	}
 

@@ -35,6 +35,8 @@ import com.google.common.collect.MapMaker;
 
 /**
  * Default xml field selector implementation. Use the jaxp implementation.
+ * <p>
+ * DomJaxenSelector is thread safe.
  * 
  * @author Guillaume Mary <guillaume.mary@capgemini.com>
  * 
