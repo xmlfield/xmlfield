@@ -55,6 +55,8 @@ import org.xmlfield.core.api.XmlFieldObject;
 import org.xmlfield.core.exception.XmlFieldTechnicalException;
 import org.xmlfield.core.exception.XmlFieldXPathException;
 
+import com.google.common.collect.MapMaker;
+
 /**
  * l'objet {@link InvocationHandler} à utiliser sur les proxies chargés à la
  * lecture des nœuds XML.
@@ -67,6 +69,12 @@ public class XmlFieldInvocationHandler implements InvocationHandler {
 
 	private static final Logger logger = LoggerFactory
 			.getLogger(XmlFieldInvocationHandler.class);
+
+	private static Map<String, Set<String>> methodnamesCache = new MapMaker()
+			.softValues().makeMap();
+
+	private static Map<String, NamespaceMap> namespaceCache = new MapMaker()
+			.softValues().makeMap();
 
 	/**
 	 * vérifie qu'un type réel est compatible avec un type déclaré.
@@ -133,9 +141,9 @@ public class XmlFieldInvocationHandler implements InvocationHandler {
 
 	private final Map<String, Object> cache = new HashMap<String, Object>();
 
-	private final Set<String> methodNames = new TreeSet<String>();
+	private Set<String> methodNames = null;
 
-	private final NamespaceMap namespaces;
+	private NamespaceMap namespaces;
 
 	private final XmlFieldNode node;
 
@@ -163,22 +171,42 @@ public class XmlFieldInvocationHandler implements InvocationHandler {
 		this.xmlField = checkNotNull(xmlField, "xmlField");
 		this.node = checkNotNull(node, "node");
 		this.type = checkNotNull(type, "type");
-		this.namespaces = getResourceNamespaces(type);
 
-		for (final Method method : type.getMethods()) {
+		String typeName = type.getName();
+		// Load namespaces
 
-			final String methodName = method.getName();
+		namespaces = namespaceCache.get(typeName);
+		if (namespaces == null) {
+			this.namespaces = getResourceNamespaces(type);
+			if (namespaces != null) {
+				namespaceCache.put(typeName, namespaces);
+			} else {
+				namespaceCache.put(typeName, new NamespaceMap());
+			}
+		} else if (namespaces.isEmpty()) {
+			namespaces = null;
+		}
 
-			if (method.isAnnotationPresent(FieldXPath.class)
-					&& isMethodNameGetter(methodName)) {
+		// Load method names
+		methodNames = methodnamesCache.get(typeName);
+		if (methodNames == null) {
+			methodNames = new TreeSet<String>();
+			for (final Method method : type.getMethods()) {
 
-				final Class<?>[] paramTypes = method.getParameterTypes();
+				final String methodName = method.getName();
 
-				if (paramTypes == null || paramTypes.length == 0) {
+				if (method.isAnnotationPresent(FieldXPath.class)
+						&& isMethodNameGetter(methodName)) {
 
-					methodNames.add(methodName);
+					final Class<?>[] paramTypes = method.getParameterTypes();
+
+					if (paramTypes == null || paramTypes.length == 0) {
+
+						methodNames.add(methodName);
+					}
 				}
 			}
+			methodnamesCache.put(typeName, methodNames);
 		}
 	}
 
