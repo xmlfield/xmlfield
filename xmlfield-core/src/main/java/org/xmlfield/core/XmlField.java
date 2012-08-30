@@ -270,6 +270,8 @@ public class XmlField {
 		final String resourceXPathGlobal = b.toString();
 
 		// TODO
+		// See https://sourceforge.net/apps/mantisbt/xmlfield/view.php?id=46
+
 		final NamespaceMap namespaces = getResourceNamespaces(null);
 
 		final XmlFieldNodeList xmlFieldNodes = _getSelector()
