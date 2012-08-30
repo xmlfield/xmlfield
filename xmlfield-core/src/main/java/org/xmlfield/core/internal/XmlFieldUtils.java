@@ -16,16 +16,9 @@
 package org.xmlfield.core.internal;
 
 import static org.apache.commons.lang.StringUtils.isBlank;
-import static org.apache.commons.lang.StringUtils.substringAfter;
-import static org.apache.commons.lang.StringUtils.substringAfterLast;
-import static org.apache.commons.lang.StringUtils.substringBeforeLast;
-import static org.apache.commons.lang.StringUtils.substringBetween;
 
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -37,13 +30,8 @@ import org.xmlfield.annotations.Namespaces;
 import org.xmlfield.annotations.ResourceXPath;
 import org.xmlfield.core.XmlField;
 import org.xmlfield.core.api.XmlFieldNode;
-import org.xmlfield.core.api.XmlFieldNodeList;
 import org.xmlfield.core.api.XmlFieldNodeModifier;
-import org.xmlfield.core.api.XmlFieldNodeModifierFactory;
 import org.xmlfield.core.api.XmlFieldObject;
-import org.xmlfield.core.api.XmlFieldSelector;
-import org.xmlfield.core.api.XmlFieldSelectorFactory;
-import org.xmlfield.core.exception.XmlFieldXPathException;
 
 /**
  * Xml manipulation node utility class.
@@ -55,288 +43,10 @@ import org.xmlfield.core.exception.XmlFieldXPathException;
 public abstract class XmlFieldUtils {
 
 	/**
-	 * Namespaces container class.
-	 * 
-	 * @author PGMY03781
-	 * @author Nicolas Richeton
-	 * 
-	 */
-	public static class NamespaceMap implements
-			Iterable<Map.Entry<String, String>> {
-
-		private final Map<String, String> prefixesURIs = new HashMap<String, String>();
-		private String stringValue = "";
-
-		private NamespaceMap(final Namespaces namespaces) {
-			this(namespaces == null ? new String[0] : namespaces.value());
-		}
-
-		public NamespaceMap(final String... namespaces) {
-			if (namespaces != null) {
-				for (final String n : namespaces) {
-					final String prefix = substringBetween(n, ":", "=");
-
-					if (prefix == null) {
-
-						throw new IllegalArgumentException(
-								"Illegal namespace prefix for XPath expressions: "
-										+ n);
-					}
-
-					final String uri = substringAfter(n, "=").replace("\"", "");
-					prefixesURIs.put(prefix, uri);
-				}
-				updateToString();
-			}
-		}
-
-		private void addNamespaces(final NamespaceMap nMap) {
-			if (nMap != null) {
-				prefixesURIs.putAll(nMap.prefixesURIs);
-				updateToString();
-			}
-		}
-
-		public String get(String prefix) {
-			return prefixesURIs.get(prefix);
-		}
-
-		public Map<String, String> getPrefixesURIs() {
-			return prefixesURIs;
-		}
-
-		public boolean isEmpty() {
-			return prefixesURIs.isEmpty();
-		}
-
-		@Override
-		public Iterator<Entry<String, String>> iterator() {
-			return prefixesURIs.entrySet().iterator();
-		}
-
-		/*
-		 * (non-Javadoc)
-		 * 
-		 * @see java.lang.Object#toString()
-		 */
-		@Override
-		public String toString() {
-			return stringValue;
-
-		}
-
-		/**
-		 * Updates toString representation. The representation is stored
-		 * internally to speed up toString, as the value will not change in most
-		 * cases after creation.
-		 */
-		private void updateToString() {
-			if (!prefixesURIs.isEmpty()) {
-				StringBuilder builder = new StringBuilder();
-				for (Entry<String, String> entry : this) {
-					builder.append(entry.getKey());
-					builder.append(":");
-					builder.append(entry.getValue());
-					builder.append(",");
-				}
-				stringValue = builder.toString();
-			}
-		}
-
-	}
-
-	/**
 	 * All the method prefixes known by xmlfield.
 	 */
 	private static final String[] METHOD_PREFIXES = { "set", "get", "has",
 			"is", "addTo", "sizeOf", "isNull", "new", "removeFrom" };
-
-	/**
-	 * Add a bonded element add the end of a list located by the xpath.
-	 * 
-	 * @param root
-	 *            root element
-	 * @param xpath
-	 *            xpath location to the element list
-	 * @param type
-	 *            element type to add
-	 * @return the new element
-	 * @throws XmlFieldXPathException
-	 *             xpath exception
-	 */
-	public static <T> T add(final Object root, final String xpath,
-			final Class<T> type) throws XmlFieldXPathException {
-		return add(getXmlFieldNode(root), xpath, type);
-	}
-
-	/**
-	 * Add a binded instance at the end of the nodes located by the xpath.
-	 * 
-	 * @param root
-	 *            root element
-	 * @param xpath
-	 *            xpath location to the element list
-	 * @param type
-	 *            element type to add
-	 * @return the new element
-	 * @throws XmlFieldXPathException
-	 *             xpath exception
-	 */
-	public static <T> T add(final XmlFieldNode root, final String xpath,
-			final Class<T> type) throws XmlFieldXPathException {
-
-		final XmlFieldNode node = addNode(root, xpath, type);
-
-		final XmlField binder = new XmlField();
-
-		return binder.nodeToObject(null, node, type);
-	}
-
-	/**
-	 * Add the specified binded node at the end of the xpath location.
-	 * 
-	 * @param root
-	 *            root element
-	 * @param fieldXPath
-	 *            xpath location relative to the root element where we want to
-	 *            add the new element
-	 * @param type
-	 *            element type to add
-	 * @return the new node
-	 * @throws XmlFieldXPathException
-	 *             xpath exception
-	 */
-	public static XmlFieldNode addNode(final XmlFieldNode root,
-			final String fieldXPath, final Class<?> type)
-			throws XmlFieldXPathException {
-
-		final NamespaceMap namespaces = getResourceNamespaces(type);
-		final XmlFieldNode parentNode = addParentNodes(root, fieldXPath, type);
-
-		// Create requested node.
-
-		final String elementName = XPathUtils
-				.getElementNameWithSelector(fieldXPath);
-		final XmlFieldNode node = createComplexElement(namespaces, parentNode,
-				elementName, null);
-
-		return node;
-	}
-
-	/**
-	 * Add parent nodes to a specified node.
-	 * 
-	 * @param root
-	 *            root element
-	 * @param fieldXPath
-	 * @param type
-	 * @return
-	 * @throws XmlFieldXPathException
-	 */
-	public static XmlFieldNode addParentNodes(final XmlFieldNode root,
-			final String fieldXPath, final Class<?> type)
-			throws XmlFieldXPathException {
-
-		final NamespaceMap namespaces = getResourceNamespaces(type);
-
-		final XmlFieldSelector selector = XmlFieldSelectorFactory.newInstance()
-				.newSelector();
-
-		final XmlFieldNode parentNode;
-
-		// Check if this type of element already exists in the document.
-		final XmlFieldNodeList nodeList = selector.selectXPathToNodeList(
-				namespaces, fieldXPath, root);
-
-		if (nodeList != null && nodeList.getLength() > 0) {
-			// Siblings exist. We will add item to their parent.
-			if (nodeList.item(0).getNodeType() == XmlFieldNode.ATTRIBUTE_NODE) {
-				String xPathElement = XPathUtils.getElementXPath(fieldXPath);
-				if (xPathElement != null) {
-					parentNode = selector.selectXPathToNode(namespaces,
-							xPathElement, root);
-				} else {
-					parentNode = root;
-				}
-			} else {
-				if (".".equals(fieldXPath)) {
-					parentNode = nodeList.item(0);
-				} else {
-					parentNode = nodeList.item(0).getParentNode();
-				}
-			}
-
-		} else {
-			// Sibling do not exist. We need to create the appropriate node
-			// hierarchy :
-
-			// Do we even need a hierarchy ?
-			if (!fieldXPath.contains("/")) {
-				// We can create this node directly in the parent.
-				parentNode = root;
-			} else {
-				// Get hierarchy
-				final List<String> elementsToCreate = new ArrayList<String>();
-				XmlFieldNode node;
-
-				// Loop over the XPath hierarchy
-				for (String xPathBuffer = fieldXPath;;) {
-					// Remove field name. Keep only parents
-					xPathBuffer = substringBeforeLast(xPathBuffer, "/");
-
-					// Ensure xpath was valid.
-					if (isBlank(xPathBuffer)) {
-						throw new IllegalStateException(
-								"Unable to create child in list with XPath: "
-										+ fieldXPath);
-					}
-
-					// If parent node already exists, we can create the element
-					// directly.
-					final XmlFieldNodeList nList = selector
-							.selectXPathToNodeList(namespaces, xPathBuffer,
-									root);
-					if (nList != null && nList.getLength() != 0) {
-						node = nList.item(0);
-						break; // Escape from the loop and go to node creation.
-					}
-
-					// We have not parent, we need to create a node.
-					final String elementName;
-					if (xPathBuffer.contains("/")) {
-						// Keep only parent name
-						elementName = substringAfterLast(xPathBuffer, "/");
-					} else {
-						// This was the last element.
-						elementName = xPathBuffer;
-						xPathBuffer = null;
-					}
-
-					// Remenber we have to create elementName
-					elementsToCreate.add(0, elementName);
-
-					// If that was the last parent, exit the loop.
-					if (xPathBuffer == null) {
-						node = root;
-						break;
-					}
-				}
-
-				// Create all required elements
-				for (final String elementName : elementsToCreate) {
-					final XmlFieldNode n = createComplexElement(namespaces,
-							node, elementName, null);
-					node = n;
-				}
-
-				// The request node will be attached to the last node created
-				// (the parent).
-				parentNode = node;
-			}
-		}
-
-		return parentNode;
-	}
 
 	/**
 	 * 
@@ -347,12 +57,12 @@ public abstract class XmlFieldUtils {
 	 * @return
 	 */
 	public static XmlFieldNode createComplexElement(NamespaceMap namespaces,
-			XmlFieldNode contextNode, String elementName, String stringValue) {
+			XmlFieldNode contextNode, String elementName, String stringValue,
+			XmlField xf) {
 
 		XmlFieldNode result = contextNode;
 
-		XmlFieldNodeModifier modifier = XmlFieldNodeModifierFactory
-				.newInstance().newModifier();
+		XmlFieldNodeModifier modifier = xf._getModifier();
 
 		// Create required node
 		switch (XPathUtils.getElementType(elementName)) {
@@ -706,8 +416,8 @@ public abstract class XmlFieldUtils {
 	 * @param item
 	 *            Item to remove
 	 */
-	public static void remove(final Object item) {
-		remove(getXmlFieldNode(item));
+	public static void remove(final Object item, XmlField xf) {
+		remove(getXmlFieldNode(item), xf);
 	}
 
 	/**
@@ -716,7 +426,7 @@ public abstract class XmlFieldUtils {
 	 * @param node
 	 *            le nœud à retirer.
 	 */
-	public static void remove(final XmlFieldNode node) {
+	public static void remove(final XmlFieldNode node, XmlField xf) {
 
 		if (node == null) {
 			return;
@@ -725,9 +435,7 @@ public abstract class XmlFieldUtils {
 		final XmlFieldNode parent = node.getParentNode();
 
 		if (parent != null) {
-			XmlFieldNodeModifier modifier = XmlFieldNodeModifierFactory
-					.newInstance().newModifier();
-			modifier.removeChild(parent, node);
+			xf._getModifier().removeChild(parent, node);
 		}
 	}
 

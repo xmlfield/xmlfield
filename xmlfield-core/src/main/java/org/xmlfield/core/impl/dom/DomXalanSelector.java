@@ -32,7 +32,7 @@ import org.xmlfield.core.api.XmlFieldNode;
 import org.xmlfield.core.api.XmlFieldNodeList;
 import org.xmlfield.core.api.XmlFieldSelector;
 import org.xmlfield.core.exception.XmlFieldXPathException;
-import org.xmlfield.core.internal.XmlFieldUtils.NamespaceMap;
+import org.xmlfield.core.internal.NamespaceMap;
 
 /**
  * Default xml field selector implementation. Use the jaxp implementation.

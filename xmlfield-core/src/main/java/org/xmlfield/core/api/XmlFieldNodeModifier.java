@@ -15,7 +15,7 @@
  */
 package org.xmlfield.core.api;
 
-import org.xmlfield.core.internal.XmlFieldUtils.NamespaceMap;
+import org.xmlfield.core.internal.NamespaceMap;
 
 /**
  * Modifier interface, this interface describe the diffrent operation needed to

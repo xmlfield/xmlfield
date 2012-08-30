@@ -19,7 +19,7 @@ import org.xmlfield.core.api.XmlFieldNodeList;
 import org.xmlfield.core.api.XmlFieldNodeModifier;
 import org.xmlfield.core.api.XmlFieldNodeParser;
 import org.xmlfield.core.api.XmlFieldSelector;
-import org.xmlfield.core.internal.XmlFieldUtils.NamespaceMap;
+import org.xmlfield.core.internal.NamespaceMap;
 
 public class XmlFieldDomNodeModifierTest {
 

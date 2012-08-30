@@ -16,6 +16,9 @@
 package org.xmlfield.core.internal;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static org.apache.commons.lang.StringUtils.isBlank;
+import static org.apache.commons.lang.StringUtils.substringAfterLast;
+import static org.apache.commons.lang.StringUtils.substringBeforeLast;
 import static org.xmlfield.core.internal.XmlFieldUtils.getExplicitCollections;
 import static org.xmlfield.core.internal.XmlFieldUtils.getFieldFormat;
 import static org.xmlfield.core.internal.XmlFieldUtils.getFieldXPath;
@@ -27,7 +30,9 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -46,12 +51,9 @@ import org.xmlfield.annotations.FieldXPath;
 import org.xmlfield.core.XmlField;
 import org.xmlfield.core.api.XmlFieldNode;
 import org.xmlfield.core.api.XmlFieldNodeList;
-import org.xmlfield.core.api.XmlFieldNodeModifier;
 import org.xmlfield.core.api.XmlFieldObject;
-import org.xmlfield.core.api.XmlFieldSelector;
 import org.xmlfield.core.exception.XmlFieldTechnicalException;
 import org.xmlfield.core.exception.XmlFieldXPathException;
-import org.xmlfield.core.internal.XmlFieldUtils.NamespaceMap;
 
 /**
  * l'objet {@link InvocationHandler} à utiliser sur les proxies chargés à la
@@ -133,12 +135,9 @@ public class XmlFieldInvocationHandler implements InvocationHandler {
 
 	private final Set<String> methodNames = new TreeSet<String>();
 
-	private XmlFieldNodeModifier modifier;
-
 	private final NamespaceMap namespaces;
 
 	private final XmlFieldNode node;
-	private XmlFieldSelector selector;
 
 	private final Class<?> type;
 	private final XmlField xmlField;
@@ -159,14 +158,11 @@ public class XmlFieldInvocationHandler implements InvocationHandler {
 	 *            TODO
 	 */
 	public XmlFieldInvocationHandler(final XmlField xmlField,
-			final XmlFieldNode node, final Class<?> type,
-			XmlFieldSelector selector, XmlFieldNodeModifier modifier) {
+			final XmlFieldNode node, final Class<?> type) {
 
 		this.xmlField = checkNotNull(xmlField, "xmlField");
 		this.node = checkNotNull(node, "node");
 		this.type = checkNotNull(type, "type");
-		this.selector = checkNotNull(selector, "selector");
-		this.modifier = checkNotNull(modifier, "modifier");
 		this.namespaces = getResourceNamespaces(type);
 
 		for (final Method method : type.getMethods()) {
@@ -184,6 +180,190 @@ public class XmlFieldInvocationHandler implements InvocationHandler {
 				}
 			}
 		}
+	}
+
+	/**
+	 * Add a bonded element add the end of a list located by the xpath.
+	 * 
+	 * @param root
+	 *            root element
+	 * @param xpath
+	 *            xpath location to the element list
+	 * @param type
+	 *            element type to add
+	 * @return the new element
+	 * @throws XmlFieldXPathException
+	 *             xpath exception
+	 */
+	public <T> T add(final Object root, final String xpath, final Class<T> type)
+			throws XmlFieldXPathException {
+		return add(XmlFieldUtils.getXmlFieldNode(root), xpath, type);
+	}
+
+	/**
+	 * Add a binded instance at the end of the nodes located by the xpath.
+	 * 
+	 * @param root
+	 *            root element
+	 * @param xpath
+	 *            xpath location to the element list
+	 * @param type
+	 *            element type to add
+	 * @return the new element
+	 * @throws XmlFieldXPathException
+	 *             xpath exception
+	 */
+	public <T> T add(final XmlFieldNode root, final String xpath,
+			final Class<T> type) throws XmlFieldXPathException {
+
+		final XmlFieldNode node = addNode(root, xpath, type);
+
+		final XmlField binder = new XmlField();
+
+		return binder.nodeToObject(null, node, type);
+	}
+
+	/**
+	 * Add the specified binded node at the end of the xpath location.
+	 * 
+	 * @param root
+	 *            root element
+	 * @param fieldXPath
+	 *            xpath location relative to the root element where we want to
+	 *            add the new element
+	 * @param type
+	 *            element type to add
+	 * @return the new node
+	 * @throws XmlFieldXPathException
+	 *             xpath exception
+	 */
+	public XmlFieldNode addNode(final XmlFieldNode root,
+			final String fieldXPath, final Class<?> type)
+			throws XmlFieldXPathException {
+
+		final NamespaceMap namespaces = getResourceNamespaces(type);
+		final XmlFieldNode parentNode = addParentNodes(root, fieldXPath, type);
+
+		// Create requested node.
+
+		final String elementName = XPathUtils
+				.getElementNameWithSelector(fieldXPath);
+		final XmlFieldNode node = XmlFieldUtils.createComplexElement(
+				namespaces, parentNode, elementName, null, xmlField);
+
+		return node;
+	}
+
+	/**
+	 * Add parent nodes to a specified node.
+	 * 
+	 * @param root
+	 *            root element
+	 * @param fieldXPath
+	 * @param type
+	 * @return
+	 * @throws XmlFieldXPathException
+	 */
+	public XmlFieldNode addParentNodes(final XmlFieldNode root,
+			final String fieldXPath, final Class<?> type)
+			throws XmlFieldXPathException {
+
+		final NamespaceMap namespaces = getResourceNamespaces(type);
+
+		final XmlFieldNode parentNode;
+
+		// Check if this type of element already exists in the document.
+		final XmlFieldNodeList nodeList = xmlField._getSelector()
+				.selectXPathToNodeList(namespaces, fieldXPath, root);
+
+		if (nodeList != null && nodeList.getLength() > 0) {
+			// Siblings exist. We will add item to their parent.
+			if (nodeList.item(0).getNodeType() == XmlFieldNode.ATTRIBUTE_NODE) {
+				String xPathElement = XPathUtils.getElementXPath(fieldXPath);
+				if (xPathElement != null) {
+					parentNode = xmlField._getSelector().selectXPathToNode(
+							namespaces, xPathElement, root);
+				} else {
+					parentNode = root;
+				}
+			} else {
+				if (".".equals(fieldXPath)) {
+					parentNode = nodeList.item(0);
+				} else {
+					parentNode = nodeList.item(0).getParentNode();
+				}
+			}
+
+		} else {
+			// Sibling do not exist. We need to create the appropriate node
+			// hierarchy :
+
+			// Do we even need a hierarchy ?
+			if (!fieldXPath.contains("/")) {
+				// We can create this node directly in the parent.
+				parentNode = root;
+			} else {
+				// Get hierarchy
+				final List<String> elementsToCreate = new ArrayList<String>();
+				XmlFieldNode node;
+
+				// Loop over the XPath hierarchy
+				for (String xPathBuffer = fieldXPath;;) {
+					// Remove field name. Keep only parents
+					xPathBuffer = substringBeforeLast(xPathBuffer, "/");
+
+					// Ensure xpath was valid.
+					if (isBlank(xPathBuffer)) {
+						throw new IllegalStateException(
+								"Unable to create child in list with XPath: "
+										+ fieldXPath);
+					}
+
+					// If parent node already exists, we can create the element
+					// directly.
+					final XmlFieldNodeList nList = xmlField._getSelector()
+							.selectXPathToNodeList(namespaces, xPathBuffer,
+									root);
+					if (nList != null && nList.getLength() != 0) {
+						node = nList.item(0);
+						break; // Escape from the loop and go to node creation.
+					}
+
+					// We have not parent, we need to create a node.
+					final String elementName;
+					if (xPathBuffer.contains("/")) {
+						// Keep only parent name
+						elementName = substringAfterLast(xPathBuffer, "/");
+					} else {
+						// This was the last element.
+						elementName = xPathBuffer;
+						xPathBuffer = null;
+					}
+
+					// Remenber we have to create elementName
+					elementsToCreate.add(0, elementName);
+
+					// If that was the last parent, exit the loop.
+					if (xPathBuffer == null) {
+						node = root;
+						break;
+					}
+				}
+
+				// Create all required elements
+				for (final String elementName : elementsToCreate) {
+					final XmlFieldNode n = XmlFieldUtils.createComplexElement(
+							namespaces, node, elementName, null, xmlField);
+					node = n;
+				}
+
+				// The request node will be attached to the last node created
+				// (the parent).
+				parentNode = node;
+			}
+		}
+
+		return parentNode;
 	}
 
 	/**
@@ -206,7 +386,7 @@ public class XmlFieldInvocationHandler implements InvocationHandler {
 
 		final String fieldXPath = getFieldXPath(method);
 
-		return XmlFieldUtils.add(proxy, fieldXPath, type);
+		return add(proxy, fieldXPath, type);
 	}
 
 	/**
@@ -246,7 +426,7 @@ public class XmlFieldInvocationHandler implements InvocationHandler {
 					+ objectClass.getName() + " n'a été définie.");
 		}
 
-		return XmlFieldUtils.add(proxy, specificFieldXPath, objectClass);
+		return add(proxy, specificFieldXPath, objectClass);
 	}
 
 	/**
@@ -396,7 +576,7 @@ public class XmlFieldInvocationHandler implements InvocationHandler {
 
 		final String fieldXPath = getFieldXPath(method);
 
-		return XmlFieldUtils.add(proxy, fieldXPath, type);
+		return add(proxy, fieldXPath, type);
 	}
 
 	/**
@@ -405,7 +585,7 @@ public class XmlFieldInvocationHandler implements InvocationHandler {
 	private Object doRemoveFrom(Method method, Object obj) throws Exception {
 		removeFromCache(method);
 
-		XmlFieldUtils.remove(obj);
+		XmlFieldUtils.remove(obj, xmlField);
 
 		return null;
 	}
@@ -434,7 +614,8 @@ public class XmlFieldInvocationHandler implements InvocationHandler {
 
 		if (value == null) {
 			// Value is null. We have to delete the current value.
-			n = selector.selectXPathToNode(namespaces, fieldXPath, node);
+			n = xmlField._getSelector().selectXPathToNode(namespaces,
+					fieldXPath, node);
 			if (n == null) {
 				// No node was matching the Xpath. Value is already null
 				if (logger.isDebugEnabled()) {
@@ -447,21 +628,21 @@ public class XmlFieldInvocationHandler implements InvocationHandler {
 					// the resource is not the node who contains the attributes
 					String elementXPath = XPathUtils
 							.getElementXPath(fieldXPath);
-					n = selector.selectXPathToNode(namespaces, elementXPath,
-							node);
+					n = xmlField._getSelector().selectXPathToNode(namespaces,
+							elementXPath, node);
 				}
-				modifier.removeAttribute(n, attributeName);
+				xmlField._getModifier().removeAttribute(n, attributeName);
 			} else {
 				// Remove all matching nodes.
-				XmlFieldNodeList nodesToRemove = selector
+				XmlFieldNodeList nodesToRemove = xmlField._getSelector()
 						.selectXPathToNodeList(namespaces, fieldXPath, node);
-				modifier.removeChildren(nodesToRemove);
+				xmlField._getModifier().removeChildren(nodesToRemove);
 			}
 
 		} else {
 			// We have to set a value.
 			// First : create all parent nodes.
-			contextNode = XmlFieldUtils.addParentNodes(node, fieldXPath, type);
+			contextNode = addParentNodes(node, fieldXPath, type);
 
 			// Ensure we have an array to loop on. If single item, convert to
 			// array.
@@ -487,10 +668,10 @@ public class XmlFieldInvocationHandler implements InvocationHandler {
 			}
 
 			// Get all matching nodes
-			XmlFieldNodeList nodeXmlFieldList = selector.selectXPathToNodeList(
-					namespaces,
-					XPathUtils.getElementNameWithSelector(fieldXPath),
-					contextNode);
+			XmlFieldNodeList nodeXmlFieldList = xmlField._getSelector()
+					.selectXPathToNodeList(namespaces,
+							XPathUtils.getElementNameWithSelector(fieldXPath),
+							contextNode);
 
 			// Loop on new values
 			XmlFieldNode currentNode = null;
@@ -508,17 +689,21 @@ public class XmlFieldInvocationHandler implements InvocationHandler {
 
 				if (currentValue instanceof XmlFieldObject) {
 					valueNode = ((XmlFieldObject) currentValue).toNode();
-					modifier.insertBefore(valueNode.getParentNode(), valueNode,
-							currentNode);
+					xmlField._getModifier().insertBefore(
+							valueNode.getParentNode(), valueNode, currentNode);
 					listUpdated = true;
 				}
 			}
 
 			// Update list if necessary
 			if (listUpdated) {
-				nodeXmlFieldList = selector.selectXPathToNodeList(namespaces,
-						XPathUtils.getElementNameWithSelector(fieldXPath),
-						contextNode);
+				nodeXmlFieldList = xmlField
+						._getSelector()
+						.selectXPathToNodeList(
+								namespaces,
+								XPathUtils
+										.getElementNameWithSelector(fieldXPath),
+								contextNode);
 			}
 
 			// Java bug : we have to call item() once with a valid node to make
@@ -557,7 +742,7 @@ public class XmlFieldInvocationHandler implements InvocationHandler {
 					// Node didn't exist : create new node
 					XmlFieldUtils.createComplexElement(namespaces, contextNode,
 							XPathUtils.getElementNameWithSelector(fieldXPath),
-							stringValue);
+							stringValue, xmlField);
 				} else {
 					// Node exists : set value.
 					currentNode.setTextContent(stringValue);
@@ -567,7 +752,8 @@ public class XmlFieldInvocationHandler implements InvocationHandler {
 			// Remove additional items
 			for (int i = items.length; i < nodeXmlFieldList.getLength(); i++) {
 				currentNode = nodeXmlFieldList.item(i);
-				modifier.removeChild(currentNode.getParentNode(), currentNode);
+				xmlField._getModifier().removeChild(
+						currentNode.getParentNode(), currentNode);
 			}
 		}
 
@@ -718,8 +904,8 @@ public class XmlFieldInvocationHandler implements InvocationHandler {
 
 		if (Number.class.equals(xpathType)) {
 
-			final Double d = selector.selectXPathToNumber(namespaces,
-					fieldXPath, node);
+			final Double d = xmlField._getSelector().selectXPathToNumber(
+					namespaces, fieldXPath, node);
 
 			final double v = d == null ? 0 : d.doubleValue();
 
@@ -727,15 +913,15 @@ public class XmlFieldInvocationHandler implements InvocationHandler {
 
 		} else if (String.class.equals(xpathType)) {
 
-			final String s = selector.selectXPathToString(namespaces,
-					fieldXPath, node);
+			final String s = xmlField._getSelector().selectXPathToString(
+					namespaces, fieldXPath, node);
 
 			value = s;
 
 		} else if (Boolean.class.equals(xpathType)) {
 
-			final Boolean b = selector.selectXPathToBoolean(namespaces,
-					fieldXPath, node);
+			final Boolean b = xmlField._getSelector().selectXPathToBoolean(
+					namespaces, fieldXPath, node);
 
 			final boolean v = b == null ? false : b.booleanValue();
 
@@ -743,8 +929,8 @@ public class XmlFieldInvocationHandler implements InvocationHandler {
 
 		} else {
 
-			final XmlFieldNode n = selector.selectXPathToNode(namespaces,
-					fieldXPath, node);
+			final XmlFieldNode n = xmlField._getSelector().selectXPathToNode(
+					namespaces, fieldXPath, node);
 
 			value = n;
 		}

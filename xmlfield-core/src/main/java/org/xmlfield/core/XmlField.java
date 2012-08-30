@@ -44,10 +44,10 @@ import org.xmlfield.core.api.XmlFieldSelectorFactory;
 import org.xmlfield.core.exception.XmlFieldException;
 import org.xmlfield.core.exception.XmlFieldParsingException;
 import org.xmlfield.core.exception.XmlFieldXPathException;
+import org.xmlfield.core.internal.NamespaceMap;
 import org.xmlfield.core.internal.XPathUtils;
 import org.xmlfield.core.internal.XmlFieldInvocationHandler;
 import org.xmlfield.core.internal.XmlFieldUtils;
-import org.xmlfield.core.internal.XmlFieldUtils.NamespaceMap;
 
 /**
  * This class is the entry point of XmlField. It can convert xml data to objects
@@ -87,15 +87,17 @@ public class XmlField {
 	private static XmlFieldSelectorFactory selectorFactory = XmlFieldSelectorFactory
 			.newInstance();
 
-	private final XmlFieldNodeModifier modifier;
+	private XmlFieldNodeModifier modifier;
 	/**
 	 * Parser used to parse the xml to node
 	 */
-	private final XmlFieldNodeParser parser;
+	private XmlFieldNodeParser parser;
+	private Map<String, String> parserConfiguration;
+
 	/**
 	 * Selector used to execute xpath expression
 	 */
-	private final XmlFieldSelector selector;
+	private XmlFieldSelector selector;
 
 	public XmlField() {
 		this(null);
@@ -106,9 +108,31 @@ public class XmlField {
 	 *            parser configuration or null
 	 */
 	public XmlField(Map<String, String> parserConfiguration) {
-		selector = selectorFactory.newSelector();
-		parser = parserFactory.newParser(parserConfiguration);
-		modifier = modifierFactory.newModifier();
+		this.parserConfiguration = parserConfiguration;
+	}
+
+	public XmlFieldNodeModifier _getModifier() {
+		if (modifier == null) {
+			modifier = modifierFactory.newModifier();
+		}
+
+		return modifier;
+	}
+
+	public XmlFieldNodeParser _getParser() {
+		if (parser == null) {
+			parser = parserFactory.newParser(parserConfiguration);
+		}
+
+		return parser;
+	}
+
+	public XmlFieldSelector _getSelector() {
+		if (selector == null) {
+			selector = selectorFactory.newSelector();
+		}
+
+		return selector;
 	}
 
 	/**
@@ -134,7 +158,7 @@ public class XmlField {
 		final Class<?>[] types = new Class<?>[] { type, XmlFieldObject.class };
 
 		final InvocationHandler invocationHandler = new XmlFieldInvocationHandler(
-				this, node, type, selector, modifier);
+				this, node, type);
 
 		final T proxy = type.cast(Proxy.newProxyInstance(classLoader, types,
 				invocationHandler));
@@ -179,8 +203,8 @@ public class XmlField {
 
 		final NamespaceMap namespaces = getResourceNamespaces(type);
 
-		final XmlFieldNodeList xmlFieldNodes = selector.selectXPathToNodeList(
-				namespaces, resourceXPath, node);
+		final XmlFieldNodeList xmlFieldNodes = _getSelector()
+				.selectXPathToNodeList(namespaces, resourceXPath, node);
 
 		final List<T> list = new ArrayList<T>();
 		for (int i = 0; i < xmlFieldNodes.getLength(); i++) {
@@ -225,8 +249,8 @@ public class XmlField {
 		// TODO
 		final NamespaceMap namespaces = getResourceNamespaces(null);
 
-		final XmlFieldNodeList xmlFieldNodes = selector.selectXPathToNodeList(
-				namespaces, resourceXPathGlobal, node);
+		final XmlFieldNodeList xmlFieldNodes = _getSelector()
+				.selectXPathToNodeList(namespaces, resourceXPathGlobal, node);
 
 		final List<Object> list = new ArrayList<Object>();
 
@@ -269,8 +293,8 @@ public class XmlField {
 
 			try {
 
-				subNode = selector.selectXPathToNode(namespaces, resourceXPath,
-						node);
+				subNode = _getSelector().selectXPathToNode(namespaces,
+						resourceXPath, node);
 
 			} catch (final XmlFieldXPathException e) {
 
@@ -304,12 +328,12 @@ public class XmlField {
 
 	public String nodeToXml(final XmlFieldNode node)
 			throws XmlFieldParsingException {
-		return parser.nodeToXml(node);
+		return _getParser().nodeToXml(node);
 	}
 
 	public void nodeToXml(final XmlFieldNode node, Writer writer)
 			throws XmlFieldParsingException {
-		parser.nodeToXml(node, writer);
+		_getParser().nodeToXml(node, writer);
 	}
 
 	public XmlFieldNode objectToNode(Object o) {
@@ -317,12 +341,12 @@ public class XmlField {
 	}
 
 	public String objectToXml(Object o) throws XmlFieldParsingException {
-		return parser.nodeToXml(objectToNode(o));
+		return _getParser().nodeToXml(objectToNode(o));
 	}
 
 	public void objectToXml(Object o, Writer writer)
 			throws XmlFieldParsingException {
-		parser.nodeToXml(objectToNode(o), writer);
+		_getParser().nodeToXml(objectToNode(o), writer);
 	}
 
 	/**
@@ -372,7 +396,7 @@ public class XmlField {
 	 */
 	public XmlFieldNode xmlToNode(final InputStream xmlInputStream)
 			throws XmlFieldParsingException {
-		return parser.xmlToNode(xmlInputStream);
+		return _getParser().xmlToNode(xmlInputStream);
 	}
 
 	/**
@@ -395,7 +419,7 @@ public class XmlField {
 	 */
 	public XmlFieldNode xmlToNode(final String xml)
 			throws XmlFieldParsingException {
-		return parser.xmlToNode(xml);
+		return _getParser().xmlToNode(xml);
 	}
 
 	/**

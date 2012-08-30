@@ -29,7 +29,7 @@ import org.xmlfield.core.api.XmlFieldNode;
 import org.xmlfield.core.api.XmlFieldNodeList;
 import org.xmlfield.core.api.XmlFieldSelector;
 import org.xmlfield.core.exception.XmlFieldXPathException;
-import org.xmlfield.core.internal.XmlFieldUtils.NamespaceMap;
+import org.xmlfield.core.internal.NamespaceMap;
 
 import com.google.common.collect.MapMaker;
 
@@ -40,6 +40,15 @@ import com.google.common.collect.MapMaker;
  * 
  */
 public class DomJaxenSelector implements XmlFieldSelector {
+
+	/**
+	 * Enable cache for XPath objects. Warning : this is for testing only. XPath
+	 * objects are not always thread safe. You should not enable caching without
+	 * knowing EXACTLY what you are doing.
+	 * 
+	 * @see http://sourceforge.net/apps/mantisbt/xmlfield/view.php?id=41
+	 */
+	static boolean useCache = false;
 
 	public static XPath addNamespace(final NamespaceMap namespaces, XPath xp)
 			throws JaxenException {
@@ -75,24 +84,28 @@ public class DomJaxenSelector implements XmlFieldSelector {
 	 */
 	private XPath getXPath(NamespaceMap namespaces, String xpath)
 			throws JaxenException {
+		XPath result = null;
+		if (useCache) {
+			// Build cache key
+			String key = StringUtils.EMPTY;
+			if (namespaces != null) {
+				key = key + namespaces.toString();
+			}
+			key = key + "|" + xpath;
 
-		// Build cache key
-		String key = StringUtils.EMPTY;
-		if (namespaces != null) {
-			key = key + namespaces.toString();
-		}
-		key = key + "|" + xpath;
+			// Get from cache
+			result = xpathCache.get(key);
 
-		// Get from cache
-		XPath result = xpathCache.get(key);
-
-		// If not in cache, create new selector and add it to the cache.
-		if (result == null) {
+			// If not in cache, create new selector and add it to the cache.
+			if (result == null) {
+				result = new DOMXPath(xpath);
+				addNamespace(namespaces, result);
+				xpathCache.put(key, result);
+			}
+		} else {
 			result = new DOMXPath(xpath);
 			addNamespace(namespaces, result);
-			xpathCache.put(key, result);
 		}
-
 		return result;
 	}
 
