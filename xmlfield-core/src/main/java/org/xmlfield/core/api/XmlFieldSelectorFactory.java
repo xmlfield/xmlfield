@@ -19,7 +19,20 @@ import org.xmlfield.core.internal.XmlFieldFactory;
 
 /**
  * <p>
- * An <code>XmlFieldSelectorFactory</code> instance can be used to create {@link XmlFieldSelector} objects.
+ * An <code>XmlFieldSelectorFactory</code> instance can be used to create
+ * {@link XmlFieldSelector} objects.
+ * </p>
+ * 
+ * <p>
+ * Thread safety :
+ * <ul>
+ * <li>Factories implementation <b>must</b> be thread-safe. They will be created
+ * once and reused by XmlField for every thread.</li>
+ * <li>Objects returned by factory should be considered <b>not thread safe</b>.
+ * Default behavior is to return a new object every time. However, if these
+ * objects are know to be thread safe, the factory can always return the same
+ * object for better performances.</li>
+ * </ul>
  * </p>
  * 
  * <p>
@@ -29,26 +42,28 @@ import org.xmlfield.core.internal.XmlFieldFactory;
  * @author Guillaume Mary <guillaume.mary@capgemini.com>
  */
 public abstract class XmlFieldSelectorFactory extends XmlFieldFactory {
-    /**
-     * <p>
-     * Get a new <code>XmlFieldSelectorFactory</code> instance.
-     * 
-     * @return Instance of an <code>XmlFieldSelectorFactory</code>.
-     * 
-     * @throws RuntimeException
-     *             When there is a failure in creating an <code>XmlFieldSelectorFactory</code>
-     */
-    public static final XmlFieldSelectorFactory newInstance() {
-        return newInstance(XmlFieldSelectorFactory.class);
-    }
+	/**
+	 * <p>
+	 * Get a new <code>XmlFieldSelectorFactory</code> instance.
+	 * 
+	 * @return Instance of an <code>XmlFieldSelectorFactory</code>.
+	 * 
+	 * @throws RuntimeException
+	 *             When there is a failure in creating an
+	 *             <code>XmlFieldSelectorFactory</code>
+	 */
+	public static final XmlFieldSelectorFactory newInstance() {
+		return newInstance(XmlFieldSelectorFactory.class);
+	}
 
-    /**
-     * <p>
-     * Return a new <code>XmlFieldSelector</code> using the underlying object model determined when the
-     * <code>XmlFieldSelectorFactory</code> was instantiated.
-     * </p>
-     * 
-     * @return New instance of an <code>XmlFieldSelector</code>.
-     */
-    public abstract XmlFieldSelector newSelector();
+	/**
+	 * <p>
+	 * Return a new <code>XmlFieldSelector</code> using the underlying object
+	 * model determined when the <code>XmlFieldSelectorFactory</code> was
+	 * instantiated.
+	 * </p>
+	 * 
+	 * @return New instance of an <code>XmlFieldSelector</code>.
+	 */
+	public abstract XmlFieldSelector newSelector();
 }

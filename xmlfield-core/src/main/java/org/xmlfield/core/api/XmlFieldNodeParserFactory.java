@@ -26,6 +26,17 @@ import org.xmlfield.core.internal.XmlFieldFactory;
  * </p>
  * 
  * <p>
+ * Thread safety :
+ * <ul>
+ * <li>Factories implementation <b>must</b> be thread-safe. They will be created
+ * once and reused by XmlField for every thread.</li>
+ * <li>Objects returned by factory should be considered <b>not thread safe</b>.
+ * Default behavior is to return a new object every time. However, if these
+ * objects are know to be thread safe, the factory can always return the same
+ * object for better performances.</li>
+ * </ul>
+ * </p>
+ * <p>
  * See {@link #newInstance()} for lookup mechanism.
  * </p>
  * 

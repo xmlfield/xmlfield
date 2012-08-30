@@ -19,9 +19,22 @@ import org.xmlfield.core.internal.XmlFieldFactory;
 
 /**
  * <p>
- * An <code>XmlFieldNodeModifierFactory</code> instance can be used to create {@link XmlFieldParser} objects.
+ * An <code>XmlFieldNodeModifierFactory</code> instance can be used to create
+ * {@link XmlFieldParser} objects.
  * </p>
  * 
+ * 
+ * <p>
+ * Thread safety :
+ * <ul>
+ * <li>Factories implementation <b>must</b> be thread-safe. They will be created
+ * once and reused by XmlField for every thread.</li>
+ * <li>Objects returned by factory should be considered <b>not thread safe</b>.
+ * Default behavior is to return a new object every time. However, if these
+ * objects are know to be thread safe, the factory can always return the same
+ * object for better performances.</li>
+ * </ul>
+ * </p>
  * <p>
  * See {@link #newInstance()} for lookup mechanism.
  * </p>
@@ -29,26 +42,28 @@ import org.xmlfield.core.internal.XmlFieldFactory;
  * @author Guillaume Mary <guillaume.mary@capgemini.com>
  */
 public abstract class XmlFieldNodeModifierFactory extends XmlFieldFactory {
-    /**
-     * <p>
-     * Get a new <code>XmlFieldNodeModifierFactory</code> instance.
-     * 
-     * @return Instance of an <code>XmlFieldNodeModifierFactory</code>.
-     * 
-     * @throws RuntimeException
-     *             When there is a failure in creating an <code>XmlFieldNodeModifierFactory</code>
-     */
-    public static final XmlFieldNodeModifierFactory newInstance() {
-        return newInstance(XmlFieldNodeModifierFactory.class);
-    }
+	/**
+	 * <p>
+	 * Get a new <code>XmlFieldNodeModifierFactory</code> instance.
+	 * 
+	 * @return Instance of an <code>XmlFieldNodeModifierFactory</code>.
+	 * 
+	 * @throws RuntimeException
+	 *             When there is a failure in creating an
+	 *             <code>XmlFieldNodeModifierFactory</code>
+	 */
+	public static final XmlFieldNodeModifierFactory newInstance() {
+		return newInstance(XmlFieldNodeModifierFactory.class);
+	}
 
-    /**
-     * <p>
-     * Return a new <code>XmlFieldNodeModifier</code> using the underlying object model determined when the
-     * <code>XmlFieldNodeModifierFactory</code> was instantiated.
-     * </p>
-     * 
-     * @return New instance of an <code>XmlFieldNodeModifier</code>.
-     */
-    public abstract XmlFieldNodeModifier newModifier();
+	/**
+	 * <p>
+	 * Return a new <code>XmlFieldNodeModifier</code> using the underlying
+	 * object model determined when the <code>XmlFieldNodeModifierFactory</code>
+	 * was instantiated.
+	 * </p>
+	 * 
+	 * @return New instance of an <code>XmlFieldNodeModifier</code>.
+	 */
+	public abstract XmlFieldNodeModifier newModifier();
 }
