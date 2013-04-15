@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.OutputKeys;
 
 import org.xml.sax.SAXException;
 import org.xmlfield.core.api.XmlFieldNode;
@@ -111,11 +112,30 @@ public class XmlField {
 	}
 
 	/**
-	 * Create XmlField object for xml/object manipulations.
+	 * Create XmlField object for xml/object manipulations. This constructor can
+	 * be used to gain fine control over xmlfield output for example
+	 * (indentation, xml declaration etc. ).
+	 * 
+	 * <p>
+	 * Configuration is forwarded to xml transformer.
+	 * </p>
+	 * <p>
+	 * See {@link OutputKeys} for universal valid keys and values.
+	 * </p>
+	 * <p>
+	 * For specific transformer implementation see available documentation, for
+	 * exemple, if xalan is used see
+	 * org.apache.xml.serializer.OutputPropertiesFactory
+	 * </p>
+	 * <p>
+	 * BEWARE : if {@link OutputKeys#MEDIA_TYPE} is set to anything but xml, it
+	 * can defeat XmlField purpose. this is applicable to other configuration
+	 * too.
+	 * </p>
 	 * 
 	 * @param parserConfiguration
-	 *            parser configuration or null. Allowed keys are specific to the
-	 *            parser implementations. See {@link DomNodeParser} for default
+	 *            parser configuration. Allowed keys are specific to the parser
+	 *            implementations. See {@link DomNodeParser} for default
 	 *            implementation.
 	 */
 	public XmlField(Map<String, String> parserConfiguration) {
