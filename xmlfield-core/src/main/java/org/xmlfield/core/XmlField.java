@@ -44,6 +44,7 @@ import org.xmlfield.core.api.XmlFieldSelectorFactory;
 import org.xmlfield.core.exception.XmlFieldException;
 import org.xmlfield.core.exception.XmlFieldParsingException;
 import org.xmlfield.core.exception.XmlFieldXPathException;
+import org.xmlfield.core.impl.dom.DomNodeParser;
 import org.xmlfield.core.internal.NamespaceMap;
 import org.xmlfield.core.internal.XPathUtils;
 import org.xmlfield.core.internal.XmlFieldInvocationHandler;
@@ -99,13 +100,23 @@ public class XmlField {
 	 */
 	private XmlFieldSelector selector;
 
+	/**
+	 * Create XmlField object for xml/object manipulations.
+	 * 
+	 * <p>
+	 * Use default configuration.
+	 */
 	public XmlField() {
 		this(null);
 	}
 
 	/**
+	 * Create XmlField object for xml/object manipulations.
+	 * 
 	 * @param parserConfiguration
-	 *            parser configuration or null
+	 *            parser configuration or null. Allowed keys are specific to the
+	 *            parser implementations. See {@link DomNodeParser} for default
+	 *            implementation.
 	 */
 	public XmlField(Map<String, String> parserConfiguration) {
 		this.parserConfiguration = parserConfiguration;

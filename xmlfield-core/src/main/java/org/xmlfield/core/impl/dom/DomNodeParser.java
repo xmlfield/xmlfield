@@ -34,6 +34,8 @@ import javax.xml.transform.TransformerFactoryConfigurationError;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
@@ -52,8 +54,18 @@ import org.xmlfield.core.exception.XmlFieldParsingException;
  * @author Nicolas Richeton
  */
 public class DomNodeParser implements XmlFieldNodeParser {
-	public static String CONFIG_INDENT_XML = "indent";
 
+	/**
+	 * @deprecated
+	 * @see OutputKeys
+	 */
+	@Deprecated
+	public static String CONFIG_INDENT_XML = OutputKeys.INDENT;
+
+	private static final Logger logger = LoggerFactory
+			.getLogger(DomNodeParser.class);
+
+	Map<String, String> configuration = null;
 	DocumentBuilder documentBuilder = null;
 	boolean indent = false;
 	Transformer t = null;
@@ -63,14 +75,30 @@ public class DomNodeParser implements XmlFieldNodeParser {
 		this(null);
 	}
 
+	/**
+	 * Create document parser and writer.
+	 * 
+	 * @param configuration
+	 *            configure XML output (Transformer). Allowed values are
+	 *            {@link OutputKeys} constants.
+	 * @throws TransformerConfigurationException
+	 * @throws TransformerFactoryConfigurationError
+	 */
 	public DomNodeParser(Map<String, String> configuration)
 			throws TransformerConfigurationException,
 			TransformerFactoryConfigurationError {
 
-		if (configuration != null
-				&& Boolean.parseBoolean(configuration.get(CONFIG_INDENT_XML))) {
+		if (configuration != null) {
+			// Apply configuration
+			this.configuration = configuration;
 
-			indent = true;
+			// Warn for deprecated parameter value.
+			// Should be removed eventually.
+			if ("true".equals(configuration.get(OutputKeys.INDENT))) {
+				logger.warn("Use of deprecated value \"true\" for configuration OutputKeys.INDENT. "
+						+ "Please use \"yes\" instead");
+				configuration.put(OutputKeys.INDENT, "yes");
+			}
 
 		}
 	}
@@ -92,11 +120,15 @@ public class DomNodeParser implements XmlFieldNodeParser {
 		if (t == null) {
 			t = TransformerFactory.newInstance().newTransformer();
 
+			// Default for this key
 			t.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
-			if (indent) {
-				t.setOutputProperty(OutputKeys.INDENT, "yes");
-			}
 
+			// Apply configuration
+			if (configuration != null) {
+				for (String key : configuration.keySet()) {
+					t.setOutputProperty(key, configuration.get(key));
+				}
+			}
 		}
 	}
 
