@@ -133,7 +133,6 @@ public class XmlFieldInvocationHandler implements InvocationHandler {
 	 * <tt>"isNullXxx()"</tt>.
 	 */
 	private static boolean isMethodNameGetter(final String methodName) {
-
 		return methodName.startsWith("get") || methodName.startsWith("has")
 				|| methodName.startsWith("is")
 				&& !methodName.startsWith("isNull");
@@ -512,7 +511,7 @@ public class XmlFieldInvocationHandler implements InvocationHandler {
 	 */
 	private Object doGet(final String methodName) throws NoSuchMethodException,
 			XmlFieldXPathException {
-		if (cacheExists(methodName)) {
+		if (xmlField.isGetterCache() && cacheExists(methodName)) {
 			return getFromCache(methodName);
 		}
 
@@ -577,7 +576,7 @@ public class XmlFieldInvocationHandler implements InvocationHandler {
 	 */
 	private Object doIsNull(final String methodName)
 			throws XmlFieldXPathException {
-		if (cacheExists(methodName)) {
+		if (xmlField.isGetterCache() && cacheExists(methodName)) {
 			return getFromCache(methodName);
 		}
 

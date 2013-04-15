@@ -89,13 +89,14 @@ public class XmlField {
 	private static XmlFieldSelectorFactory selectorFactory = XmlFieldSelectorFactory
 			.newInstance();
 
+	private boolean getterCache = false;
 	private XmlFieldNodeModifier modifier;
 	/**
 	 * Parser used to parse the xml to node
 	 */
 	private XmlFieldNodeParser parser;
-	private Map<String, String> parserConfiguration;
 
+	private Map<String, String> parserConfiguration;
 	/**
 	 * Selector used to execute xpath expression
 	 */
@@ -200,6 +201,10 @@ public class XmlField {
 	 */
 	public <T> T castObject(Object o, Class<T> type) {
 		return loadProxy(XmlFieldUtils.getXmlFieldNode(o), type);
+	}
+
+	public boolean isGetterCache() {
+		return getterCache;
 	}
 
 	private <T> T loadProxy(final XmlFieldNode node, final Class<T> type) {
@@ -403,6 +408,20 @@ public class XmlField {
 	public void objectToXml(Object o, Writer writer)
 			throws XmlFieldParsingException {
 		_getParser().nodeToXml(objectToNode(o), writer);
+	}
+
+	/**
+	 * Enables caching for get methods.
+	 * 
+	 * <p>
+	 * Warning : this cache is experimental and cannot get changes mades when
+	 * using different objects to access the same XML Node. The use of this
+	 * cache is NOT recommended at the moment.
+	 * 
+	 * @param getterCache
+	 */
+	public void setGetterCache(boolean getterCache) {
+		this.getterCache = getterCache;
 	}
 
 	/**
