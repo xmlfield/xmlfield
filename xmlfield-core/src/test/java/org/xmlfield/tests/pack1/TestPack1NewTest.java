@@ -138,113 +138,111 @@ public class TestPack1NewTest {
 		assertEquals(
 
 				"<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
-						+ System.lineSeparator()
+						+ "\n"
 						+ "<Catalog>"
-						+ System.lineSeparator()
+						+ "\n"
 						+ "<Cd>	<Title>Empire Burlesque</Title>	<Artist>Bob Dylan</Artist>	<Country>USA</Country>	<Company>Columbia</Company>	<Price>10.90</Price>	<Year>1985</Year>"
-						+ System.lineSeparator()
+						+ "\n"
 						+ "</Cd>"
-						+ System.lineSeparator()
+						+ "\n"
 						+ "<Cd>	<Title>Hide your heart</Title>	<Artist>Bonnie Tyler</Artist>	<Country>UK</Country>	<Company>CBS Records</Company>	<Price>9.90</Price>	<Year>1988</Year>"
-						+ System.lineSeparator()
+						+ "\n"
 						+ "</Cd>"
-						+ System.lineSeparator()
+						+ "\n"
 						+ "<Cd>	<Title>Greatest Hits</Title>	<Artist>Dolly Parton</Artist>	<Country>USA</Country>	<Company>RCA</Company>	<Price>9.90</Price>	<Year>1982</Year>"
-						+ System.lineSeparator()
+						+ "\n"
 						+ "</Cd>"
-						+ System.lineSeparator()
+						+ "\n"
 						+ "<Cd>	<Title>Still got the blues</Title>	<Artist>Gary Moore</Artist>	<Country>UK</Country>	<Company>Virgin records</Company>	<Price>10.20</Price>	<Year>1990</Year>"
-						+ System.lineSeparator()
+						+ "\n"
 						+ "</Cd>"
-						+ System.lineSeparator()
+						+ "\n"
 						+ "<Cd>	<Title>Eros</Title>	<Artist>Eros Ramazzotti</Artist>	<Country>EU</Country>	<Company>BMG</Company>	<Price>9.90</Price>	<Year>1997</Year>"
-						+ System.lineSeparator()
+						+ "\n"
 						+ "</Cd>"
-						+ System.lineSeparator()
+						+ "\n"
 						+ "<Cd>	<Title>One night only</Title>	<Artist>Bee Gees</Artist>	<Country>UK</Country>	<Company>Polydor</Company>	<Price>10.90</Price>	<Year>1998</Year>"
-						+ System.lineSeparator()
+						+ "\n"
 						+ "</Cd>"
-						+ System.lineSeparator()
+						+ "\n"
 						+ "<Cd>	<Title>Sylvias Mother</Title>	<Artist>Dr.Hook</Artist>	<Country>UK</Country>	<Company>CBS</Company>	<Price>8.10</Price>	<Year>1973</Year>"
-						+ System.lineSeparator()
+						+ "\n"
 						+ "</Cd>"
-						+ System.lineSeparator()
+						+ "\n"
 						+ "<Cd>	<Title>Maggie May</Title>	<Artist>Rod Stewart</Artist>	<Country>UK</Country>	<Company>Pickwick</Company>	<Price>8.50</Price>	<Year>1990</Year>"
-						+ System.lineSeparator()
+						+ "\n"
 						+ "</Cd>"
-						+ System.lineSeparator()
+						+ "\n"
 						+ "<Cd>	<Title>Romanza</Title>	<Artist>Andrea Bocelli</Artist>	<Country>EU</Country>	<Company>Polydor</Company>	<Price>10.80</Price>	<Year>1996</Year>"
-						+ System.lineSeparator()
+						+ "\n"
 						+ "</Cd>"
-						+ System.lineSeparator()
+						+ "\n"
 						+ "<Cd>	<Title>When a man loves a woman</Title>	<Artist>Percy Sledge</Artist>	<Country>USA</Country>	<Company>Atlantic</Company>	<Price>8.70</Price>	<Year>1987</Year>"
-						+ System.lineSeparator()
+						+ "\n"
 						+ "</Cd>"
-						+ System.lineSeparator()
+						+ "\n"
 						+ "<Cd>	<Title>Black angel</Title>	<Artist>Savage Rose</Artist>	<Country>EU</Country>	<Company>Mega</Company>	<Price>10.90</Price>	<Year>1995</Year>"
-						+ System.lineSeparator()
+						+ "\n"
 						+ "</Cd>"
-						+ System.lineSeparator()
+						+ "\n"
 						+ "<Cd>	<Title>1999 Grammy Nominees</Title>	<Artist>Many</Artist>	<Country>USA</Country>	<Company>Grammy</Company>	<Price>10.20</Price>	<Year>1999</Year>"
-						+ System.lineSeparator()
+						+ "\n"
 						+ "</Cd>"
-						+ System.lineSeparator()
+						+ "\n"
 						+ "<Cd>	<Title>For the good times</Title>	<Artist>Kenny Rogers</Artist>	<Country>UK</Country>	<Company>Mucik Master</Company>	<Price>8.70</Price>	<Year>1995</Year>"
-						+ System.lineSeparator()
+						+ "\n"
 						+ "</Cd>"
-						+ System.lineSeparator()
+						+ "\n"
 						+ "<Cd>	<Title>Big Willie style</Title>	<Artist>Will Smith</Artist>	<Country>USA</Country>	<Company>Columbia</Company>	<Price>9.90</Price>	<Year>1997</Year>"
-						+ System.lineSeparator()
+						+ "\n"
 						+ "</Cd>"
-						+ System.lineSeparator()
+						+ "\n"
 						+ "<Cd>	<Title>Tupelo Honey</Title>	<Artist>Van Morrison</Artist>	<Country>UK</Country>	<Company>Polydor</Company>	<Price>8.20</Price>	<Year>1971</Year>"
-						+ System.lineSeparator()
+						+ "\n"
 						+ "</Cd>"
-						+ System.lineSeparator()
+						+ "\n"
 						+ "<Cd>	<Title>Soulsville</Title>	<Artist>Jorn Hoel</Artist>	<Country>Norway</Country>	<Company>WEA</Company>	<Price>7.90</Price>	<Year>1996</Year>"
-						+ System.lineSeparator()
+						+ "\n"
 						+ "</Cd>"
-						+ System.lineSeparator()
+						+ "\n"
 						+ "<Cd>	<Title>The very best of</Title>	<Artist>Cat Stevens</Artist>	<Country>UK</Country>	<Company>Island</Company>	<Price>8.90</Price>	<Year>1990</Year>"
-						+ System.lineSeparator()
+						+ "\n"
 						+ "</Cd>"
-						+ System.lineSeparator()
+						+ "\n"
 						+ "<Cd>	<Title>Stop</Title>	<Artist>Sam Brown</Artist>	<Country>UK</Country>	<Company>A and M</Company>	<Price>8.90</Price>	<Year>1988</Year>"
-						+ System.lineSeparator()
+						+ "\n"
 						+ "</Cd>"
-						+ System.lineSeparator()
+						+ "\n"
 						+ "<Cd>	<Title>Bridge of Spies</Title>	<Artist>T'Pau</Artist>	<Country>UK</Country>	<Company>Siren</Company>	<Price>7.90</Price>	<Year>1987</Year>"
-						+ System.lineSeparator()
+						+ "\n"
 						+ "</Cd>"
-						+ System.lineSeparator()
+						+ "\n"
 						+ "<Cd>	<Title>Private Dancer</Title>	<Artist>Tina Turner</Artist>	<Country>UK</Country>	<Company>Capitol</Company>	<Price>8.90</Price>	<Year>1983</Year>"
-						+ System.lineSeparator()
+						+ "\n"
 						+ "</Cd>"
-						+ System.lineSeparator()
+						+ "\n"
 						+ "<Cd>	<Title>Midt om natten</Title>	<Artist>Kim Larsen</Artist>	<Country>EU</Country>	<Company>Medley</Company>	<Price>7.80</Price>	<Year>1983</Year>"
-						+ System.lineSeparator()
+						+ "\n"
 						+ "</Cd>"
-						+ System.lineSeparator()
+						+ "\n"
 						+ "<Cd>	<Title>Pavarotti Gala Concert</Title>	<Artist>Luciano Pavarotti</Artist>	<Country>UK</Country>	<Company>DECCA</Company>	<Price>9.90</Price>	<Year>1991</Year>"
-						+ System.lineSeparator()
+						+ "\n"
 						+ "</Cd>"
-						+ System.lineSeparator()
+						+ "\n"
 						+ "<Cd>	<Title>The dock of the bay</Title>	<Artist>Otis Redding</Artist>	<Country>USA</Country>	<Company>Atlantic</Company>	<Price>7.90</Price>	<Year>1987</Year>"
-						+ System.lineSeparator()
+						+ "\n"
 						+ "</Cd>"
-						+ System.lineSeparator()
+						+ "\n"
 						+ "<Cd>	<Title>Picture book</Title>	<Artist>Simply Red</Artist>	<Country>EU</Country>	<Company>Elektra</Company>	<Price>7.20</Price>	<Year>1985</Year>"
-						+ System.lineSeparator()
+						+ "\n"
 						+ "</Cd>"
-						+ System.lineSeparator()
+						+ "\n"
 						+ "<Cd>	<Title>Red</Title>	<Artist>The Communards</Artist>	<Country>UK</Country>	<Company>London</Company>	<Price>7.80</Price>	<Year>1987</Year>"
-						+ System.lineSeparator()
+						+ "\n"
 						+ "</Cd>"
-						+ System.lineSeparator()
+						+ "\n"
 						+ "<Cd>	<Title>Unchain my heart</Title>	<Artist>Joe Cocker</Artist>	<Country>USA</Country>	<Company>EMI</Company>	<Price>8.20</Price>	<Year>1987</Year>"
-						+ System.lineSeparator() + "</Cd>"
-						+ System.lineSeparator() + "</Catalog>"
-						+ System.lineSeparator(), actual);
+						+ "\n" + "</Cd>" + "\n" + "</Catalog>" + "\n", actual);
 
 	}
 
