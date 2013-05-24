@@ -110,6 +110,10 @@ public class DomNodeParser implements XmlFieldNodeParser {
 					.newInstance();
 
 			documentBuilderFactory.setNamespaceAware(true);
+			// Prevent XXE
+			documentBuilderFactory.setExpandEntityReferences(false);
+			documentBuilderFactory.setValidating(false);
+
 			documentBuilder = documentBuilderFactory.newDocumentBuilder();
 
 		}
