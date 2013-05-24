@@ -5,7 +5,6 @@
     <groupId>org.xmlfield</groupId>
     <version>0.10-SNAPSHOT</version>
   </parent>
-  <groupId>org.xmlfield</groupId>
   <artifactId>xmlfield-validation</artifactId>
   <name>XMLField Validation</name>
   <dependencies>
@@ -19,7 +18,7 @@
   	<dependency>
   		<groupId>junit</groupId>
   		<artifactId>junit</artifactId>
-  		<version>4.8.2</version>
+  		<version>4.11</version>
   		<type>jar</type>
   		<scope>test</scope>
   	</dependency>
