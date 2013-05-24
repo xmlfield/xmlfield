@@ -17,20 +17,15 @@ package org.xmlfield.tests.xxe;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.xmlfield.core.XmlField;
 import org.xmlfield.core.api.XmlFieldNode;
 
 /**
- * Test basic xmlfield usage, with a simple xml file (no namespace, no
- * attribute).
+ * Test for XXE Vulnerability.
  * 
  * @author Nicolas Richeton <nicolas.richeton@capgemini.com>
  */
 public class XXETest {
-
-	Logger log = LoggerFactory.getLogger(XXETest.class);
 
 	private final XmlField xmlfield = new XmlField();
 
@@ -40,13 +35,13 @@ public class XXETest {
 	 */
 	@Test
 	public void testPreventXXE() throws Exception {
-		// Create initial XML
+		// Create initial XML with entity injection
 		final String xml = "<?xml version=\"1.0\"?><!DOCTYPE customer[<!ENTITY name SYSTEM \"/\">]><Catalog><test>&name;</test></Catalog>";
 		final XmlFieldNode node = xmlfield.xmlToNode(xml);
 
-		// Get object and do initial asserts
 		final Catalog catalog = xmlfield.nodeToObject(node, Catalog.class);
 
+		// Ensure entity injection is ignored
 		Assert.assertEquals("<Catalog><test/></Catalog>",
 				xmlfield.objectToXml(catalog));
 
