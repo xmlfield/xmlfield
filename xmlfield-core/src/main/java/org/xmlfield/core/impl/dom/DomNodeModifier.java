@@ -1,5 +1,5 @@
 /*
- * Copyright 2010 Capgemini
+ * Copyright 2010-2013 Capgemini
  * Licensed under the Apache License, Version 2.0 (the "License"); 
  * you may not use this file except in compliance with the License. 
  * You may obtain a copy of the License at 
@@ -81,7 +81,7 @@ public class DomNodeModifier implements XmlFieldNodeModifier {
 
 		if (textContent != null) {
 
-			attribute.setTextContent(textContent);
+			attribute.setTextContent(InputSanitizer.sanitizeText(textContent));
 		}
 
 	}
@@ -110,7 +110,8 @@ public class DomNodeModifier implements XmlFieldNodeModifier {
 
 		if (textContent != null) {
 
-			element.appendChild(document.createTextNode(textContent));
+			element.appendChild(document.createTextNode(InputSanitizer
+					.sanitizeText(textContent)));
 		}
 
 		return new DomNode(element);

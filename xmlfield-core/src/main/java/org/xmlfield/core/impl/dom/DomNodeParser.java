@@ -1,5 +1,5 @@
 /*
- * Copyright 2010 Capgemini
+ * Copyright 2010-2013 Capgemini
  * Licensed under the Apache License, Version 2.0 (the "License"); 
  * you may not use this file except in compliance with the License. 
  * You may obtain a copy of the License at 
@@ -46,7 +46,8 @@ import org.xmlfield.core.exception.XmlFieldParsingException;
 
 /**
  * Default xml field node parser. This implementation deal with a {@link Node}
- * object
+ * object.
+ * <p>
  * <p>
  * DomNodeParser is not thread safe.
  * 
@@ -56,6 +57,17 @@ import org.xmlfield.core.exception.XmlFieldParsingException;
 public class DomNodeParser implements XmlFieldNodeParser {
 
 	/**
+	 * Remove invalid XML entities before parsing XML document. Currently only
+	 * supports String input (no cleaning is performed with input streams).
+	 * <p>
+	 * This option have a small performance impact and can be disabled is
+	 * content is known to perfectly valid.
+	 */
+	public static final String CONFIG_CLEANUP_XML = "xmlfield.dom.cleanupXmlFirst";
+
+	/**
+	 * Switch XML implementation.
+	 * 
 	 * @deprecated
 	 * @see OutputKeys
 	 */
@@ -65,9 +77,15 @@ public class DomNodeParser implements XmlFieldNodeParser {
 	private static final Logger logger = LoggerFactory
 			.getLogger(DomNodeParser.class);
 
+	/**
+	 * When enabled, a global replacement of invalid characters is performed
+	 * before sending the XML input to the parser.
+	 */
+	boolean cleanupXmlFirst = true;
 	Map<String, String> configuration = null;
 	DocumentBuilder documentBuilder = null;
 	boolean indent = false;
+
 	Transformer t = null;
 
 	public DomNodeParser() throws TransformerConfigurationException,
@@ -98,6 +116,14 @@ public class DomNodeParser implements XmlFieldNodeParser {
 				logger.warn("Use of deprecated value \"true\" for configuration OutputKeys.INDENT. "
 						+ "Please use \"yes\" instead");
 				configuration.put(OutputKeys.INDENT, "yes");
+			}
+
+			// Process CONFIG_CLEANUP_XML and remove key to prevent forwaring to
+			// the underlying parser.
+			if (configuration.get(CONFIG_CLEANUP_XML) != null
+					&& !"true".equals(configuration.get(CONFIG_CLEANUP_XML))) {
+				cleanupXmlFirst = false;
+				configuration.remove(CONFIG_CLEANUP_XML);
 			}
 
 		}
@@ -188,6 +214,9 @@ public class DomNodeParser implements XmlFieldNodeParser {
 	private Node xmlToNode(final InputSource xmlInputSource)
 			throws XmlFieldParsingException {
 
+		new InputSource() {
+
+		};
 		Document document = null;
 		try {
 			ensureBuilder();
@@ -206,12 +235,22 @@ public class DomNodeParser implements XmlFieldNodeParser {
 	@Override
 	public XmlFieldNode xmlToNode(InputStream xmlContent)
 			throws XmlFieldParsingException {
+
+		// TODO:
+		// Cleaning XML should be supported with InputStream inputs.
+		// Be careful with encoding, since it should be determined from the xml
+		// header.
 		return new DomNode(xmlToNode(new InputSource(xmlContent)));
 	}
 
 	@Override
 	public XmlFieldNode xmlToNode(String xml) throws XmlFieldParsingException {
-		return new DomNode(xmlToNode(new InputSource(new StringReader(xml))));
-	}
+		String xmlData = xml;
+		if (cleanupXmlFirst) {
+			xmlData = InputSanitizer.sanitizeXml(xml);
+		}
 
+		return new DomNode(
+				xmlToNode(new InputSource(new StringReader(xmlData))));
+	}
 }

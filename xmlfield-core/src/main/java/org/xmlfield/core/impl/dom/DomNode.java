@@ -1,5 +1,5 @@
 /*
- * Copyright 2010 Capgemini
+ * Copyright 2010-2013 Capgemini
  * Licensed under the Apache License, Version 2.0 (the "License"); 
  * you may not use this file except in compliance with the License. 
  * You may obtain a copy of the License at 
@@ -107,7 +107,7 @@ public class DomNode implements XmlFieldNode {
 	@Override
 	public void setTextContent(String textContent) {
 		if (this.node != null) {
-			this.node.setTextContent(textContent);
+			this.node.setTextContent(InputSanitizer.sanitizeText(textContent));
 		}
 	}
 
