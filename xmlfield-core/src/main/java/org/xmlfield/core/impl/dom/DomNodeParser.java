@@ -43,6 +43,8 @@ import org.xml.sax.SAXException;
 import org.xmlfield.core.api.XmlFieldNode;
 import org.xmlfield.core.api.XmlFieldNodeParser;
 import org.xmlfield.core.exception.XmlFieldParsingException;
+import org.xmlfield.core.impl.dom.cleanup.EntitySanitizingInputStream;
+import org.xmlfield.core.impl.dom.cleanup.InputSanitizer;
 
 /**
  * Default xml field node parser. This implementation deal with a {@link Node}
@@ -57,11 +59,13 @@ import org.xmlfield.core.exception.XmlFieldParsingException;
 public class DomNodeParser implements XmlFieldNodeParser {
 
 	/**
-	 * Remove invalid XML entities before parsing XML document. Currently only
-	 * supports String input (no cleaning is performed with input streams).
+	 * Remove invalid XML numeric entities before parsing XML document. The
+	 * underlying XML parser will fail if invalid entity are used. With this
+	 * option enabled, XmlField will replace invalid entity by an
+	 * "unknown character".
 	 * <p>
-	 * This option have a small performance impact and can be disabled is
-	 * content is known to perfectly valid.
+	 * This option have a small performance impact but should be disabled only
+	 * if is content is known to perfectly valid.
 	 */
 	public static final String CONFIG_CLEANUP_XML = "xmlfield.dom.cleanupXmlFirst";
 
@@ -81,7 +85,7 @@ public class DomNodeParser implements XmlFieldNodeParser {
 	 * When enabled, a global replacement of invalid characters is performed
 	 * before sending the XML input to the parser.
 	 */
-	boolean cleanupXmlFirst = true;
+	boolean cleanupXmlFirst = false;
 	Map<String, String> configuration = null;
 	DocumentBuilder documentBuilder = null;
 	boolean indent = false;
@@ -118,11 +122,10 @@ public class DomNodeParser implements XmlFieldNodeParser {
 				configuration.put(OutputKeys.INDENT, "yes");
 			}
 
-			// Process CONFIG_CLEANUP_XML and remove key to prevent forwaring to
-			// the underlying parser.
-			if (configuration.get(CONFIG_CLEANUP_XML) != null
-					&& !"true".equals(configuration.get(CONFIG_CLEANUP_XML))) {
-				cleanupXmlFirst = false;
+			// Process CONFIG_CLEANUP_XML and remove key to prevent forwarding
+			// to the underlying parser.
+			if ("true".equals(configuration.get(CONFIG_CLEANUP_XML))) {
+				cleanupXmlFirst = true;
 				configuration.remove(CONFIG_CLEANUP_XML);
 			}
 
@@ -236,11 +239,12 @@ public class DomNodeParser implements XmlFieldNodeParser {
 	public XmlFieldNode xmlToNode(InputStream xmlContent)
 			throws XmlFieldParsingException {
 
-		// TODO:
-		// Cleaning XML should be supported with InputStream inputs.
-		// Be careful with encoding, since it should be determined from the xml
-		// header.
-		return new DomNode(xmlToNode(new InputSource(xmlContent)));
+		InputStream stream = xmlContent;
+		if (cleanupXmlFirst) {
+			stream = new EntitySanitizingInputStream(stream);
+		}
+
+		return new DomNode(xmlToNode(new InputSource(stream)));
 	}
 
 	@Override

@@ -37,15 +37,18 @@ public class InvalidEntityTest {
 	 * 
 	 * @throws Exception
 	 */
-	@Test(expected = XmlFieldParsingException.class)
+	@Test()
 	public void testReadInvalidEntityInputStream() throws Exception {
 
 		final InputStream xml = new ByteArrayInputStream(
-				"<?xml version=\"1.0\"?><Catalog><test>&#25;</test></Catalog>"
+				"<?xml version=\"1.0\"?><Catalog><test>&#25;&amp;</test></Catalog>"
 						.getBytes("UTF-8"));
+		Map<String, String> conf = new HashMap<String, String>();
+		conf.put(DomNodeParser.CONFIG_CLEANUP_XML, "true");
+		XmlField xmlfield = new XmlField(conf);
 		final XmlFieldNode node = xmlfield.xmlToNode(xml);
 
-		Assert.assertEquals(null, "<Catalog><test>�</test></Catalog>",
+		Assert.assertEquals(null, "<Catalog><test>�&amp;</test></Catalog>",
 				xmlfield.objectToXml(node));
 	}
 
@@ -59,6 +62,11 @@ public class InvalidEntityTest {
 	public void testReadInvalidEntityString() throws Exception {
 
 		final String xml = "<?xml version=\"1.0\"?><Catalog><test>&#25;</test></Catalog>";
+
+		Map<String, String> conf = new HashMap<String, String>();
+		conf.put(DomNodeParser.CONFIG_CLEANUP_XML, "true");
+		XmlField xmlfield = new XmlField(conf);
+
 		final XmlFieldNode node = xmlfield.xmlToNode(xml);
 
 		Assert.assertEquals(null, "<Catalog><test>�</test></Catalog>",

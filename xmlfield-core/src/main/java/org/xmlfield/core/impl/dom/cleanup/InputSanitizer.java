@@ -13,7 +13,7 @@
  * limitations under the License. 
  * 
  */
-package org.xmlfield.core.impl.dom;
+package org.xmlfield.core.impl.dom.cleanup;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;

@@ -17,6 +17,7 @@ package org.xmlfield.core.impl.dom;
 
 import org.w3c.dom.Node;
 import org.xmlfield.core.api.XmlFieldNode;
+import org.xmlfield.core.impl.dom.cleanup.InputSanitizer;
 
 /**
  * Default xml field node implementation

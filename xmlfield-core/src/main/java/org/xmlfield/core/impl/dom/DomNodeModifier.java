@@ -28,6 +28,7 @@ import org.w3c.dom.Node;
 import org.xmlfield.core.api.XmlFieldNode;
 import org.xmlfield.core.api.XmlFieldNodeList;
 import org.xmlfield.core.api.XmlFieldNodeModifier;
+import org.xmlfield.core.impl.dom.cleanup.InputSanitizer;
 import org.xmlfield.core.internal.NamespaceMap;
 import org.xmlfield.core.internal.XPathUtils;
 
