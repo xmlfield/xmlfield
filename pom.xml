@@ -19,7 +19,7 @@
         <url>https://sourceforge.net/apps/mantisbt/xmlfield/</url>
     </issueManagement>
     <scm>
-        <developerConnection>scm:svn:https://svn.code.sf.net/p/xmlfield/code/trunk</developerConnection>
+        <developerConnection>svn+ssh://svn.code.sf.net/p/xmlfield/code/trunk</developerConnection>
         <url>https://svn.code.sf.net/p/xmlfield/code/trunk</url>
     </scm>
 
@@ -30,7 +30,7 @@
             <extension>
                 <groupId>org.apache.maven.wagon</groupId>
                 <artifactId>wagon-ssh</artifactId>
-                <version>1.0</version>
+                <version>2.4</version>
             </extension>
         </extensions>
         <pluginManagement>
@@ -74,7 +74,7 @@
               <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-site-plugin</artifactId>
-                <version>2.2</version>
+                <version>3.3</version>
                 
             </plugin>
 <!--             <plugin> -->
