@@ -1,5 +1,7 @@
 package org.xmlfield.core;
 
+import java.util.Map;
+
 /**
  * Factory used to create XmlField instances.
  * <p>
@@ -13,18 +15,24 @@ package org.xmlfield.core;
  */
 public class XmlFieldFactory {
 
+	private Boolean getterCache = null;
+	private Map<String, String> parserConfiguration = null;
+	private boolean useThreadLocal = false;
+
 	/**
 	 * XmlFiled instances associated to threads. Used only if useThreadLocal is
 	 * true.
 	 */
-	private static final ThreadLocal<XmlField> xmlFieldInstances = new ThreadLocal<XmlField>() {
+	private final ThreadLocal<XmlField> xmlFieldInstances = new ThreadLocal<XmlField>() {
 		@Override
 		protected XmlField initialValue() {
-			return new XmlField();
+			XmlField xf = new XmlField(parserConfiguration);
+			if (getterCache != null) {
+				xf.setGetterCache(getterCache);
+			}
+			return xf;
 		}
 	};
-
-	boolean useThreadLocal = false;
 
 	public XmlFieldFactory() {
 	}
@@ -49,7 +57,32 @@ public class XmlFieldFactory {
 			return xmlFieldInstances.get();
 		}
 
-		return new XmlField();
+		XmlField xf = new XmlField(parserConfiguration);
+		if (getterCache != null) {
+			xf.setGetterCache(getterCache);
+		}
+
+		return xf;
+	}
+
+	/**
+	 * Enable Getter cache.
+	 * 
+	 * @see XmlField#setGetterCache(boolean)
+	 * @param enabled
+	 */
+	public void setGetterCache(boolean enabled) {
+		this.getterCache = enabled;
+	}
+
+	/**
+	 * Set parser configuration. All XmlField instances will use this
+	 * configuration.
+	 * 
+	 * @param configuration
+	 */
+	public void setParserConfiguration(Map<String, String> configuration) {
+		parserConfiguration = configuration;
 	}
 
 	/**

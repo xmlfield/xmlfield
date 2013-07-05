@@ -26,6 +26,7 @@ import java.io.Writer;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Proxy;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -201,6 +202,17 @@ public class XmlField {
 	 */
 	public <T> T castObject(Object o, Class<T> type) {
 		return loadProxy(XmlFieldUtils.getXmlFieldNode(o), type);
+	}
+
+	/**
+	 * Returns the current parser configuration.
+	 * <p>
+	 * The returned object is cannot be updated.
+	 * 
+	 * @return
+	 */
+	public Map<String, String> getParserConfiguration() {
+		return new HashMap<String, String>(parserConfiguration);
 	}
 
 	public boolean isGetterCache() {
