@@ -1,0 +1,254 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document xmlns="http://maven.apache.org/XDOC/2.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/XDOC/2.0 http://maven.apache.org/xsd/xdoc-2.0.xsd">
+
+    <properties>
+        <title>Xml model and basic usage</title>
+        <author email="nicolas.richeton@capgemini.com">Nicolas Richeton</author>
+    </properties>
+
+    <body>
+
+
+        <h1>Xml model and basic usage</h1>
+
+        <p>XMLField uses annotated interfaces to define the xml model.
+        </p>
+
+
+        <h2>Define model to read an xml file</h2>
+        <p>We use the following xml file : </p>
+
+        <source><![CDATA[
+<database name="xmlfield-demo-db">
+  <tables>
+    <table tableType="system">
+      <name>users</name>
+      <fields>
+        <field>
+          <name>uid</name>
+          <type>long</type>
+        </field>
+        <field>
+          <name>uname</name>
+          <type>java.lang.String</type>
+        </field>
+        <field>
+          <name>firstName</name>
+          <type>java.lang.String</type>
+        </field>
+        <field>
+          <name>lastName</name>
+          <type>java.lang.String</type>
+        </field>
+        <field>
+          <name>email</name>
+          <type>java.lang.String</type>
+        </field>
+      </fields>
+    </table>
+  </tables>
+</database>
+    
+        ]]></source>
+        <p>First, create an interface for the root object, and add the XmlField annotation :</p>
+        <source><![CDATA[
+import org.xmlfield.annotations.ResourceXPath;
+
+
+@ResourceXPath("/database")
+public interface IDatabase {
+
+}
+    ]]></source>
+        <p>Then add some getters :</p>
+
+        <source><![CDATA[
+import org.xmlfield.annotations.ResourceXPath;
+
+
+@ResourceXPath("/database")
+public interface IDatabase {
+
+    @FieldXPath("@name")
+    String getName();
+
+    @FieldXPath("tables/table")
+    ITable[] getTables();
+
+}
+    ]]></source>
+
+        <p>This time, we add FieldXPath annotations to map getters to xml tags. Please note that we don't use getter on
+            'tables' tag. Since this is only an enclosing tag, we let XmlField handle it for us.
+        </p>
+        <p>Then we create the ITable and IField interfaces : </p>
+
+        <source><![CDATA[
+import org.xmlfield.annotations.ResourceXPath;
+
+
+@ResourceXPath("/table")
+public interface ITable {
+
+    @FieldXPath("name")
+    String getName();
+
+    @FieldXPath("@tableType")
+    String getTableType;
+
+    @FieldXPath("fields/field")
+    IField[] getFields()
+}
+
+@ResourceXPath("/field")
+public interface IField {
+
+    @FieldXPath("name")
+    String getName();
+
+    @FieldXPath("type")
+    String getType();
+}
+    ]]></source>
+        <p>Now, you're ready to read the field using XmlField</p>
+
+        <source><![CDATA[
+String xmlContent="<database>(...)</database";
+XmlField xf = new XmlField();
+IDatabase db = xf.xmlToObject( xmlContent, IDatabase.class );
+
+System.out.println( db.getName() );
+ITable tables = db.getTables();
+System.out.println( tables[0].getName() );
+    ]]></source>
+
+        <h2>Add support for writing</h2>
+        <p>To update the xml content, you just have to add a few methods to the interface. This time no need to add
+            annotations, XmlField will automatically find the XPath according to method names.
+        </p>
+        <p>For single objects, we just add a setter.</p>
+        <p>For arrays, XmlField needs an additional addTo method. This method is used to create a new tag (since
+            xmlField objects are just interfaces, you cannot create a new object using new IField()). The new tag is
+            added to the xml document as soon as the method returns. The set method can be used to empty the document
+            using
+            setXXX(null), remove one or several tags or simply to reorder tags.
+        </p>
+
+        <source><![CDATA[
+import org.xmlfield.annotations.ResourceXPath;
+
+
+@ResourceXPath("/database")
+public interface IDatabase {
+
+    @FieldXPath("@name")
+    String getName();
+    
+    void setName( String name);
+
+    @FieldXPath("tables/table")
+    ITable[] getTables();
+    
+    ITable addToTables();
+    
+    void setTables(ITable[] tables);
+
+}
+
+@ResourceXPath("/table")
+public interface ITable {
+
+    @FieldXPath("name")
+    String getName();
+    
+    void setName(String name) ;
+
+    @FieldXPath("@tableType")
+    String getTableType();
+    
+    void setTableType();
+
+    @FieldXPath("fields/field")
+    IField[] getFields()
+   
+    IField addToFields();
+    
+    void setFields(IField[] fields);
+    
+}
+
+@ResourceXPath("/field")
+public interface IField {
+
+    @FieldXPath("name")
+    String getName();
+
+    void setName(String name);
+    
+    @FieldXPath("type")
+    String getType;
+    
+    void setType(String type);
+}
+    ]]></source>
+    
+    <p>Now you can update and save the document</p>
+    
+<source><![CDATA[
+String xmlContent="<database>(...)</database";
+XmlField xf = new XmlField();
+IDatabase db = xf.xmlToObject( xmlContent, IDatabase.class );
+
+db.setName( "New db name" );
+
+ITable newTable = db.addToTables();
+newTable.setName("My new table");
+
+
+String result = xf.objectToXml(db);
+
+    ]]></source>
+
+        <h2>Supported types and additional methods </h2>
+        <p>XmlField support most Java basic types (and corresponding objects types). When using these types in arrays,
+            it is recommended to use XmlXXXX types instead : they are required to ensure no data loss will happen when
+            moving tags in the array.
+        </p>
+        <p>XmlField also support DateTime from <a href="http://joda-time.sourceforge.net/">JodaTime</a></p>
+        <ul>
+            <li>boolean / Boolean</li>
+            <li>String / XmlString</li>
+            <li>int / Integer / XmlInt</li>
+            <li>long / Long</li>
+            <li>DateTime</li>
+
+        </ul>
+        <p>XmlField also recognizes additional methods to ease development.</p>
+        <ul>
+            <li>isXXX : for booleans</li>
+            <li>sizeOfXXX : for arrays</li>
+            <li>removeFromXXXX : for arrays</li>
+        </ul>
+        
+         <div id="disqus_thread"></div>
+    <script type="text/javascript">
+<![CDATA[  
+        var disqus_shortname = 'xmlfield';
+
+        (function() {
+            var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+            dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        })();
+        
+      //  ]]>
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+   	
+   	
+    </body>
+</document>
+  
+  

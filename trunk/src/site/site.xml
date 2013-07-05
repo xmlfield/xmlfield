@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<project name="XMLField">
+  <bannerLeft>
+    <name>XMLField</name>
+   <src>images/logo.png</src>
+  </bannerLeft>
+  
+   <bannerRight>
+    <src>http://sflogo.sourceforge.net/sflogo.php?group_id=499670&amp;type=16</src>
+  		<href>http://sourceforge.net/projects/xmlfield</href>
+		<alt>Get XMLField at SourceForge.net. Fast, secure and Free Open Source software downloads</alt>
+  </bannerRight>
+  
+
+    
+  <body>
+  
+  <head><script type="text/javascript">
+
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-27309634-1']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+
+</script></head>
+    	<links>
+      <item name="Maven repo" href="http://xmlfield.sourceforge.net/maven/repository/" />
+      <item name="Change log" href="https://sourceforge.net/apps/mantisbt/xmlfield/changelog_page.php"/>
+      <item name="Roadmap" href="https://sourceforge.net/apps/mantisbt/xmlfield/roadmap_page.php"/>
+      <item name="Stats (ohloh)" href="https://www.ohloh.net/p/xmlfield"/>
+    </links>
+   
+    <menu name="XMLField">
+      <item name="Introduction" href="index.html"/>
+      <item name="Xml Model" href="model.html"/>
+      <item name="Namespaces" href="namespaces.html"/>
+      <item name="Behavior explained" href="behavior.html"/>
+ 
+     </menu>
+ <menu ref="modules" />
+   <menu ref="reports"/>
+
+  </body>
+</project>

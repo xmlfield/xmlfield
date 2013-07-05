@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<project name="XMLField">
+ <bannerLeft>
+    <name>XMLField Core</name>
+  
+  </bannerLeft>
+  
+   <bannerRight>
+    <src>http://sflogo.sourceforge.net/sflogo.php?group_id=499670&amp;type=16</src>
+  		<href>http://sourceforge.net/projects/xmlfield</href>
+		<alt>Get XMLField at SourceForge.net. Fast, secure and Free Open Source software downloads</alt>
+  </bannerRight>
+ 
+  <body>
+
+    <menu ref="reports"/>
+
+  </body>
+</project>
