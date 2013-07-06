@@ -87,7 +87,7 @@
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.scm</groupId>
-				<artifactId>maven-scm-providers-svn</artifactId>
+				<artifactId>maven-scm-provider-svnexe</artifactId>
 				<version>1.8.1</version>
 			</plugin>
 			<!-- <plugin> -->
