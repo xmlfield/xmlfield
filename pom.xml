@@ -20,6 +20,7 @@
 		<url>https://sourceforge.net/apps/mantisbt/xmlfield/</url>
 	</issueManagement>
 	<scm>
+		<connection>svn+ssh://svn.code.sf.net/p/xmlfield/code/trunk</connection>
 		<developerConnection>svn+ssh://svn.code.sf.net/p/xmlfield/code/trunk</developerConnection>
 		<url>https://svn.code.sf.net/p/xmlfield/code/trunk</url>
 	</scm>
@@ -79,17 +80,7 @@
 
 			</plugin>
 
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-scm-plugin</artifactId>
-				<version>1.8.1</version>
-
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.scm</groupId>
-				<artifactId>maven-scm-provider-svnexe</artifactId>
-				<version>1.8.1</version>
-			</plugin>
+		
 			<!-- <plugin> -->
 			<!-- <groupId>org.apache.maven.plugins</groupId> -->
 			<!-- <artifactId>maven-site-plugin</artifactId> -->
