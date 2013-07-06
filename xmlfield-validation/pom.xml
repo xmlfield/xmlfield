@@ -3,7 +3,7 @@
   <parent>
     <artifactId>xmlfield</artifactId>
     <groupId>org.xmlfield</groupId>
-    <version>0.12</version>
+    <version>0.12-SNAPSHOT</version>
   </parent>
   <artifactId>xmlfield-validation</artifactId>
   <name>XMLField Validation</name>
@@ -11,7 +11,7 @@
   	<dependency>
   		<groupId>org.xmlfield</groupId>
   		<artifactId>xmlfield-core</artifactId>
-  		<version>0.12</version>
+  		<version>0.12-SNAPSHOT</version>
   		<type>jar</type>
   		<scope>compile</scope>
   	</dependency>
