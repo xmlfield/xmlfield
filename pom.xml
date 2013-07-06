@@ -20,8 +20,7 @@
 		<url>https://sourceforge.net/apps/mantisbt/xmlfield/</url>
 	</issueManagement>
 	<scm>
-		<connection>svn+ssh://svn.code.sf.net/p/xmlfield/code/trunk</connection>
-		<developerConnection>svn+ssh://svn.code.sf.net/p/xmlfield/code/trunk</developerConnection>
+		<developerConnection>scm:svn:svn+ssh://svn.code.sf.net/p/xmlfield/code/trunk</developerConnection>
 		<url>https://svn.code.sf.net/p/xmlfield/code/trunk</url>
 	</scm>
 
