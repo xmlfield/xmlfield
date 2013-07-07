@@ -59,6 +59,17 @@
               <artifactId>maven-scm-provider-svnexe</artifactId>
               <version>1.8.1</version>
             </dependency>
+             <dependency>
+              <groupId>org.apache.maven.scm</groupId>
+              <artifactId>maven-scm-api</artifactId>
+              <version>1.8.1</version>
+            </dependency>
+            <dependency>
+              <groupId>org.apache.maven.scm</groupId>
+              <artifactId>maven-scm-providers-standard</artifactId>
+              <type>pom</type>
+              <version>1.8.1</version>
+            </dependency>
           </dependencies>
 				
 			</plugin>
@@ -155,7 +166,9 @@
 			<!-- </plugin> -->
 		</plugins>
 
+	
 	</build>
+	
 	<modules>
 		<module>xmlfield-core</module>
 		<module>xmlfield-repository</module>
