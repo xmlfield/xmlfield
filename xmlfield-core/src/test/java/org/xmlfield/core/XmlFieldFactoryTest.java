@@ -58,12 +58,11 @@ public class XmlFieldFactoryTest {
 	@Test
 	public void testFactoryThreadLocal() throws Exception {
 
-		XmlFieldFactory factory = new XmlFieldFactory();
+		XmlFieldFactory factory = new XmlFieldFactory(true);
 
 		Map<String, String> conf = new HashMap<String, String>();
 		conf.put(OutputKeys.INDENT, "true");
 		factory.setParserConfiguration(conf);
-		factory.setUseThreadLocal(true);
 		XmlField xf = factory.getXmlField();
 
 		Assert.assertNotNull(xf);

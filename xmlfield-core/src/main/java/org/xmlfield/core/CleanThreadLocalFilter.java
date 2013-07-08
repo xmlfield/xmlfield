@@ -27,6 +27,16 @@ public class CleanThreadLocalFilter implements Filter {
 
 	XmlFieldFactory factory = null;
 
+	/**
+	 * This method is intended to be overridden to setup global configuration.
+	 * 
+	 * @param factory
+	 *            Global XmlFieldFactory
+	 */
+	public void configure(XmlFieldFactory factory) {
+		// No special configuration
+	}
+
 	@Override
 	public void destroy() {
 
@@ -46,8 +56,10 @@ public class CleanThreadLocalFilter implements Filter {
 
 	@Override
 	public void init(FilterConfig filterConfig) throws ServletException {
-		factory = new XmlFieldFactory();
-		factory.setUseThreadLocal(true);
+		factory = new XmlFieldFactory(true);
+
+		// Call custom configuration if any.
+		configure(factory);
 	}
 
 }

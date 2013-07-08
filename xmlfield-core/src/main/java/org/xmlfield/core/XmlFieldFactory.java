@@ -7,6 +7,10 @@ import java.util.Map;
  * <p>
  * This factory is thread safe and can be configured to use ThreadLocal to reuse
  * XmlField instances for performance reasons.
+ * <p>
+ * When using ThreadLocal, configuration ( parserConfiguration and getter cache)
+ * is unique (static) across all XmlFieldFactory instances.
+ * 
  * 
  * @see CleanThreadLocalFilter
  * 
@@ -15,26 +19,52 @@ import java.util.Map;
  */
 public class XmlFieldFactory {
 
-	private Boolean getterCache = null;
-	private Map<String, String> parserConfiguration = null;
-	private boolean useThreadLocal = false;
-
+	private static Boolean staticGetterCache = null;
+	private static Map<String, String> staticParserConfiguration = null;
 	/**
 	 * XmlFiled instances associated to threads. Used only if useThreadLocal is
 	 * true.
 	 */
-	private final ThreadLocal<XmlField> xmlFieldInstances = new ThreadLocal<XmlField>() {
+	private static final ThreadLocal<XmlField> xmlFieldInstances = new ThreadLocal<XmlField>() {
 		@Override
 		protected XmlField initialValue() {
-			XmlField xf = new XmlField(parserConfiguration);
-			if (getterCache != null) {
-				xf.setGetterCache(getterCache);
+			XmlField xf = new XmlField(staticParserConfiguration);
+			if (staticGetterCache != null) {
+				xf.setGetterCache(staticGetterCache);
 			}
 			return xf;
 		}
 	};
 
+	private Boolean getterCache = null;
+	private Map<String, String> parserConfiguration = null;
+
+	private final boolean useThreadLocal;
+
 	public XmlFieldFactory() {
+		this(false);
+	}
+
+	/**
+	 * @param useThreadLocal
+	 *            When enabled, the factory will create only one XmlField object
+	 *            per thread and reuse it each time {@link #getXmlField()} is
+	 *            called.
+	 *            <p>
+	 *            This improves performance if {@link #getXmlField()} is called
+	 *            several times in the same thread. But it is still better to
+	 *            keep the XmlField object and reuse it because it it not
+	 *            subject to synchronization.
+	 * 
+	 *            <p>
+	 *            When used in a web application, it is recommended to use a
+	 *            servlet filter which clears the context after each call to
+	 *            prevent leaks in application servers.
+	 * 
+	 * @see CleanThreadLocalFilter
+	 */
+	public XmlFieldFactory(boolean useThreadLocal) {
+		this.useThreadLocal = useThreadLocal;
 	}
 
 	/**
@@ -72,7 +102,11 @@ public class XmlFieldFactory {
 	 * @param enabled
 	 */
 	public void setGetterCache(boolean enabled) {
-		this.getterCache = enabled;
+		if (useThreadLocal) {
+			staticGetterCache = enabled;
+		} else {
+			this.getterCache = enabled;
+		}
 	}
 
 	/**
@@ -82,28 +116,11 @@ public class XmlFieldFactory {
 	 * @param configuration
 	 */
 	public void setParserConfiguration(Map<String, String> configuration) {
-		parserConfiguration = configuration;
-	}
-
-	/**
-	 * When enabled, the factory will create only one XmlField object per thread
-	 * and reuse it each time {@link #getXmlField()} is called.
-	 * <p>
-	 * This improves performance if {@link #getXmlField()} is called several
-	 * times in the same thread. But it is still better to keep the XmlField
-	 * object and reuse it because it it not subject to synchronization.
-	 * 
-	 * <p>
-	 * When used in a web application, it is recommended to use a servlet filter
-	 * which clears the context after each call to prevent leaks in application
-	 * servers.
-	 * 
-	 * @see CleanThreadLocalFilter
-	 * 
-	 * @param useThreadLocal
-	 */
-	public void setUseThreadLocal(boolean useThreadLocal) {
-		this.useThreadLocal = useThreadLocal;
+		if (useThreadLocal) {
+			staticParserConfiguration = configuration;
+		} else {
+			parserConfiguration = configuration;
+		}
 	}
 
 }
