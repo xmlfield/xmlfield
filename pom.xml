@@ -7,7 +7,7 @@
 	<artifactId>xmlfield</artifactId>
 	<packaging>pom</packaging>
 	<name>XMLField</name>
-	<version>0.14-SNAPSHOT</version>
+	<version>0.14</version>
 
 
 
@@ -19,8 +19,8 @@
 		<url>https://sourceforge.net/apps/mantisbt/xmlfield/</url>
 	</issueManagement>
 	<scm>
-		<developerConnection>scm:svn:svn+ssh://svn.code.sf.net/p/xmlfield/code/trunk</developerConnection>
-		<url>https://svn.code.sf.net/p/xmlfield/code/trunk</url>
+		<developerConnection>scm:svn:svn+ssh://svn.code.sf.net/p/xmlfield/code/tags/xmlfield-0.14</developerConnection>
+		<url>https://svn.code.sf.net/p/xmlfield/code/tags/xmlfield-0.14</url>
 	</scm>
 
 
