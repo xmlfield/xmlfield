@@ -181,18 +181,18 @@
 		<repository>
 			<id>xmlfield-repository</id>
 			<name>XMLField Repository</name>
-			<url>scp://web.sourceforge.net/home/groups/x/xm/xmlfield/htdocs/maven/repository</url>
+			<url>scp://web.sourceforge.net/home/project-web/xmlfield/htdocs/maven/repository</url>
 		</repository>
 		<snapshotRepository>
 			<uniqueVersion>false</uniqueVersion>
 			<id>xmlfield-repository-snapshots</id>
 			<name>XMLField Snapshot Repository</name>
-			<url>scp://web.sourceforge.net/home/groups/x/xm/xmlfield/htdocs/maven/snapshots</url>
+			<url>scp://web.sourceforge.net/home/project-web/xmlfield/htdocs/maven/snapshots</url>
 		</snapshotRepository>
 		<site>
 			<id>xmlfield-site</id>
 			<name>XMLField Site</name>
-			<url>scp://web.sourceforge.net/home/groups/x/xm/xmlfield/htdocs</url>
+			<url>scp://web.sourceforge.net/home/project-web/xmlfield/htdocs</url>
 		</site>
 	</distributionManagement>
 	<properties>
