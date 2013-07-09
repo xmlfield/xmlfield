@@ -20,6 +20,7 @@ import java.io.InputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.util.HashMap;
 import java.util.Map;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -112,7 +113,7 @@ public class DomNodeParser implements XmlFieldNodeParser {
 
 		if (configuration != null) {
 			// Apply configuration
-			this.configuration = configuration;
+			this.configuration = new HashMap<String, String>(configuration);
 
 			// Warn for deprecated parameter value.
 			// Should be removed eventually.
