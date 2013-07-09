@@ -101,19 +101,19 @@ public class DomNodeParser implements XmlFieldNodeParser {
 	/**
 	 * Create document parser and writer.
 	 * 
-	 * @param configuration
+	 * @param configurationParam
 	 *            configure XML output (Transformer). Allowed values are
 	 *            {@link OutputKeys} constants.
 	 * @throws TransformerConfigurationException
 	 * @throws TransformerFactoryConfigurationError
 	 */
-	public DomNodeParser(Map<String, String> configuration)
+	public DomNodeParser(Map<String, String> configurationParam)
 			throws TransformerConfigurationException,
 			TransformerFactoryConfigurationError {
 
-		if (configuration != null) {
+		if (configurationParam != null) {
 			// Apply configuration
-			this.configuration = new HashMap<String, String>(configuration);
+			this.configuration = new HashMap<String, String>(configurationParam);
 
 			// Warn for deprecated parameter value.
 			// Should be removed eventually.
