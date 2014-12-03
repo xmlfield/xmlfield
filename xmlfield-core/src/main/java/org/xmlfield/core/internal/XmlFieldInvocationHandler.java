@@ -639,7 +639,8 @@ public class XmlFieldInvocationHandler implements InvocationHandler {
 
 		XmlFieldNode n;
 
-		if (value == null) {
+		if (value == null || value instanceof Object[]
+				&& ((Object[]) value).length == 0) {
 			// Value is null. We have to delete the current value.
 			n = xmlField._getSelector().selectXPathToNode(namespaces,
 					fieldXPath, node);
