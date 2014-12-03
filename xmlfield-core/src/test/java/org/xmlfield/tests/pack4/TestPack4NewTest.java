@@ -77,6 +77,29 @@ public class TestPack4NewTest {
 	}
 
 	@Test
+	public void testSetEmptyArray() throws Exception {
+
+		// Load initial XML
+		final String xml = "<list><string>String1</string><string>String2</string></list>";
+		String result = null;
+		final XmlFieldNode node = binder.xmlToNode(xml);
+
+		// Attach and assert object values
+		final StringList list = binder.nodeToObject(node, StringList.class);
+		assertEquals(2, list.getStrings().length);
+
+		// Remove all tags 'string' by setting empty value
+		XmlString[] values = list.getStrings();
+		values = (XmlString[]) ArrayUtils.remove(values, 0);
+		values = (XmlString[]) ArrayUtils.remove(values, 0);
+
+		list.setStrings(values);
+		result = binder.nodeToXml(node);
+		log.info(result);
+		assertEquals("<list/>", result);
+	}
+
+	@Test
 	public void testSetNull() throws Exception {
 
 		// Load initial XML
