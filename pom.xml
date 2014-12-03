@@ -19,8 +19,10 @@
 		<url>https://sourceforge.net/apps/mantisbt/xmlfield/</url>
 	</issueManagement>
 	<scm>
-		<developerConnection>scm:svn:svn+ssh://svn.code.sf.net/p/xmlfield/code/trunk</developerConnection>
-		<url>https://svn.code.sf.net/p/xmlfield/code/trunk</url>
+		<connection>scm:git:https://github.com/xmlfield/xmlfield.git</connection>
+		<developerConnection>scm:git:https://github.com/xmlfield/xmlfield.git</developerConnection>
+		<url>https://github.com/xmlfield/xmlfield</url>
+		<tag>HEAD</tag>
 	</scm>
 
 
