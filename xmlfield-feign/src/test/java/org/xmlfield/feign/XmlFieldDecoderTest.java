@@ -28,13 +28,11 @@ public class XmlFieldDecoderTest {
     decoder = new XmlFieldDecoder();
   }
 
-
-  private File getFileInClasspath(String filename) {
-    ClassLoader classLoader = getClass().getClassLoader();
-    File file = new File(classLoader.getResource(filename).getFile());
-    return file;
-  }
-
+  /**
+   * Nominal test of decoding
+   * 
+   * @throws Exception
+   */
   @Test
   public void decodeTestNominal() throws Exception {
     File fileInClasspath = getFileInClasspath("atom_test.xml");
@@ -49,4 +47,11 @@ public class XmlFieldDecoderTest {
     assertEquals("CD Catalog", model.getName());
     assertEquals("Atom", model.getFormat());
   }
+
+  private File getFileInClasspath(String filename) {
+    ClassLoader classLoader = getClass().getClassLoader();
+    File file = new File(classLoader.getResource(filename).getFile());
+    return file;
+  }
+
 }
