@@ -2,7 +2,6 @@ package org.xmlfield.feign;
 
 import java.lang.reflect.Type;
 
-import org.xmlfield.core.XmlField;
 import org.xmlfield.core.exception.XmlFieldParsingException;
 
 import feign.RequestTemplate;
@@ -17,8 +16,6 @@ import feign.codec.Encoder;
  *
  */
 public class XmlFieldEncoder implements Encoder {
-  private XmlField xf = new XmlField();
-
   /**
    * {@inheritDoc}
    */
@@ -27,7 +24,7 @@ public class XmlFieldEncoder implements Encoder {
       throws EncodeException {
 
     try {
-      template.body(xf.objectToXml(object));
+      template.body(XmlFieldFactory.getInstance().objectToXml(object));
     } catch (XmlFieldParsingException e) {
       throw new EncodeException(e.toString(), e);
     }

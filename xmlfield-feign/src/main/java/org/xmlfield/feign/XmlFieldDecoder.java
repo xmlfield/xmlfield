@@ -3,7 +3,6 @@ package org.xmlfield.feign;
 import java.io.IOException;
 import java.lang.reflect.Type;
 
-import org.xmlfield.core.XmlField;
 import org.xmlfield.core.exception.XmlFieldParsingException;
 
 import feign.FeignException;
@@ -21,8 +20,6 @@ import feign.codec.Decoder;
  *
  */
 public class XmlFieldDecoder implements Decoder {
-  private XmlField xf = new XmlField();
-
   /**
    * {@inheritDoc}
    */
@@ -39,7 +36,7 @@ public class XmlFieldDecoder implements Decoder {
     }
 
     try {
-      return xf.xmlToObject(response.body().toString(), (Class<?>) type);
+      return XmlFieldFactory.getInstance().xmlToObject(response.body().toString(), (Class<?>) type);
     } catch (XmlFieldParsingException e) {
       throw new DecodeException(e.toString(), e);
     } finally {
