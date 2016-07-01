@@ -36,7 +36,7 @@ public class XmlFieldDecoderTest {
   }
 
   @Test
-  public void decodeXmlOCRResponseTest() throws Exception {
+  public void decodeTestNominal() throws Exception {
     File fileInClasspath = getFileInClasspath("atom_test.xml");
     byte[] data = Files.readAllBytes(fileInClasspath.toPath());
 
