@@ -16,7 +16,7 @@ import feign.codec.Encoder;
  * @author Idriss Neumann <neumann.idriss@gmail.com>
  *
  */
-public class XPathEncoder implements Encoder {
+public class XmlFieldEncoder implements Encoder {
   private XmlField xf = new XmlField();
 
   /**
