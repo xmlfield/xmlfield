@@ -20,9 +20,12 @@ import feign.codec.Decoder;
  * @author Idriss Neumann<neumann.idriss@gmail.com>
  *
  */
-public class XPathDecoder implements Decoder {
+public class XmlFieldDecoder implements Decoder {
   private XmlField xf = new XmlField();
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public Object decode(Response response, Type type)
       throws IOException, DecodeException, FeignException {

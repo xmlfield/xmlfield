@@ -19,6 +19,9 @@ import feign.codec.Encoder;
 public class XPathEncoder implements Encoder {
   private XmlField xf = new XmlField();
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public void encode(Object object, Type bodyType, RequestTemplate template)
       throws EncodeException {
