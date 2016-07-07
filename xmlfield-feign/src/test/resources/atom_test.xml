@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<a:entry xmlns:a="http://www.w3.org/2005/Atom" xmlns="http://www.w3.org/1999/xhtml" >
+    <a:title type="xhtml">
+        <div>
+            <span class="name">CD Catalog</span>
+            <span class="format">Atom</span>
+        </div>
+    </a:title>
+    <a:id>12345</a:id>
+    <a:updated>2003-12-14T18:30:02Z</a:updated>
+    <a:author>
+        <a:name>Author</a:name>
+    </a:author>
+    <a:content type="xhtml">
+        <div>
+            <div class="cd">
+                <span class="title">01</span>
+                <span class="price">999999</span>
+                <span class="artist">QL0001</span>
+            </div>
+        </div>
+    </a:content>
+</a:entry>
