@@ -3,6 +3,7 @@ package org.xmlfield.feign;
 import java.io.IOException;
 import java.lang.reflect.Type;
 
+import org.apache.commons.io.IOUtils;
 import org.xmlfield.core.exception.XmlFieldParsingException;
 
 import feign.FeignException;
@@ -36,7 +37,8 @@ public class XmlFieldDecoder implements Decoder {
     }
 
     try {
-      return XmlFieldFactory.getInstance().xmlToObject(response.body().toString(), (Class<?>) type);
+      return XmlFieldFactory.getInstance()
+          .xmlToObject(IOUtils.toString(response.body().asInputStream(), "UTF-8"), (Class<?>) type);
     } catch (XmlFieldParsingException e) {
       throw new DecodeException(e.toString(), e);
     } finally {
